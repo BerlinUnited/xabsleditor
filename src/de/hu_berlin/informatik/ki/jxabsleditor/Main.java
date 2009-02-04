@@ -127,6 +127,8 @@ public class Main extends javax.swing.JFrame
     toolbarMain = new javax.swing.JToolBar();
     btNew = new javax.swing.JButton();
     btOpen = new javax.swing.JButton();
+    btSave = new javax.swing.JButton();
+    seperator1 = new javax.swing.JToolBar.Separator();
     btCompile = new javax.swing.JButton();
     mbMain = new javax.swing.JMenuBar();
     mFile = new javax.swing.JMenu();
@@ -186,6 +188,21 @@ public class Main extends javax.swing.JFrame
     });
     toolbarMain.add(btOpen);
 
+    btSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave22.png"))); // NOI18N
+    btSave.setToolTipText("Save File");
+    btSave.setFocusable(false);
+    btSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    btSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    btSave.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        saveFileAction(evt);
+      }
+    });
+    toolbarMain.add(btSave);
+
+    seperator1.setOrientation(javax.swing.SwingConstants.HORIZONTAL);
+    toolbarMain.add(seperator1);
+
     btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile22.png"))); // NOI18N
     btCompile.setToolTipText("Compile Behavior");
     btCompile.setFocusable(false);
@@ -204,6 +221,7 @@ public class Main extends javax.swing.JFrame
     mFile.setText("File");
 
     miNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+    miNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew16.png"))); // NOI18N
     miNew.setMnemonic('N');
     miNew.setText("New");
     miNew.addActionListener(new java.awt.event.ActionListener() {
@@ -214,6 +232,7 @@ public class Main extends javax.swing.JFrame
     mFile.add(miNew);
 
     miOpen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+    miOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
     miOpen.setMnemonic('O');
     miOpen.setText("Open");
     miOpen.addActionListener(new java.awt.event.ActionListener() {
@@ -235,11 +254,12 @@ public class Main extends javax.swing.JFrame
     mFile.add(jSeparator1);
 
     miSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+    miSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave16.png"))); // NOI18N
     miSave.setMnemonic('S');
     miSave.setText("Save");
     miSave.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miSaveActionPerformed(evt);
+        saveFileAction(evt);
       }
     });
     mFile.add(miSave);
@@ -271,6 +291,7 @@ public class Main extends javax.swing.JFrame
     mEdit.setText("Edit");
 
     miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
+    miCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"))); // NOI18N
     miCompile.setMnemonic('C');
     miCompile.setText("Compile Behavior");
     miCompile.addActionListener(new java.awt.event.ActionListener() {
@@ -335,8 +356,8 @@ public class Main extends javax.swing.JFrame
       jTabbedPane.remove(jTabbedPane.getSelectedComponent());
 }//GEN-LAST:event_miCloseActionPerformed
 
-    private void miSaveActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveActionPerformed
-    {//GEN-HEADEREND:event_miSaveActionPerformed
+    private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
+    {//GEN-HEADEREND:event_saveFileAction
 
       XEditorPanel editor = ((XEditorPanel) jTabbedPane.getSelectedComponent());
       String text = editor.getText();
@@ -361,7 +382,7 @@ public class Main extends javax.swing.JFrame
           e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
       }//end catch
 
-}//GEN-LAST:event_miSaveActionPerformed
+}//GEN-LAST:event_saveFileAction
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
     {//GEN-HEADEREND:event_miRefreshGraphActionPerformed
@@ -530,12 +551,15 @@ public class Main extends javax.swing.JFrame
             try
             {
               ic.xabsl();
+              JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
+                "compiled and saved.");
             }
             catch(Exception e)
             {
               Helper.handleException(e);
               return;
             }
+
           }
           catch(Exception ex)
           {
@@ -608,6 +632,7 @@ public class Main extends javax.swing.JFrame
   private javax.swing.JButton btCompile;
   private javax.swing.JButton btNew;
   private javax.swing.JButton btOpen;
+  private javax.swing.JButton btSave;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
   private javax.swing.JSplitPane jSplitPane;
@@ -626,6 +651,7 @@ public class Main extends javax.swing.JFrame
   private javax.swing.JMenuItem miRefreshGraph;
   private javax.swing.JMenuItem miSave;
   private javax.swing.JMenuItem miSaveAs;
+  private javax.swing.JToolBar.Separator seperator1;
   private javax.swing.JToolBar toolbarMain;
   private de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.XGraph xGraph;
   // End of variables declaration//GEN-END:variables
