@@ -186,7 +186,7 @@ public class Main extends javax.swing.JFrame
     });
     toolbarMain.add(btOpen);
 
-    btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"))); // NOI18N
+    btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile22.png"))); // NOI18N
     btCompile.setToolTipText("Compile Behavior");
     btCompile.setFocusable(false);
     btCompile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
