@@ -440,11 +440,11 @@ public class Main extends javax.swing.JFrame
 
       JOptionPane.showMessageDialog(this,
         "<html>" +
-        "<h1>JXabslEditor</h1>" +
+        "<h1>XabslEditor - Java edition</h1>" +
         "<p>(c) 2009 by NaoTeam Humboldt<br>" +
         "Humboldt-Universit&auml;t zu Berlin</p>" +
         "</html>",
-        "JXabslEditor",
+        "XabslEditor",
         JOptionPane.INFORMATION_MESSAGE);
 
     }//GEN-LAST:event_miInfoActionPerformed
