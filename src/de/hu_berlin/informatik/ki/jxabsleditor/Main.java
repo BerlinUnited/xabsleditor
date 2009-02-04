@@ -28,7 +28,16 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.CommonTreeNodeStream;
+import xabslc.IC;
+import xabslc.PrepareIC;
+import xabslc.XabslLexer;
+import xabslc.XabslParser;
 
 /**
  *
@@ -40,6 +49,10 @@ public class Main extends javax.swing.JFrame
   private JFileChooser fileChooser = new JFileChooser();
   private Properties configuration = new Properties();
   private File fConfig;
+
+  private FileFilter dotFilter = new DotFileFilter();
+  private FileFilter xabslFilter = new XABSLFileFilter();
+  private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
 
   /** Creates new form Main */
   public Main()
@@ -74,8 +87,11 @@ public class Main extends javax.swing.JFrame
     }
 
     fileChooser = new JFileChooser();
-    fileChooser.setFileFilter(new DotFileFilter());
-    fileChooser.setFileFilter(new XABSLFileFilter());
+    fileChooser.setFileFilter(xabslFilter);
+    fileChooser.setFileFilter(icFilter);
+    fileChooser.setFileFilter(dotFilter);
+    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    fileChooser.setAcceptAllFileFilterUsed(true);
 
     loadConfiguration();
 
@@ -108,6 +124,10 @@ public class Main extends javax.swing.JFrame
     jSplitPane = new javax.swing.JSplitPane();
     jTabbedPane = new javax.swing.JTabbedPane();
     xGraph = new de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.XGraph();
+    toolbarMain = new javax.swing.JToolBar();
+    btNew = new javax.swing.JButton();
+    btOpen = new javax.swing.JButton();
+    btCompile = new javax.swing.JButton();
     mbMain = new javax.swing.JMenuBar();
     mFile = new javax.swing.JMenu();
     miNew = new javax.swing.JMenuItem();
@@ -119,6 +139,7 @@ public class Main extends javax.swing.JFrame
     jSeparator2 = new javax.swing.JSeparator();
     miQuit = new javax.swing.JMenuItem();
     mEdit = new javax.swing.JMenu();
+    miCompile = new javax.swing.JMenuItem();
     miRefreshGraph = new javax.swing.JMenuItem();
     miOption = new javax.swing.JMenuItem();
     mHelp = new javax.swing.JMenu();
@@ -138,6 +159,47 @@ public class Main extends javax.swing.JFrame
 
     getContentPane().add(jSplitPane, java.awt.BorderLayout.CENTER);
 
+    toolbarMain.setFloatable(false);
+    toolbarMain.setRollover(true);
+
+    btNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew22.png"))); // NOI18N
+    btNew.setToolTipText("New file");
+    btNew.setFocusable(false);
+    btNew.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    btNew.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    btNew.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        newFileAction(evt);
+      }
+    });
+    toolbarMain.add(btNew);
+
+    btOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen22.png"))); // NOI18N
+    btOpen.setToolTipText("Open File");
+    btOpen.setFocusable(false);
+    btOpen.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    btOpen.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    btOpen.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        openFileAction(evt);
+      }
+    });
+    toolbarMain.add(btOpen);
+
+    btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"))); // NOI18N
+    btCompile.setToolTipText("Compile Behavior");
+    btCompile.setFocusable(false);
+    btCompile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    btCompile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    btCompile.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        compileAction(evt);
+      }
+    });
+    toolbarMain.add(btCompile);
+
+    getContentPane().add(toolbarMain, java.awt.BorderLayout.PAGE_START);
+
     mFile.setMnemonic('F');
     mFile.setText("File");
 
@@ -146,7 +208,7 @@ public class Main extends javax.swing.JFrame
     miNew.setText("New");
     miNew.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miNewActionPerformed(evt);
+        newFileAction(evt);
       }
     });
     mFile.add(miNew);
@@ -156,7 +218,7 @@ public class Main extends javax.swing.JFrame
     miOpen.setText("Open");
     miOpen.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miOpenActionPerformed(evt);
+        openFileAction(evt);
       }
     });
     mFile.add(miOpen);
@@ -208,6 +270,16 @@ public class Main extends javax.swing.JFrame
     mEdit.setMnemonic('E');
     mEdit.setText("Edit");
 
+    miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
+    miCompile.setMnemonic('C');
+    miCompile.setText("Compile Behavior");
+    miCompile.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        compileAction(evt);
+      }
+    });
+    mEdit.add(miCompile);
+
     miRefreshGraph.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
     miRefreshGraph.setMnemonic('R');
     miRefreshGraph.setText("Refresh Graph");
@@ -248,66 +320,20 @@ public class Main extends javax.swing.JFrame
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-  private void miNewActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miNewActionPerformed
-  {//GEN-HEADEREND:event_miNewActionPerformed
+  private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
+  {//GEN-HEADEREND:event_newFileAction
     // create new tab
     XEditorPanel editor = new XEditorPanel();
     int tabCount = jTabbedPane.getTabCount();
     jTabbedPane.addTab("New " + tabCount, editor);
     jTabbedPane.setSelectedComponent(editor);
-}//GEN-LAST:event_miNewActionPerformed
+}//GEN-LAST:event_newFileAction
 
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
     {//GEN-HEADEREND:event_miCloseActionPerformed
       // close current tab
       jTabbedPane.remove(jTabbedPane.getSelectedComponent());
 }//GEN-LAST:event_miCloseActionPerformed
-
-    private void miOpenActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOpenActionPerformed
-    {//GEN-HEADEREND:event_miOpenActionPerformed
-
-      int result = fileChooser.showOpenDialog(this);
-      if(JFileChooser.APPROVE_OPTION != result)
-      {
-        return;
-      }
-
-      File selectedFile = fileChooser.getSelectedFile();
-      if(selectedFile == null)
-      {
-        return;
-      }
-      try
-      {
-
-        configuration.setProperty("lastOpenedFolder",
-          fileChooser.getCurrentDirectory().getAbsolutePath());
-        saveConfiguration();
-
-        // read the file
-        String content = readFileToString(selectedFile);
-
-        // create new document
-        XEditorPanel editor = new XEditorPanel(content);
-        editor.setFile(selectedFile);
-
-        // create a tab
-        jTabbedPane.addTab(editor.getFile().getName(), null, editor, selectedFile.getAbsolutePath());
-        jTabbedPane.setSelectedComponent(editor);
-      }
-      catch(IOException e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
-      }
-    /*
-    catch(Exception e)
-    {
-    JOptionPane.showMessageDialog(this,
-    e.toString(), "Could not open the file.", JOptionPane.ERROR_MESSAGE);
-    }//end catch
-     */
-}//GEN-LAST:event_miOpenActionPerformed
 
     private void miSaveActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveActionPerformed
     {//GEN-HEADEREND:event_miSaveActionPerformed
@@ -402,6 +428,125 @@ public class Main extends javax.swing.JFrame
 
     }//GEN-LAST:event_miInfoActionPerformed
 
+    private void openFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openFileAction
+    {//GEN-HEADEREND:event_openFileAction
+
+
+      fileChooser.setFileFilter(xabslFilter);
+      int result = fileChooser.showOpenDialog(this);
+      if(JFileChooser.APPROVE_OPTION != result)
+      {
+        return;
+      }
+
+      File selectedFile = fileChooser.getSelectedFile();
+      if(selectedFile == null)
+      {
+        return;
+      }
+      try
+      {
+
+        configuration.setProperty("lastOpenedFolder",
+          fileChooser.getCurrentDirectory().getAbsolutePath());
+        saveConfiguration();
+
+        // read the file
+        String content = readFileToString(selectedFile);
+
+        // create new document
+        XEditorPanel editor = new XEditorPanel(content);
+        editor.setFile(selectedFile);
+
+        // create a tab
+        jTabbedPane.addTab(editor.getFile().getName(), null, editor, selectedFile.getAbsolutePath());
+        jTabbedPane.setSelectedComponent(editor);
+      }
+      catch(IOException e)
+      {
+        JOptionPane.showMessageDialog(this,
+          e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
+      }
+
+    }//GEN-LAST:event_openFileAction
+
+    private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
+    {//GEN-HEADEREND:event_compileAction
+
+      XEditorPanel editor = ((XEditorPanel) jTabbedPane.getSelectedComponent());
+      File optionFile = editor.getFile();
+
+      File agentsFile = Helper.getAgentFileForOption(optionFile);
+      if(agentsFile == null)
+      {
+        JOptionPane.showMessageDialog(this, "Could not find agents.xabsl",
+          "ERROR", JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+
+      fileChooser.setFileFilter(icFilter);
+      int result = fileChooser.showSaveDialog(this);
+      fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      if(result == JFileChooser.APPROVE_OPTION)
+      {
+        File fout = fileChooser.getSelectedFile();
+        if(fout == null)
+        {
+          JOptionPane.showMessageDialog(this, "No file selected");
+        }
+        else
+        {
+          try
+          {
+            XabslLexer lexer = new XabslLexer(agentsFile.getAbsolutePath());
+            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+            XabslParser parser = new XabslParser(tokenStream);
+
+            CommonTree tree = (CommonTree) parser.xabsl().getTree();
+            CommonTreeNodeStream nodes = new CommonTreeNodeStream(tree);
+            PrepareIC prepare = new PrepareIC(nodes);
+            try
+            {
+              tree = (CommonTree) prepare.xabsl().getTree();
+            }
+            catch(Exception ex)
+            {
+              Helper.handleException(ex);
+            }
+
+            //System.err.println(tree.toStringTree());
+
+            nodes = new CommonTreeNodeStream(tree);
+            IC ic = new IC(nodes);
+
+            ic.outputFilename = fout.getAbsolutePath();
+            ic.title = lexer.title;
+            ic.symbols = parser.symbols;
+            ic.enumNames = parser.enumNames;
+            ic.enumValues = parser.enumValues;
+            ic.parameterSymbols = parser.parameterSymbols;
+            ic.parameterEnumNames = parser.parameterEnumNames;
+
+            try
+            {
+              ic.xabsl();
+            }
+            catch(Exception e)
+            {
+              Helper.handleException(e);
+              return;
+            }
+          }
+          catch(Exception ex)
+          {
+            Helper.handleException(ex);
+          }
+
+        }
+      }
+
+    }//GEN-LAST:event_compileAction
+
   /**
    * @param args the command line arguments
    */
@@ -437,6 +582,7 @@ public class Main extends javax.swing.JFrame
   {
     if(selectedFile == null)
     {
+      fileChooser.setFileFilter(xabslFilter);
       int result = fileChooser.showSaveDialog(this);
       if(JFileChooser.APPROVE_OPTION != result)
       {
@@ -459,6 +605,9 @@ public class Main extends javax.swing.JFrame
   }//end saveStringToFile
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton btCompile;
+  private javax.swing.JButton btNew;
+  private javax.swing.JButton btOpen;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
   private javax.swing.JSplitPane jSplitPane;
@@ -468,6 +617,7 @@ public class Main extends javax.swing.JFrame
   private javax.swing.JMenu mHelp;
   private javax.swing.JMenuBar mbMain;
   private javax.swing.JMenuItem miClose;
+  private javax.swing.JMenuItem miCompile;
   private javax.swing.JMenuItem miInfo;
   private javax.swing.JMenuItem miNew;
   private javax.swing.JMenuItem miOpen;
@@ -476,6 +626,7 @@ public class Main extends javax.swing.JFrame
   private javax.swing.JMenuItem miRefreshGraph;
   private javax.swing.JMenuItem miSave;
   private javax.swing.JMenuItem miSaveAs;
+  private javax.swing.JToolBar toolbarMain;
   private de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.XGraph xGraph;
   // End of variables declaration//GEN-END:variables
 

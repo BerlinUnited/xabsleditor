@@ -65,11 +65,11 @@ public class ExceptionDialog extends javax.swing.JDialog
       }
     });
 
-    lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/warning.png"))); // NOI18N
+    lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/warning32.png"))); // NOI18N
 
     lblMessage.setText("<no message>");
 
-    lblCaption.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+    lblCaption.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
     lblCaption.setText("Exception thrown:");
 
     btClose.setMnemonic('C');
@@ -102,8 +102,8 @@ public class ExceptionDialog extends javax.swing.JDialog
         .addComponent(lblIcon)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
           .addComponent(lblMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+          .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addComponent(btDetails)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 259, Short.MAX_VALUE)
@@ -116,13 +116,13 @@ public class ExceptionDialog extends javax.swing.JDialog
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(lblIcon)
           .addGroup(layout.createSequentialGroup()
             .addComponent(lblCaption)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(lblMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
-          .addComponent(lblIcon))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(lblMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+        .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(btClose)

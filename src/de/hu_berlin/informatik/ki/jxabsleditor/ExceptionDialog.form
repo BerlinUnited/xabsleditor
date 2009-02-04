@@ -31,8 +31,8 @@
               <Component id="lblIcon" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="lblMessage" pref="362" max="32767" attributes="0"/>
                   <Component id="spDetails" alignment="0" pref="362" max="32767" attributes="0"/>
-                  <Component id="lblMessage" alignment="0" pref="362" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btDetails" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="259" max="32767" attributes="0"/>
@@ -49,15 +49,15 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Component id="lblIcon" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Component id="lblCaption" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lblMessage" min="-2" pref="52" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="lblMessage" min="-2" pref="61" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblIcon" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="spDetails" pref="159" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="spDetails" pref="144" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btClose" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -72,7 +72,7 @@
     <Component class="javax.swing.JLabel" name="lblIcon">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/warning.png"/>
+          <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/warning32.png"/>
         </Property>
       </Properties>
     </Component>
