@@ -143,6 +143,7 @@ public class XParser implements Parser
   private void parseDecision() throws Exception
   {
     isTokenAndEat("decision");
+    /*
     isTokenAndEat("{");
 
     boolean resume = true;
@@ -187,8 +188,10 @@ public class XParser implements Parser
         resume = false;
       }
     }
+     */
 
-    isTokenAndEat("}");
+    //isTokenAndEat("}");
+    parseBlock();
   }//end parseDecision
 
   private void parseSingleDecision() throws Exception
@@ -210,17 +213,19 @@ public class XParser implements Parser
         currentToken.offset, Math.max(currentToken.textCount, 2)));
 
     }
-  }
+  }//end parseSingleDecision
 
   private void parseAction() throws Exception
   {
     isTokenAndEat("action");
+
     isTokenAndEat("{");
     while(!isToken("}"))
     {
       parseExpression();
-    }
+    }//end while
     isTokenAndEat("}");
+    
   }//end parseAction
 
   private void parseGoto() throws Exception
@@ -247,7 +252,7 @@ public class XParser implements Parser
     {
       parseFunction();
     }
-  }//end parseFunction
+  }//end parseExpression
 
   private void parseFunction() throws Exception
   {
@@ -316,7 +321,27 @@ public class XParser implements Parser
         parseBooleanExpression();
       }
     }
-  }
+  }//end parseBooleanExpression
+
+
+  // parse a block surounded by {}
+  private void parseBlock() throws Exception
+  {
+    isTokenAndEat("{");
+
+    while(!isToken("}"))
+    {
+        if(isToken("{"))
+            parseBlock();
+        else if(isToken("goto") || isToken("stay"))
+            parseSingleDecision();
+        else
+            eat();
+    }//end while
+
+    isTokenAndEat("}");
+  }//end parseBlock
+
 
   private void parseAssignment() throws Exception
   {

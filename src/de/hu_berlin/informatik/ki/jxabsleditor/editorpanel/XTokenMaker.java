@@ -163,7 +163,9 @@ public class XTokenMaker extends AbstractTokenMaker
                     break;
                     
                 case Token.IDENTIFIER:
-                    if(Character.isJavaIdentifierPart(c))
+                    // it is allowed to have identifiers to contain dots,
+                    // i.e. something like ball.pos.x
+                    if(Character.isJavaIdentifierPart(c) || c == '.')
                     {
                         currentTokenType = Token.IDENTIFIER;
                         i++;
