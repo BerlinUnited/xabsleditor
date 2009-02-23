@@ -280,9 +280,6 @@
           </Events>
         </Component>
         <Component class="javax.swing.JToolBar$Separator" name="seperator1">
-          <Properties>
-            <Property name="orientation" type="int" value="0"/>
-          </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="btCompile">
           <Properties>

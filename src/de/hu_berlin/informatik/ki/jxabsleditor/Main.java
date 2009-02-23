@@ -32,6 +32,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 import xabslc.IC;
@@ -53,6 +54,9 @@ public class Main extends javax.swing.JFrame
   private FileFilter dotFilter = new DotFileFilter();
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
+
+
+  String defaultCompilationPath = null;
 
   /** Creates new form Main */
   public Main()
@@ -109,6 +113,15 @@ public class Main extends javax.swing.JFrame
     if(configuration.containsKey("dotInstallationPath"))
     {
       this.xGraph.setLayoutEngine(configuration.getProperty("dotInstallationPath"));
+    }
+
+    if(configuration.containsKey("defaultCompilationPath"))
+    {
+      String path = configuration.getProperty("defaultCompilationPath");
+      if(new File(path).exists())
+      {
+          this.defaultCompilationPath = path;
+      }
     }
   }//end loadConfiguration
 
@@ -503,70 +516,90 @@ public class Main extends javax.swing.JFrame
         JOptionPane.showMessageDialog(this, "Could not find agents.xabsl",
           "ERROR", JOptionPane.ERROR_MESSAGE);
         return;
-      }
+      }//end file
 
-      fileChooser.setFileFilter(icFilter);
-      int result = fileChooser.showSaveDialog(this);
-      fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-      if(result == JFileChooser.APPROVE_OPTION)
+      File fout = null;
+      
+      if(defaultCompilationPath == null)
       {
-        File fout = fileChooser.getSelectedFile();
-        if(fout == null)
+        fileChooser.setFileFilter(icFilter);
+        int result = fileChooser.showSaveDialog(this);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if(result == JFileChooser.APPROVE_OPTION)
         {
-          JOptionPane.showMessageDialog(this, "No file selected");
+            fout = fileChooser.getSelectedFile();
         }
-        else
+      }else
+      {
+          fout = new File(defaultCompilationPath + "/behavior-ic.dat");
+      }
+      
+      
+        
+    if(fout == null)
+    {
+      JOptionPane.showMessageDialog(this, "No file selected");
+      return;
+    }else if(fout.exists())
+    {
+        if(!fout.delete())
         {
-          try
-          {
-            XabslLexer lexer = new XabslLexer(agentsFile.getAbsolutePath());
-            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            XabslParser parser = new XabslParser(tokenStream);
-
-            CommonTree tree = (CommonTree) parser.xabsl().getTree();
-            CommonTreeNodeStream nodes = new CommonTreeNodeStream(tree);
-            PrepareIC prepare = new PrepareIC(nodes);
-            try
-            {
-              tree = (CommonTree) prepare.xabsl().getTree();
-            }
-            catch(Exception ex)
-            {
-              Helper.handleException(ex);
-            }
-
-            //System.err.println(tree.toStringTree());
-
-            nodes = new CommonTreeNodeStream(tree);
-            IC ic = new IC(nodes);
-
-            ic.outputFilename = fout.getAbsolutePath();
-            ic.title = lexer.title;
-            ic.symbols = parser.symbols;
-            ic.enumNames = parser.enumNames;
-            ic.enumValues = parser.enumValues;
-            ic.parameterSymbols = parser.parameterSymbols;
-            ic.parameterEnumNames = parser.parameterEnumNames;
-
-            try
-            {
-              ic.xabsl();
-              JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
-                "compiled and saved.");
-            }
-            catch(Exception e)
-            {
-              Helper.handleException(e);
-              return;
-            }
-
-          }
-          catch(Exception ex)
-          {
-            Helper.handleException(ex);
-          }
-
+            JOptionPane.showMessageDialog(this, "Can not overwrite the file " +
+                    fout.getAbsolutePath());
+            return;
         }
+    }
+
+
+      try
+      {
+        XabslLexer lexer = new XabslLexer(agentsFile.getAbsolutePath());
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        XabslParser parser = new XabslParser(tokenStream);
+
+        CommonTree tree = (CommonTree) parser.xabsl().getTree();
+        CommonTreeNodeStream nodes = new CommonTreeNodeStream(tree);
+        PrepareIC prepare = new PrepareIC(nodes);
+        
+        try
+        {
+          tree = (CommonTree) prepare.xabsl().getTree();
+        }
+        catch(RecognitionException ex)
+        {
+          Helper.handleException(ex);
+          return;
+        }
+
+        //System.err.println(tree.toStringTree());
+
+        nodes = new CommonTreeNodeStream(tree);
+        IC ic = new IC(nodes);
+
+        ic.outputFilename = fout.getAbsolutePath();
+        ic.title = lexer.title;
+        ic.symbols = parser.symbols;
+        ic.enumNames = parser.enumNames;
+        ic.enumValues = parser.enumValues;
+        ic.parameterSymbols = parser.parameterSymbols;
+        ic.parameterEnumNames = parser.parameterEnumNames;
+
+        try
+        {
+          ic.xabsl();
+          JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
+            "compiled and saved.");
+        }
+        catch(RecognitionException e)
+        {
+          Helper.handleException(e);
+          return;
+        }
+
+      }
+      catch(Exception ex)
+      {
+        Helper.handleException(ex);
       }
 
     }//GEN-LAST:event_compileAction
@@ -729,6 +762,7 @@ public class Main extends javax.swing.JFrame
     return newFile;
   }//end validateFileName
 
+  
   private void saveConfiguration()
   {
     try
@@ -740,7 +774,7 @@ public class Main extends javax.swing.JFrame
       handleException(ex);
     }
 
-  }
+  }//end saveConfiguration
 
   public static void handleException(Exception ex)
   {
