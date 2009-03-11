@@ -9,17 +9,12 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.graphpanel;
 
-import att.grappa.Attribute;
-import att.grappa.Element;
 import att.grappa.Graph;
 import att.grappa.GrappaAdapter;
-import att.grappa.GrappaBox;
 import att.grappa.GrappaListener;
 import att.grappa.GrappaPanel;
-import att.grappa.GrappaPoint;
 import att.grappa.GrappaSupport;
 import att.grappa.Parser;
-import att.grappa.Subgraph;
 import java.io.InputStream;
 
 /**
@@ -53,6 +48,7 @@ public class XGraph extends javax.swing.JPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        setPreferredSize(new java.awt.Dimension(100, 200));
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
 

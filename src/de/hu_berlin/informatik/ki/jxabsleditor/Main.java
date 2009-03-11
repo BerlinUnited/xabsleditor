@@ -17,10 +17,13 @@ import att.grappa.GrappaPanel;
 import att.grappa.GrappaPoint;
 import att.grappa.Subgraph;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -550,26 +553,37 @@ public class Main extends javax.swing.JFrame
         }
     }
 
+      XABSLErrorOutputStream errorStream = new XABSLErrorOutputStream();
 
+      
       try
       {
+
         XabslLexer lexer = new XabslLexer(agentsFile.getAbsolutePath());
+
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         XabslParser parser = new XabslParser(tokenStream);
 
+        
+        PrintStream defaultErrorStream = System.err;
+        System.setErr(new PrintStream(errorStream));
+        
         CommonTree tree = (CommonTree) parser.xabsl().getTree();
+
+        System.setErr(defaultErrorStream); // set the default stream back
+        //System.out.println(errorStream.getMessage());
+        errorStream.parseMessage();
+        if(errorStream.message != null)
+        {
+            throw new Exception(errorStream.getMessage());
+        }
+        
         CommonTreeNodeStream nodes = new CommonTreeNodeStream(tree);
         PrepareIC prepare = new PrepareIC(nodes);
+
+        tree = (CommonTree) prepare.xabsl().getTree();
         
-        try
-        {
-          tree = (CommonTree) prepare.xabsl().getTree();
-        }
-        catch(RecognitionException ex)
-        {
-          Helper.handleException(ex);
-          return;
-        }
+        System.err.println("test");
 
         //System.err.println(tree.toStringTree());
 
@@ -584,17 +598,10 @@ public class Main extends javax.swing.JFrame
         ic.parameterSymbols = parser.parameterSymbols;
         ic.parameterEnumNames = parser.parameterEnumNames;
 
-        try
-        {
-          ic.xabsl();
-          JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
-            "compiled and saved.");
-        }
-        catch(RecognitionException e)
-        {
-          Helper.handleException(e);
-          return;
-        }
+
+      ic.xabsl();
+      JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
+        "compiled and saved.");
 
       }
       catch(Exception ex)
@@ -784,6 +791,42 @@ public class Main extends javax.swing.JFrame
     ExceptionDialog dlg = new ExceptionDialog(null, ex);
     dlg.setVisible(true);
   }
+
+
+
+  class XABSLErrorOutputStream extends OutputStream
+  {
+        private StringBuffer messageBuffer = new StringBuffer();
+        
+        @Override
+        public void write(int b) throws IOException {
+            messageBuffer.append((char)b);
+        }
+
+        public String getMessage()
+        {
+            return messageBuffer.toString();
+        }//end getMessage
+
+        public String fileName;
+        int row;
+        int col;
+        String message;
+
+        public void parseMessage()
+        {
+            String str = messageBuffer.toString();
+            str = str.replaceAll("\\(|(\\) : )|,", ";");
+            String[] splStr = str.split(";");
+            if(splStr.length == 4)
+            {
+                fileName = splStr[0];
+                row = Integer.parseInt(splStr[1]);
+                col = Integer.parseInt(splStr[2]);
+                message = splStr[3];
+            }
+        }//end parseMessage
+  }//end class XABSLErrorOutputStream
 
   class MyGrappaListener implements GrappaListener
   {
