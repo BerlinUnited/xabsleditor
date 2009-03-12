@@ -26,6 +26,7 @@ public class XGraph extends javax.swing.JPanel
 
     private String layoutEngine = null;
     private GrappaListener listener = null;
+    private GrappaPanel graphPanel;
 
   /** Creates new form Graph */
   public XGraph()
@@ -70,7 +71,7 @@ public class XGraph extends javax.swing.JPanel
     }
 
     Graph graph = parser.getGraph();
-    GrappaPanel graphPanel = new GrappaPanel(graph);
+    graphPanel = new GrappaPanel(graph);
     graphPanel.addGrappaListener(new GrappaAdapter());
 
 
@@ -104,6 +105,12 @@ public class XGraph extends javax.swing.JPanel
     public void setListener(GrappaListener listener) {
         this.listener = listener;
     }
+
+    public GrappaPanel getGraphPanel() {
+        return graphPanel;
+    }
+
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
