@@ -485,7 +485,7 @@ public class Main extends javax.swing.JFrame
       {
 
         configuration.setProperty("lastOpenedFolder",
-          fileChooser.getCurrentDirectory().getAbsolutePath());
+        fileChooser.getCurrentDirectory().getAbsolutePath());
         saveConfiguration();
 
         // read the file
@@ -567,11 +567,21 @@ public class Main extends javax.swing.JFrame
         
         PrintStream defaultErrorStream = System.err;
         System.setErr(new PrintStream(errorStream));
-        
-        CommonTree tree = (CommonTree) parser.xabsl().getTree();
+
+        CommonTree tree;
+        try{
+          XabslParser.xabsl_return x_return = parser.xabsl();
+          tree = (CommonTree) x_return.getTree();
+        }
+        catch(Error er)
+        {
+          er.printStackTrace();
+          throw new Exception(errorStream.getMessage());
+        }
 
         System.setErr(defaultErrorStream); // set the default stream back
         //System.out.println(errorStream.getMessage());
+
         errorStream.parseMessage();
         if(errorStream.message != null)
         {
@@ -599,9 +609,9 @@ public class Main extends javax.swing.JFrame
         ic.parameterEnumNames = parser.parameterEnumNames;
 
 
-      ic.xabsl();
-      JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
-        "compiled and saved.");
+        ic.xabsl();
+        JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
+          "compiled and saved.");
 
       }
       catch(Exception ex)
