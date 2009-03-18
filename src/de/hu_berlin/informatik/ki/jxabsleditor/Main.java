@@ -16,17 +16,20 @@ import att.grappa.GrappaListener;
 import att.grappa.GrappaPanel;
 import att.grappa.GrappaPoint;
 import att.grappa.Subgraph;
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
-import java.io.BufferedOutputStream;
+import java.awt.Component;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -35,7 +38,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 import xabslc.IC;
@@ -58,6 +60,8 @@ public class Main extends javax.swing.JFrame
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
 
+
+  private HashMap<String, Component> openDocumentsMap;
 
   String defaultCompilationPath = null;
 
@@ -103,6 +107,8 @@ public class Main extends javax.swing.JFrame
     loadConfiguration();
 
     this.xGraph.setListener(new MyGrappaListener());
+
+    this.openDocumentsMap = new HashMap<String, Component>();
   }
 
   private void loadConfiguration()
@@ -360,16 +366,61 @@ public class Main extends javax.swing.JFrame
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
     // create new tab
-    XEditorPanel editor = new XEditorPanel();
-    int tabCount = jTabbedPane.getTabCount();
-    jTabbedPane.addTab("New " + tabCount, editor);
-    jTabbedPane.setSelectedComponent(editor);
+    createDocumentTab(null);
 }//GEN-LAST:event_newFileAction
 
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
     {//GEN-HEADEREND:event_miCloseActionPerformed
       // close current tab
-      jTabbedPane.remove(jTabbedPane.getSelectedComponent());
+
+      XEditorPanel editor = ((XEditorPanel) jTabbedPane.getSelectedComponent());
+      if(!editor.isChanged())
+      {
+        jTabbedPane.remove(editor);
+        return;
+      }
+
+      
+      int result = JOptionPane.showConfirmDialog(this, "Save changes?", "File was modified.",
+        JOptionPane.YES_NO_CANCEL_OPTION);
+
+      if(result == JOptionPane.CANCEL_OPTION)
+          return;
+      else if(result == JOptionPane.NO_OPTION)
+      {
+          jTabbedPane.remove(editor);
+          return;
+      }
+      
+
+      
+      String text = editor.getText();
+      File selectedFile = editor.getFile();
+      try
+      {
+        File file = saveStringToFile(selectedFile, text);
+        if(file != null)
+        {
+          editor.setChanged(false);
+          editor.setFile(file);
+          jTabbedPane.setTitleAt(jTabbedPane.getSelectedIndex(), file.getName());
+        }//end if
+      }
+      catch(IOException e)
+      {
+        JOptionPane.showMessageDialog(this,
+          e.toString(), "The file could not be written.", JOptionPane.ERROR_MESSAGE);
+      }
+      catch(Exception e)
+      {
+        JOptionPane.showMessageDialog(this,
+          e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
+      }//end catch
+
+      if(!editor.isChanged())
+      {
+        jTabbedPane.remove(editor);
+      }//end if
 }//GEN-LAST:event_miCloseActionPerformed
 
     private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
@@ -385,6 +436,8 @@ public class Main extends javax.swing.JFrame
         if(file != null)
         {
           editor.setChanged(false);
+          editor.setFile(file);
+          jTabbedPane.setTitleAt(jTabbedPane.getSelectedIndex(), file.getName());
         }
       }
       catch(IOException e)
@@ -468,7 +521,6 @@ public class Main extends javax.swing.JFrame
     private void openFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openFileAction
     {//GEN-HEADEREND:event_openFileAction
 
-
       fileChooser.setFileFilter(xabslFilter);
       int result = fileChooser.showOpenDialog(this);
       if(JFileChooser.APPROVE_OPTION != result)
@@ -481,30 +533,23 @@ public class Main extends javax.swing.JFrame
       {
         return;
       }
-      try
+
+      // test if the file is allready opened
+      for(int i = 0; i < jTabbedPane.getTabCount(); i++)
       {
+          Component c = jTabbedPane.getComponentAt(i);
+          if(((XEditorPanel)c).getFile().compareTo(selectedFile) == 0)
+          {
+              jTabbedPane.setSelectedComponent(c);
+              return;
+          }//end if
+      }//end for
 
-        configuration.setProperty("lastOpenedFolder",
-        fileChooser.getCurrentDirectory().getAbsolutePath());
-        saveConfiguration();
+      configuration.setProperty("lastOpenedFolder",
+              fileChooser.getCurrentDirectory().getAbsolutePath());
+      saveConfiguration();
 
-        // read the file
-        String content = readFileToString(selectedFile);
-
-        // create new document
-        XEditorPanel editor = new XEditorPanel(content);
-        editor.setFile(selectedFile);
-
-        // create a tab
-        jTabbedPane.addTab(editor.getFile().getName(), null, editor, selectedFile.getAbsolutePath());
-        jTabbedPane.setSelectedComponent(editor);
-      }
-      catch(IOException e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
-      }
-
+      createDocumentTab(selectedFile);
     }//GEN-LAST:event_openFileAction
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
@@ -635,6 +680,48 @@ public class Main extends javax.swing.JFrame
       }
     });
   }
+
+  
+  private void createDocumentTab(File file)
+  {
+      try
+      {
+        // create new document
+        XEditorPanel editor = null;
+        if(file == null)
+        {
+            editor = new XEditorPanel();
+            int tabCount = jTabbedPane.getTabCount();
+            jTabbedPane.addTab("New " + tabCount, editor);
+        }else
+        {
+            editor = new XEditorPanel(file);
+            // create a tab
+            jTabbedPane.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
+        }
+
+        jTabbedPane.setSelectedComponent(editor);
+
+        editor.addDocumentChangedListener(new DocumentChangedListener() {
+                public void documentChanged(XEditorPanel document) {
+                    jTabbedPane.setSelectedComponent(document);
+                    int i = jTabbedPane.getSelectedIndex();
+                    if(document.isChanged())
+                    {
+                        String title = jTabbedPane.getTitleAt(i) + " *";
+                        jTabbedPane.setTitleAt(i, title);
+                    }//end if
+                }
+            });
+      }
+      catch(Exception e)
+      {
+        JOptionPane.showMessageDialog(this,
+          e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
+      }
+      
+  }//end createDocumentTab
+
 
   private String readFileToString(File file) throws IOException
   {

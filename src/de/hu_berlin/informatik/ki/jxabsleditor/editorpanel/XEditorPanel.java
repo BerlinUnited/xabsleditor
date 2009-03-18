@@ -12,9 +12,14 @@ package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.BufferedReader;
 import java.io.File;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxHighlightingColorScheme;
@@ -31,19 +36,32 @@ public class XEditorPanel extends javax.swing.JPanel
 
   private RSyntaxTextArea textArea;
   private File file;
-  private boolean changed = false;
+  private boolean changed;
 
   /** Creates new form XEditorPanel */
   public XEditorPanel()
   {
     initComponents();
     InitTextArea(null);
+    changed = false;
   }
 
   public XEditorPanel(String str)
   {
     initComponents();
     InitTextArea(str);
+    changed = false;
+  }
+
+  // create new panel and read text from file
+  public XEditorPanel(File file)
+  {
+    initComponents();
+    InitTextArea(null);
+    
+    loadFromFile(file);
+    setFile(file);
+    changed = false;
   }
 
   private void InitTextArea(String str)
@@ -82,14 +100,20 @@ public class XEditorPanel extends javax.swing.JPanel
     // set parser
     textArea.setParser(new XParser());
 
-    textArea.addCaretListener(new CaretListener()
-    {
+    textArea.getDocument().addDocumentListener(new DocumentListener() {
 
-      public void caretUpdate(CaretEvent e)
-      {
-        setChanged(true);
-      }
-    });
+            public void insertUpdate(DocumentEvent e) {
+                setChanged(true);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                setChanged(true);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                setChanged(true);
+            }
+        });
 
     RTextScrollPane scrolPane = new RTextScrollPane(500, 400, textArea, true);
     add(scrolPane);
@@ -129,8 +153,11 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public void setChanged(boolean changed)
   {
+    if(changed == this.changed) return;
+    
     this.changed = changed;
-  }
+    fireDocumentChangedEvent();
+  }//end setChanged
 
   public File getFile()
   {
@@ -140,12 +167,44 @@ public class XEditorPanel extends javax.swing.JPanel
   public void setFile(File file)
   {
     this.file = file;
-  }
+  }//end setFile
 
   public void setCarretPosition(int pos)
   {
       this.textArea.setCaretPosition(pos);
       this.textArea.revalidate();
+  }
+
+
+  public void loadFromFile(File file)
+  {
+      try {
+         BufferedReader r = new BufferedReader(new FileReader(file));
+         textArea.read(r, null);
+         r.close();
+      } catch (IOException ioe) {
+         ioe.printStackTrace();
+         UIManager.getLookAndFeel().provideErrorFeedback(textArea);
+      }
+  }//end loadFromFile
+  
+  ArrayList<DocumentChangedListener> documentChangedListeners = new ArrayList<DocumentChangedListener>();
+  public void addDocumentChangedListener(DocumentChangedListener listener)
+  {
+      documentChangedListeners.add(listener);
+  }
+
+  public void removeDocumentChangedListener(DocumentChangedListener listener)
+  {
+      documentChangedListeners.remove(listener);
+  }
+
+  public void fireDocumentChangedEvent()
+  {
+      for(DocumentChangedListener listener: documentChangedListeners)
+      {
+          listener.documentChanged(this);
+      }
   }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
