@@ -695,7 +695,9 @@ public class Main extends javax.swing.JFrame
             jTabbedPane.addTab("New " + tabCount, editor);
         }else
         {
-            editor = new XEditorPanel(file);
+            String content = readFileToString(file);
+            editor = new XEditorPanel(content);
+            editor.setFile(file);
             // create a tab
             jTabbedPane.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
         }
