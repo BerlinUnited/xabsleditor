@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxHighlightingColorScheme;
@@ -93,7 +95,9 @@ public class XEditorPanel extends javax.swing.JPanel
 
     textArea.setWhitespaceVisible(true);
     textArea.setVisible(true);
-
+    
+    textArea.setHyperlinksEnabled(true);
+    textArea.setHyperlinkForeground(Color.red);
 
     // the tokenizer
     ((RSyntaxDocument) textArea.getDocument()).setSyntaxStyle(new XTokenMaker());
@@ -188,6 +192,11 @@ public class XEditorPanel extends javax.swing.JPanel
       }
   }//end loadFromFile
   
+  public void addHyperlinkListener(HyperlinkListener listener)
+  {
+      textArea.addHyperlinkListener(listener);
+  }//end addHyperlinkListener
+
   ArrayList<DocumentChangedListener> documentChangedListeners = new ArrayList<DocumentChangedListener>();
   public void addDocumentChangedListener(DocumentChangedListener listener)
   {

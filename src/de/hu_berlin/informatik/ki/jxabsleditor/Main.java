@@ -29,11 +29,12 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -62,6 +63,7 @@ public class Main extends javax.swing.JFrame
 
 
   private HashMap<String, Component> openDocumentsMap;
+  private HashMap<String, File> optionPathMap;
 
   String defaultCompilationPath = null;
 
@@ -109,8 +111,29 @@ public class Main extends javax.swing.JFrame
     this.xGraph.setListener(new MyGrappaListener());
 
     this.openDocumentsMap = new HashMap<String, Component>();
+    this.optionPathMap = new HashMap<String, File>();
+
   }
 
+
+  private void createOptionList(File folder)
+  {
+    File[] fileList = folder.listFiles();
+    for(File file: fileList)
+    {
+        if(file.isDirectory())
+            createOptionList(file);
+        else
+            if(file.getName().toLowerCase().endsWith(".xabsl"))
+            {
+                String name = file.getName().toLowerCase().replace(".xabsl","");
+                optionPathMap.put(name, file);
+                //System.out.println(name + " : " + file.getAbsolutePath());
+            }
+    }//end for
+  }//end createOptionList
+
+  
   private void loadConfiguration()
   {
     if(configuration.containsKey("lastOpenedFolder"))
@@ -549,6 +572,11 @@ public class Main extends javax.swing.JFrame
               fileChooser.getCurrentDirectory().getAbsolutePath());
       saveConfiguration();
 
+      // TODO: make it better
+      this.optionPathMap.clear();
+      File agentsFile = Helper.getAgentFileForOption(selectedFile);
+      createOptionList(agentsFile.getParentFile());
+
       createDocumentTab(selectedFile);
     }//GEN-LAST:event_openFileAction
 
@@ -715,6 +743,18 @@ public class Main extends javax.swing.JFrame
                     }//end if
                 }
             });
+
+        editor.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                String option = e.getDescription();
+                option = option.replace("no protocol: ", "");
+                File file = optionPathMap.get(option);
+
+                if(file != null)
+                    createDocumentTab(file);
+                //System.out.println(option);
+            }
+        });
       }
       catch(Exception e)
       {

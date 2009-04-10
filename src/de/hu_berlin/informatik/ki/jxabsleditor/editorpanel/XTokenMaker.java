@@ -59,6 +59,7 @@ public class XTokenMaker extends AbstractTokenMaker
 	 * @param tokenType The token's type.
 	 * @param startOffset The offset in the document at which the token occurs.
 	 */
+    @Override
 	public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
 
         if(tokenType == Token.IDENTIFIER)
@@ -66,8 +67,6 @@ public class XTokenMaker extends AbstractTokenMaker
             int value = wordsToHighlight.get(segment, start,end);
             if (value!=-1) tokenType = value;
         }//end if
-
-        
 
 		super.addToken(segment, start, end, tokenType, startOffset);
 	}//end addToken
@@ -118,7 +117,6 @@ public class XTokenMaker extends AbstractTokenMaker
 	 */
 	public Token getTokenList(Segment text, int initialTokenType,
 												int startOffset) {
-
 		resetTokenList();
 
         char[] array = text.array;
@@ -175,8 +173,21 @@ public class XTokenMaker extends AbstractTokenMaker
                         //System.out.println(new String(array,currentTokenStart,i-currentTokenStart));
                         currentTokenType = Token.NULL;
                         int tokenType = wordsToHighlight.get(text, currentTokenStart, i-1);
-                        tokenType = (tokenType==-1)?Token.IDENTIFIER:tokenType;
-                        addToken(text, currentTokenStart, i-1, tokenType, newStartOffset+currentTokenStart);
+                        
+                        if(tokenType==-1)
+                        {
+                            // skip space
+                            int j = i;
+                            while(Character.isWhitespace(array[j])) j++;
+
+                            c = array[j];
+                            if(c == '(')
+                                addToken(text.array, currentTokenStart, i-1, Token.FUNCTION, newStartOffset+currentTokenStart, true);
+                            else
+                                addToken(text, currentTokenStart, i-1, Token.IDENTIFIER, newStartOffset+currentTokenStart);
+                        }
+                        else
+                            addToken(text, currentTokenStart, i-1, tokenType, newStartOffset+currentTokenStart);
                     }
                     break;
                     

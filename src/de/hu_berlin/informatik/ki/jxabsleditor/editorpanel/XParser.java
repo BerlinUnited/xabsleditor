@@ -108,12 +108,23 @@ public class XParser implements Parser
     isTokenAndEat("option");
     parseIdentifier();
     isTokenAndEat("{");
+    
+    if(isToken("common"))
+        parseCommonDecision();
+
     while(!isToken("}"))
     {
       parseState();
     }//end while
     isTokenAndEat("}");
   }//end parseOption
+
+  private void parseCommonDecision() throws Exception
+  {
+      isTokenAndEat("common");
+      isTokenAndEat("decision");
+      parseBlock();
+  }//end parseState
 
   private void parseState() throws Exception
   {
@@ -135,7 +146,8 @@ public class XParser implements Parser
     addState(new State(currentStateName, currentComment, offset, this.stateMap.size()));
 
     isTokenAndEat("{");
-    parseDecision();
+    if(isToken("decision"))
+        parseDecision();
     parseAction();
     isTokenAndEat("}");
   }//end parseState
@@ -243,24 +255,37 @@ public class XParser implements Parser
 
   private void parseExpression() throws Exception
   {
-    parseIdentifier();
-    if(isToken("="))
-    {
-      parseAssignment();
-    }
+    if(isToken(Token.FUNCTION))
+        parseFunction();
     else
-    {
-      parseFunction();
-    }
+        parseAssignment();
   }//end parseExpression
 
   private void parseFunction() throws Exception
   {
-    //parseIdentifier();
+    isTokenAndEat(Token.FUNCTION);
     isTokenAndEat("(");
+    parseFunctionParameter();
     isTokenAndEat(")");
     isTokenAndEat(";");
   }//end parseFunction
+
+  private void parseFunctionParameter() throws Exception
+  {
+    if(isToken(")")) return;
+
+    parseIdentifier();
+    isTokenAndEat("=");
+    parseIdentifier();
+
+    while(!isToken(")"))
+    {
+        isTokenAndEat(",");
+        parseIdentifier();
+        isTokenAndEat("=");
+        parseIdentifier();
+    }
+  }//end parseFunctionParameter
 
   private void parseBooleanExpression() throws Exception
   {
@@ -345,7 +370,7 @@ public class XParser implements Parser
 
   private void parseAssignment() throws Exception
   {
-    //parseIdentifier();
+    parseIdentifier();
     isTokenAndEat("=");
 
     if(isToken(Token.IDENTIFIER))
