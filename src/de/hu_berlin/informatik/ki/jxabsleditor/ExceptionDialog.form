@@ -31,14 +31,14 @@
               <Component id="lblIcon" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblMessage" pref="362" max="32767" attributes="0"/>
-                  <Component id="spDetails" alignment="0" pref="362" max="32767" attributes="0"/>
+                  <Component id="lblMessage" pref="406" max="32767" attributes="0"/>
+                  <Component id="spDetails" alignment="0" pref="406" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btDetails" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="259" max="32767" attributes="0"/>
                       <Component id="btClose" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblCaption" alignment="0" pref="362" max="32767" attributes="0"/>
+                  <Component id="lblCaption" alignment="0" pref="406" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

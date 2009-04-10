@@ -25,7 +25,7 @@ public class ExceptionDialog extends javax.swing.JDialog
 
     if(exception != null)
     {
-      lblMessage.setText(exception.getLocalizedMessage());
+      lblMessage.setText("<html><p>" + exception.getLocalizedMessage() + "</p></html>");
       StringBuffer details = new StringBuffer();
       details.append(exception.getLocalizedMessage());
       details.append("\nat\n");
@@ -102,13 +102,13 @@ public class ExceptionDialog extends javax.swing.JDialog
         .addComponent(lblIcon)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(lblMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-          .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+          .addComponent(lblMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+          .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addComponent(btDetails)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 259, Short.MAX_VALUE)
             .addComponent(btClose))
-          .addComponent(lblCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE))
+          .addComponent(lblCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
         .addContainerGap())
     );
     layout.setVerticalGroup(
