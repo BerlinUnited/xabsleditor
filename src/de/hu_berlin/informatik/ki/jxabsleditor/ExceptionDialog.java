@@ -25,7 +25,8 @@ public class ExceptionDialog extends javax.swing.JDialog
 
     if(exception != null)
     {
-      lblMessage.setText("<html><p>" + exception.getLocalizedMessage() + "</p></html>");
+      txtMessage.setText(exception.getLocalizedMessage());
+      txtMessage.setCaretPosition(0);
       StringBuffer details = new StringBuffer();
       details.append(exception.getLocalizedMessage());
       details.append("\nat\n");
@@ -50,12 +51,13 @@ public class ExceptionDialog extends javax.swing.JDialog
   private void initComponents() {
 
     lblIcon = new javax.swing.JLabel();
-    lblMessage = new javax.swing.JLabel();
     lblCaption = new javax.swing.JLabel();
     btClose = new javax.swing.JButton();
     spDetails = new javax.swing.JScrollPane();
     txtDetails = new javax.swing.JTextArea();
     btDetails = new javax.swing.JToggleButton();
+    spMessage = new javax.swing.JScrollPane();
+    txtMessage = new javax.swing.JTextArea();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Exception thrown");
@@ -66,8 +68,6 @@ public class ExceptionDialog extends javax.swing.JDialog
     });
 
     lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/warning32.png"))); // NOI18N
-
-    lblMessage.setText("<no message>");
 
     lblCaption.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
     lblCaption.setText("Exception thrown:");
@@ -93,6 +93,14 @@ public class ExceptionDialog extends javax.swing.JDialog
       }
     });
 
+    txtMessage.setColumns(20);
+    txtMessage.setEditable(false);
+    txtMessage.setLineWrap(true);
+    txtMessage.setRows(5);
+    txtMessage.setText("<no message>");
+    txtMessage.setWrapStyleWord(true);
+    spMessage.setViewportView(txtMessage);
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -101,14 +109,14 @@ public class ExceptionDialog extends javax.swing.JDialog
         .addContainerGap()
         .addComponent(lblIcon)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(lblMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
-          .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+          .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+          .addGroup(layout.createSequentialGroup()
             .addComponent(btDetails)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 259, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 337, Short.MAX_VALUE)
             .addComponent(btClose))
-          .addComponent(lblCaption, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
+          .addComponent(lblCaption, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+          .addComponent(spMessage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -120,9 +128,9 @@ public class ExceptionDialog extends javax.swing.JDialog
           .addGroup(layout.createSequentialGroup()
             .addComponent(lblCaption)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(lblMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(spDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+            .addComponent(spMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addComponent(spDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(btClose)
@@ -188,8 +196,9 @@ public class ExceptionDialog extends javax.swing.JDialog
   private javax.swing.JToggleButton btDetails;
   private javax.swing.JLabel lblCaption;
   private javax.swing.JLabel lblIcon;
-  private javax.swing.JLabel lblMessage;
   private javax.swing.JScrollPane spDetails;
+  private javax.swing.JScrollPane spMessage;
   private javax.swing.JTextArea txtDetails;
+  private javax.swing.JTextArea txtMessage;
   // End of variables declaration//GEN-END:variables
 }

@@ -30,15 +30,15 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lblIcon" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblMessage" pref="406" max="32767" attributes="0"/>
-                  <Component id="spDetails" alignment="0" pref="406" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="spDetails" alignment="1" pref="484" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btDetails" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="259" max="32767" attributes="0"/>
+                      <EmptySpace pref="337" max="32767" attributes="0"/>
                       <Component id="btClose" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="lblCaption" alignment="0" pref="406" max="32767" attributes="0"/>
+                  <Component id="lblCaption" alignment="0" pref="484" max="32767" attributes="0"/>
+                  <Component id="spMessage" alignment="0" pref="484" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -53,11 +53,11 @@
                   <Group type="102" attributes="0">
                       <Component id="lblCaption" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="lblMessage" min="-2" pref="61" max="-2" attributes="0"/>
+                      <Component id="spMessage" pref="74" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="spDetails" pref="144" max="32767" attributes="0"/>
+              <EmptySpace pref="12" max="-2" attributes="0"/>
+              <Component id="spDetails" min="-2" pref="125" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btClose" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -74,11 +74,6 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/warning32.png"/>
         </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="lblMessage">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;no message&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblCaption">
@@ -120,5 +115,21 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btDetailsActionPerformed"/>
       </Events>
     </Component>
+    <Container class="javax.swing.JScrollPane" name="spMessage">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextArea" name="txtMessage">
+          <Properties>
+            <Property name="columns" type="int" value="20"/>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="lineWrap" type="boolean" value="true"/>
+            <Property name="rows" type="int" value="5"/>
+            <Property name="text" type="java.lang.String" value="&lt;no message&gt;"/>
+            <Property name="wrapStyleWord" type="boolean" value="true"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
   </SubComponents>
 </Form>

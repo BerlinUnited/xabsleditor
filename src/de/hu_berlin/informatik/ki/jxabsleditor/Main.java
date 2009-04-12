@@ -39,6 +39,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
 import xabslc.IC;
@@ -652,22 +653,28 @@ public class Main extends javax.swing.JFrame
           throw new Exception(errorStream.getMessage());
         }
 
-        System.setErr(defaultErrorStream); // set the default stream back
         //System.out.println(errorStream.getMessage());
 
         errorStream.parseMessage();
         if(errorStream.message != null)
         {
-            throw new Exception(errorStream.getMessage());
+            throw new Exception("syntax error: " + errorStream.getMessage());
         }
         
         CommonTreeNodeStream nodes = new CommonTreeNodeStream(tree);
         PrepareIC prepare = new PrepareIC(nodes);
 
-        tree = (CommonTree) prepare.xabsl().getTree();
+        try
+        {
+          tree = (CommonTree) prepare.xabsl().getTree();
+        }
+        catch(Exception ex)
+        {
+          errorStream.parseMessage();
+          throw new Exception("semantic error: " + errorStream.getMessage());
+        }
+        System.setErr(defaultErrorStream); // set the default stream back
         
-        System.err.println("test");
-
         //System.err.println(tree.toStringTree());
 
         nodes = new CommonTreeNodeStream(tree);
