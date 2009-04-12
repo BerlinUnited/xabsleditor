@@ -109,6 +109,11 @@ public class XParser implements Parser
     parseIdentifier();
     isTokenAndEat("{");
     
+    if(isToken("float") || isToken("bool"))
+    {
+      parseSymbolDefinition();
+    }
+
     if(isToken("common"))
         parseCommonDecision();
 
@@ -118,6 +123,32 @@ public class XParser implements Parser
     }//end while
     isTokenAndEat("}");
   }//end parseOption
+
+  private void parseSymbolDefinition() throws Exception
+  {
+    if(isToken("bool"))
+    {
+      isTokenAndEat("bool");
+    }
+    else
+    {
+      isTokenAndEat("float");
+    }
+
+    isTokenAndEat("@");
+
+    // eat name
+    eat();
+
+    if(isToken("["))
+    {
+      eat();
+      eat();
+      isTokenAndEat("]");
+    }
+
+    isTokenAndEat(";");
+  }
 
   private void parseCommonDecision() throws Exception
   {
