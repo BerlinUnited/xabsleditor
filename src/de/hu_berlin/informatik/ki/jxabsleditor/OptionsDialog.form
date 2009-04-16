@@ -51,11 +51,11 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" pref="305" max="-2" attributes="0"/>
-                      <Component id="jButtonOK1" pref="81" max="32767" attributes="0"/>
+                      <Component id="jButtonOK1" pref="91" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" pref="305" max="-2" attributes="0"/>
-                      <Component id="jButtonOK" pref="81" max="32767" attributes="0"/>
+                      <Component id="jButtonOK" pref="91" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>

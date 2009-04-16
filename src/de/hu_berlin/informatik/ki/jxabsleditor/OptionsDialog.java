@@ -174,7 +174,7 @@ public class OptionsDialog extends javax.swing.JDialog
       if(JFileChooser.APPROVE_OPTION == result)
       {
         String path = dotFileChooser.getSelectedFile().getAbsolutePath();
-        this.defaultCompilationPathTextField.setText(path);
+        this.dotInstallationPathTextField.setText(path);
       }//end if
     }//GEN-LAST:event_jButtonBrowseActionPerformed
 
