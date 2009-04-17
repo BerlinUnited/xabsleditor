@@ -91,7 +91,7 @@ public class XParser implements Parser
       }//end for
 
       graphString += "}";
-      System.out.println(graphString);
+      //System.out.println(graphString);
 
     }
     catch(java.io.IOException ioe)
