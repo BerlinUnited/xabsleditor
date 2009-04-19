@@ -178,7 +178,7 @@ public class XTokenMaker extends AbstractTokenMaker
                         {
                             // skip space
                             int j = i;
-                            while(Character.isWhitespace(array[j])) j++;
+                            while(j < (array.length-1) && Character.isWhitespace(array[j])) j++;
 
                             c = array[j];
                             if(c == '(')
