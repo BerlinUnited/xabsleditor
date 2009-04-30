@@ -81,7 +81,6 @@ public class XParser implements Parser
         {
           noticeList.add(new ParserNotice("State " + transition.to + " is not defined.",
             transition.offset, transition.to.length()));
-
         }
         else
         {
@@ -167,7 +166,6 @@ public class XParser implements Parser
     {
       eat();
     }
-
 
     isTokenAndEat("state");
 
@@ -434,7 +432,7 @@ public class XParser implements Parser
     }
 
     return null;
-  }//end parseState
+  }//end parseIdentifier
 
   private void skipSpace()
   {
