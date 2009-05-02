@@ -18,6 +18,8 @@ import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import java.awt.Component;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -70,6 +72,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
 
     initComponents();
+
+    // icon
+    Image icon = Toolkit.getDefaultToolkit().getImage(
+      this.getClass().getResource("res/XabslEditor.png"));
+    setIconImage(icon);
 
     // load configuration
     fConfig = new File(System.getProperty("user.home") + "/.jxabsleditor");
