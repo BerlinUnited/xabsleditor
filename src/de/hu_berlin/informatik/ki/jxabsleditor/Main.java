@@ -19,12 +19,13 @@ import att.grappa.Subgraph;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import java.awt.Component;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -38,14 +39,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.CommonTreeNodeStream;
-import xabslc.IC;
-import xabslc.PrepareIC;
-import xabslc.XabslLexer;
-import xabslc.XabslParser;
 
 /**
  *
@@ -57,15 +50,11 @@ public class Main extends javax.swing.JFrame
   private JFileChooser fileChooser = new JFileChooser();
   private Properties configuration = new Properties();
   private File fConfig;
-
   private FileFilter dotFilter = new DotFileFilter();
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
-
-
   private HashMap<String, Component> openDocumentsMap;
   private HashMap<String, File> optionPathMap;
-
   String defaultCompilationPath = null;
 
   /** Creates new form Main */
@@ -116,25 +105,24 @@ public class Main extends javax.swing.JFrame
 
   }
 
-
   private void createOptionList(File folder)
   {
     File[] fileList = folder.listFiles();
-    for(File file: fileList)
+    for(File file : fileList)
     {
-        if(file.isDirectory())
-            createOptionList(file);
-        else
-            if(file.getName().toLowerCase().endsWith(".xabsl"))
-            {
-                String name = file.getName().toLowerCase().replace(".xabsl","");
-                optionPathMap.put(name, file);
-                //System.out.println(name + " : " + file.getAbsolutePath());
-            }
+      if(file.isDirectory())
+      {
+        createOptionList(file);
+      }
+      else if(file.getName().toLowerCase().endsWith(".xabsl"))
+      {
+        String name = file.getName().toLowerCase().replace(".xabsl", "");
+        optionPathMap.put(name, file);
+      //System.out.println(name + " : " + file.getAbsolutePath());
+      }
     }//end for
   }//end createOptionList
 
-  
   private void loadConfiguration()
   {
     if(configuration.containsKey("lastOpenedFolder"))
@@ -153,7 +141,7 @@ public class Main extends javax.swing.JFrame
       String path = configuration.getProperty("defaultCompilationPath");
       if(new File(path).exists())
       {
-          this.defaultCompilationPath = path;
+        this.defaultCompilationPath = path;
       }
     }
   }//end loadConfiguration
@@ -402,20 +390,22 @@ public class Main extends javax.swing.JFrame
         return;
       }
 
-      
+
       int result = JOptionPane.showConfirmDialog(this, "Save changes?", "File was modified.",
         JOptionPane.YES_NO_CANCEL_OPTION);
 
       if(result == JOptionPane.CANCEL_OPTION)
-          return;
+      {
+        return;
+      }
       else if(result == JOptionPane.NO_OPTION)
       {
-          jTabbedPane.remove(editor);
-          return;
+        jTabbedPane.remove(editor);
+        return;
       }
-      
 
-      
+
+
       String text = editor.getText();
       File selectedFile = editor.getFile();
       try
@@ -559,16 +549,16 @@ public class Main extends javax.swing.JFrame
       // test if the file is allready opened
       for(int i = 0; i < jTabbedPane.getTabCount(); i++)
       {
-          Component c = jTabbedPane.getComponentAt(i);
-          if(((XEditorPanel)c).getFile().compareTo(selectedFile) == 0)
-          {
-              jTabbedPane.setSelectedComponent(c);
-              return;
-          }//end if
+        Component c = jTabbedPane.getComponentAt(i);
+        if(((XEditorPanel) c).getFile().compareTo(selectedFile) == 0)
+        {
+          jTabbedPane.setSelectedComponent(c);
+          return;
+        }//end if
       }//end for
 
       configuration.setProperty("lastOpenedFolder",
-              fileChooser.getCurrentDirectory().getAbsolutePath());
+        fileChooser.getCurrentDirectory().getAbsolutePath());
       saveConfiguration();
 
       // TODO: make it better
@@ -594,7 +584,7 @@ public class Main extends javax.swing.JFrame
       }//end file
 
       File fout = null;
-      
+
       if(defaultCompilationPath == null)
       {
         fileChooser.setFileFilter(icFilter);
@@ -602,95 +592,100 @@ public class Main extends javax.swing.JFrame
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         if(result == JFileChooser.APPROVE_OPTION)
         {
-            fout = fileChooser.getSelectedFile();
+          fout = fileChooser.getSelectedFile();
         }
-      }else
-      {
-          fout = new File(defaultCompilationPath + "/behavior-ic.dat");
       }
-      
-      
-        
-    if(fout == null)
-    {
-      JOptionPane.showMessageDialog(this, "No file selected");
-      return;
-    }else if(fout.exists())
-    {
+      else
+      {
+        fout = new File(defaultCompilationPath + "/behavior-ic.dat");
+      }
+
+
+
+      if(fout == null)
+      {
+        JOptionPane.showMessageDialog(this, "No file selected");
+        return;
+      }
+      else if(fout.exists())
+      {
         if(!fout.delete())
         {
-            JOptionPane.showMessageDialog(this, "Can not overwrite the file " +
-                    fout.getAbsolutePath());
-            return;
+          JOptionPane.showMessageDialog(this, "Can not overwrite the file " +
+            fout.getAbsolutePath());
+          return;
         }
-    }
+      }
 
-      XABSLErrorOutputStream errorStream = new XABSLErrorOutputStream();
 
-      
       try
       {
 
-        XabslLexer lexer = new XabslLexer(agentsFile.getAbsolutePath());
-
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        XabslParser parser = new XabslParser(tokenStream);
-
-        
-        PrintStream defaultErrorStream = System.err;
-        System.setErr(new PrintStream(errorStream));
-
-        CommonTree tree;
-        try{
-          XabslParser.xabsl_return x_return = parser.xabsl();
-          tree = (CommonTree) x_return.getTree();
-        }
-        catch(Error er)
+        // TODO find out path to Extern-directory
+        File extern = new File(agentsFile.getAbsolutePath());
+        extern = extern.getParentFile();
+        while(extern != null && extern.isDirectory() &&
+          (!extern.getName().equals("Projects") || !(new File(extern.getParentFile(), "Extern").exists()) || !(new File(extern.getParentFile(), "Documents").exists())))
         {
-          er.printStackTrace();
-          throw new Exception(errorStream.getMessage());
+          extern = extern.getParentFile();
         }
 
-        //System.out.println(errorStream.getMessage());
-
-        errorStream.parseMessage();
-        if(errorStream.message != null)
+        if(extern != null)
         {
-            throw new Exception("syntax error: " + errorStream.getMessage());
+          extern = new File(extern.getParentFile(), "Extern");
         }
-        
-        CommonTreeNodeStream nodes = new CommonTreeNodeStream(tree);
-        PrepareIC prepare = new PrepareIC(nodes);
 
-        try
+        if(extern == null || !extern.isDirectory())
         {
-          tree = (CommonTree) prepare.xabsl().getTree();
+          throw new Exception("Could not finde \"Extern\"-directory! Aborting.");
         }
-        catch(Exception ex)
+
+        String[] cmdarray = new String[]
         {
-          errorStream.parseMessage();
-          throw new Exception("semantic error: " + errorStream.getMessage());
+          "java",
+          "-jar",
+          extern.getAbsolutePath() + "/java/jruby-complete-1.2.0.jar",
+          extern.getAbsolutePath() + "/ruby/xabsl-compiler/xabsl.rb",
+          agentsFile.getAbsolutePath(),
+          "-i",
+          fout.getAbsolutePath()
+        };
+
+        Process compilerProcess = Runtime.getRuntime().exec(cmdarray);
+        compilerProcess.waitFor();
+
+        BufferedReader rIn = new BufferedReader(new InputStreamReader(compilerProcess.getInputStream()));
+
+        StringBuilder stdout = new StringBuilder();
+        String line = null;
+        while((line = rIn.readLine()) != null)
+        {
+          stdout.append(line);
+          stdout.append("\n");
         }
-        System.setErr(defaultErrorStream); // set the default stream back
-        
-        //System.err.println(tree.toStringTree());
 
-        nodes = new CommonTreeNodeStream(tree);
-        IC ic = new IC(nodes);
+        BufferedReader rErr = new BufferedReader(new InputStreamReader(compilerProcess.getErrorStream()));
+        StringBuilder stderr = new StringBuilder();
+        int stderrLineCounter = 0;
+        line = null;
+        while((line = rErr.readLine()) != null)
+        {
+          stderr.append(line);
+          stderr.append("\n");
+          stderrLineCounter++;
+        }
 
-        ic.outputFilename = fout.getAbsolutePath();
-        ic.title = lexer.title;
-        ic.symbols = parser.symbols;
-        ic.enumNames = parser.enumNames;
-        ic.enumValues = parser.enumValues;
-        ic.parameterSymbols = parser.parameterSymbols;
-        ic.parameterEnumNames = parser.parameterEnumNames;
+        System.out.println(stderr);
 
-
-        ic.xabsl();
-        JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
-          "compiled and saved.");
-
+        if(compilerProcess.exitValue() == 0 && stderrLineCounter < 3)
+        {
+          JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
+            "compiled and saved.");
+        }
+        else
+        {
+          throw new Exception(stderr.toString());
+        }
       }
       catch(Exception ex)
       {
@@ -714,61 +709,68 @@ public class Main extends javax.swing.JFrame
     });
   }
 
-  
   private void createDocumentTab(File file)
   {
-      try
+    try
+    {
+      // create new document
+      XEditorPanel editor = null;
+      if(file == null)
       {
-        // create new document
-        XEditorPanel editor = null;
-        if(file == null)
+        editor = new XEditorPanel();
+        int tabCount = jTabbedPane.getTabCount();
+        jTabbedPane.addTab("New " + tabCount, editor);
+      }
+      else
+      {
+        String content = readFileToString(file);
+        editor = new XEditorPanel(content);
+        editor.setFile(file);
+        // create a tab
+        jTabbedPane.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
+      }
+
+      jTabbedPane.setSelectedComponent(editor);
+
+      editor.addDocumentChangedListener(new DocumentChangedListener()
+      {
+
+        public void documentChanged(XEditorPanel document)
         {
-            editor = new XEditorPanel();
-            int tabCount = jTabbedPane.getTabCount();
-            jTabbedPane.addTab("New " + tabCount, editor);
-        }else
-        {
-            String content = readFileToString(file);
-            editor = new XEditorPanel(content);
-            editor.setFile(file);
-            // create a tab
-            jTabbedPane.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
+          jTabbedPane.setSelectedComponent(document);
+          int i = jTabbedPane.getSelectedIndex();
+          if(document.isChanged())
+          {
+            String title = jTabbedPane.getTitleAt(i) + " *";
+            jTabbedPane.setTitleAt(i, title);
+          }//end if
         }
+      });
 
-        jTabbedPane.setSelectedComponent(editor);
-
-        editor.addDocumentChangedListener(new DocumentChangedListener() {
-                public void documentChanged(XEditorPanel document) {
-                    jTabbedPane.setSelectedComponent(document);
-                    int i = jTabbedPane.getSelectedIndex();
-                    if(document.isChanged())
-                    {
-                        String title = jTabbedPane.getTitleAt(i) + " *";
-                        jTabbedPane.setTitleAt(i, title);
-                    }//end if
-                }
-            });
-
-        editor.addHyperlinkListener(new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                String option = e.getDescription();
-                option = option.replace("no protocol: ", "");
-                File file = optionPathMap.get(option);
-
-                if(file != null)
-                    createDocumentTab(file);
-                //System.out.println(option);
-            }
-        });
-      }
-      catch(Exception e)
+      editor.addHyperlinkListener(new HyperlinkListener()
       {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
-      }
-      
-  }//end createDocumentTab
 
+        public void hyperlinkUpdate(HyperlinkEvent e)
+        {
+          String option = e.getDescription();
+          option = option.replace("no protocol: ", "");
+          File file = optionPathMap.get(option);
+
+          if(file != null)
+          {
+            createDocumentTab(file);
+          }
+        //System.out.println(option);
+        }
+      });
+    }
+    catch(Exception e)
+    {
+      JOptionPane.showMessageDialog(this,
+        e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
+    }
+
+  }//end createDocumentTab
 
   private String readFileToString(File file) throws IOException
   {
@@ -913,7 +915,6 @@ public class Main extends javax.swing.JFrame
     return newFile;
   }//end validateFileName
 
-  
   private void saveConfiguration()
   {
     try
@@ -936,40 +937,39 @@ public class Main extends javax.swing.JFrame
     dlg.setVisible(true);
   }
 
-
-
   class XABSLErrorOutputStream extends OutputStream
   {
-        private StringBuffer messageBuffer = new StringBuffer();
-        
-        @Override
-        public void write(int b) throws IOException {
-            messageBuffer.append((char)b);
-        }
 
-        public String getMessage()
-        {
-            return messageBuffer.toString();
-        }//end getMessage
+    private StringBuffer messageBuffer = new StringBuffer();
 
-        public String fileName;
-        int row;
-        int col;
-        String message;
+    @Override
+    public void write(int b) throws IOException
+    {
+      messageBuffer.append((char) b);
+    }
 
-        public void parseMessage()
-        {
-            String str = messageBuffer.toString();
-            str = str.replaceAll("\\(|(\\) : )|,", ";");
-            String[] splStr = str.split(";");
-            if(splStr.length == 4)
-            {
-                fileName = splStr[0];
-                row = Integer.parseInt(splStr[1]);
-                col = Integer.parseInt(splStr[2]);
-                message = splStr[3];
-            }
-        }//end parseMessage
+    public String getMessage()
+    {
+      return messageBuffer.toString();
+    }//end getMessage
+    public String fileName;
+    int row;
+    int col;
+    String message;
+
+    public void parseMessage()
+    {
+      String str = messageBuffer.toString();
+      str = str.replaceAll("\\(|(\\) : )|,", ";");
+      String[] splStr = str.split(";");
+      if(splStr.length == 4)
+      {
+        fileName = splStr[0];
+        row = Integer.parseInt(splStr[1]);
+        col = Integer.parseInt(splStr[2]);
+        message = splStr[3];
+      }
+    }//end parseMessage
   }//end class XABSLErrorOutputStream
 
   class MyGrappaListener implements GrappaListener
