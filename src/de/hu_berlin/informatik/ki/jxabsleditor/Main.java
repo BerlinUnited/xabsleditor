@@ -12,15 +12,16 @@ import att.grappa.GrappaListener;
 import att.grappa.GrappaPanel;
 import att.grappa.GrappaPoint;
 import att.grappa.Subgraph;
+import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilationFinishedReceiver;
+import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
+import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import java.awt.Component;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Properties;
@@ -40,7 +41,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
  *
  * @author Heinrich Mellmann
  */
-public class Main extends javax.swing.JFrame
+public class Main extends javax.swing.JFrame implements CompilationFinishedReceiver
 {
 
   private JFileChooser fileChooser = new JFileChooser();
@@ -596,14 +597,6 @@ public class Main extends javax.swing.JFrame
       XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
       File optionFile = editor.getFile();
 
-      File agentsFile = Helper.getAgentFileForOption(optionFile);
-      if(agentsFile == null)
-      {
-        JOptionPane.showMessageDialog(this, "Could not find agents.xabsl",
-          "ERROR", JOptionPane.ERROR_MESSAGE);
-        return;
-      }//end file
-
       File fout = null;
 
       if(defaultCompilationPath == null)
@@ -621,8 +614,6 @@ public class Main extends javax.swing.JFrame
         fout = new File(defaultCompilationPath + "/behavior-ic.dat");
       }
 
-
-
       if(fout == null)
       {
         JOptionPane.showMessageDialog(this, "No file selected");
@@ -638,101 +629,8 @@ public class Main extends javax.swing.JFrame
         }
       }
 
-
-      try
-      {
-
-        // TODO find out path to Extern-directory
-        File extern = new File(agentsFile.getAbsolutePath());
-        extern = extern.getParentFile();
-        while(extern != null && extern.isDirectory() &&
-          (!extern.getName().equals("Projects") || !(new File(extern.getParentFile(), "Extern").exists()) || !(new File(extern.getParentFile(), "Documents").exists())))
-        {
-          extern = extern.getParentFile();
-        }
-
-        if(extern != null)
-        {
-          extern = new File(extern.getParentFile(), "Extern");
-        }
-
-        if(extern == null || !extern.isDirectory())
-        {
-          throw new Exception("Could not finde \"Extern\"-directory! Aborting.");
-        }
-
-        String[] cmdarray = new String[]
-        {
-          "java",
-          "-jar",
-          extern.getAbsolutePath() + "/java/jruby-complete-1.2.0.jar",
-          extern.getAbsolutePath() + "/ruby/xabsl-compiler/xabsl.rb",
-          agentsFile.getAbsolutePath(),
-          "-i",
-          fout.getAbsolutePath()
-        };
-
-        Process compilerProcess = Runtime.getRuntime().exec(cmdarray);
-        compilerProcess.waitFor();
-
-        BufferedReader rIn = new BufferedReader(new InputStreamReader(compilerProcess.getInputStream()));
-
-        StringBuilder stdout = new StringBuilder();
-        String line = null;
-        while((line = rIn.readLine()) != null)
-        {
-          stdout.append(line);
-          stdout.append("\n");
-        }
-
-        BufferedReader rErr = new BufferedReader(new InputStreamReader(compilerProcess.getErrorStream()));
-        StringBuilder stderr = new StringBuilder();
-        boolean warning = false;
-        boolean error = false;
-        line = null;
-        while((line = rErr.readLine()) != null)
-        {
-          if(line.startsWith("ERROR "))
-          {
-            error = true;
-          }
-          else if(line.startsWith("WARNING "))
-          {
-            warning = true;
-          }
-          stderr.append(line);
-          stderr.append("\n");
-        }
-
-        System.out.println(stderr);
-
-
-        txtCompilerOutput.setText(stderr.toString());
-
-        if(error)
-        {
-          tabbedPanelView.setSelectedIndex(1);
-          JOptionPane.showMessageDialog(this,
-            "Compilation failed!","ERROR", JOptionPane.ERROR_MESSAGE);
-        }
-        else if(warning)
-        {
-          tabbedPanelView.setSelectedIndex(1);
-          JOptionPane.showMessageDialog(this,
-            "There were warnings during compiliation.","WARNING", JOptionPane.WARNING_MESSAGE);
-        }
-        else
-        {
-          JOptionPane.showMessageDialog(this, "Intermediate code successfully " +
-            "compiled and saved.");
-        }
-
-      }
-      catch(Exception ex)
-      {
-        Helper.handleException(ex);
-      }
-
+      CompilerDialog frame = new CompilerDialog(this, true,optionFile, fout, this);
+      frame.setVisible(true);
     }//GEN-LAST:event_compileAction
 
   /**
@@ -886,6 +784,16 @@ public class Main extends javax.swing.JFrame
   private javax.swing.JTextArea txtCompilerOutput;
   private de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.XGraph xGraph;
   // End of variables declaration//GEN-END:variables
+
+  public void compilationFinished(CompileResult result)
+  {
+    txtCompilerOutput.setText(result.messages);
+    if(result.errors || result.warnings)
+    {
+      tabbedPanelView.setSelectedIndex(1);
+    }
+  }
+  // End of variables declaration
 
   private class XABSLFileFilter extends javax.swing.filechooser.FileFilter
   {
