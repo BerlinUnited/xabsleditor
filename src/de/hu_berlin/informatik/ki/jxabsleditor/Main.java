@@ -186,6 +186,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     miCompile = new javax.swing.JMenuItem();
     miRefreshGraph = new javax.swing.JMenuItem();
     miOption = new javax.swing.JMenuItem();
+    miSearch = new javax.swing.JMenuItem();
     mHelp = new javax.swing.JMenu();
     miInfo = new javax.swing.JMenuItem();
 
@@ -380,6 +381,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     });
     mEdit.add(miOption);
+
+    miSearch.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+    miSearch.setMnemonic('S');
+    miSearch.setText("Search");
+    miSearch.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        miSearchActionPerformed(evt);
+      }
+    });
+    mEdit.add(miSearch);
 
     mbMain.add(mEdit);
 
@@ -640,6 +651,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       frame.setVisible(true);
     }//GEN-LAST:event_compileAction
 
+    private void miSearchActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchActionPerformed
+    {//GEN-HEADEREND:event_miSearchActionPerformed
+      // TODO add your handling code here:
+
+
+      if(tabbedPanelEditor.getSelectedComponent() != null)
+      {
+        XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
+        editor.getSearchPanel().setVisible(true);
+      }
+    }//GEN-LAST:event_miSearchActionPerformed
+
   /**
    * @param args the command line arguments
    */
@@ -782,6 +805,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miRefreshGraph;
   private javax.swing.JMenuItem miSave;
   private javax.swing.JMenuItem miSaveAs;
+  private javax.swing.JMenuItem miSearch;
   private javax.swing.JPanel panelCompiler;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;
   private javax.swing.JToolBar.Separator seperator1;
