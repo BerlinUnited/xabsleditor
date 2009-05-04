@@ -432,20 +432,53 @@ public class XParser implements Parser
     parseIdentifier();
     isTokenAndEat("=");
 
-    if(isToken(Token.IDENTIFIER))
+    int parenthesisCount = 0;
+
+    while(isToken(Token.IDENTIFIER)
+      || isToken(Token.LITERAL_BOOLEAN) || isToken(Token.LITERAL_NUMBER_DECIMAL_INT)
+      || isToken(Token.LITERAL_NUMBER_FLOAT) || isToken(Token.OPERATOR)
+      || isToken("(") || isToken(")"))
     {
-      parseIdentifier();
-    }
-    else if(isToken(Token.LITERAL_BOOLEAN))
-    {
-      eat();
-    }
-    else if(isToken(Token.LITERAL_NUMBER_DECIMAL_INT))
-    {
-      eat();
+
+      if(isToken(Token.IDENTIFIER))
+      {
+        parseIdentifier();
+      }
+      else if(isToken("("))
+      {
+        eat();
+        parenthesisCount++;
+      }
+      else if(isToken(")"))
+      {
+        eat();
+        parenthesisCount--;
+      }
+      else
+      {
+        eat();
+      }
     }
 
+    if(parenthesisCount < 0)
+    {
+      noticeList.add(new ParserNotice(
+        "More right paranthesis than left ones ("
+        + Math.abs(parenthesisCount) + ")",
+        currentToken.offset, Math.max(currentToken.textCount, 2)));
+    }
+    else if(parenthesisCount > 0)
+    {
+      noticeList.add(new ParserNotice(
+        "More left paranthesis than right ones ("
+        + Math.abs(parenthesisCount) + ")",
+        currentToken.offset, Math.max(currentToken.textCount, 2)));
+    }
+    
     isTokenAndEat(";");
+
+    
+
   }//end parseAssignment
 
   private String parseIdentifier() throws Exception
