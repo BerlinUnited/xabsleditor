@@ -277,7 +277,8 @@ public class XEditorPanel extends javax.swing.JPanel
         if(found > -1)
         {
           textArea.grabFocus();
-          textArea.select(searchOffset + found, searchOffset + found + s.length());
+          textArea.setCaretPosition(searchOffset + found);
+          textArea.moveCaretPosition(searchOffset + found + s.length());
           searchOffset = searchOffset + found + 1;
           lastSearch = s;
           return true;
@@ -290,6 +291,12 @@ public class XEditorPanel extends javax.swing.JPanel
     
     searchOffset = 0;
     lastSearch = null;
+    // reset any selection
+    textArea.grabFocus();
+    int oldCaretPos = textArea.getCaretPosition();
+    textArea.setCaretPosition(0);
+    textArea.setCaretPosition(oldCaretPos);
+
     return false;
   }
   
