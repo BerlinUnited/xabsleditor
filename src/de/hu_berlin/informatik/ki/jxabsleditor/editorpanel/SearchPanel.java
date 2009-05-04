@@ -21,6 +21,12 @@ public class SearchPanel extends javax.swing.JPanel
 {
 
   private XEditorPanel parent;
+  
+  public SearchPanel()
+  {
+    this(null);
+  }
+
   /** Creates new form SearchPanel */
   public SearchPanel(XEditorPanel parent)
   {
@@ -75,6 +81,10 @@ public class SearchPanel extends javax.swing.JPanel
   private void txtSearchKeyPressed(java.awt.event.KeyEvent evt)//GEN-FIRST:event_txtSearchKeyPressed
   {//GEN-HEADEREND:event_txtSearchKeyPressed
 
+    if(parent == null)
+    {
+      return;
+    }
     if(evt.getKeyCode() == KeyEvent.VK_ESCAPE)
     {
       this.setVisible(false);

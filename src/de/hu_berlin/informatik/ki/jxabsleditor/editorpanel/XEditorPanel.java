@@ -17,9 +17,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -255,6 +252,8 @@ public class XEditorPanel extends javax.swing.JPanel
    */
   public boolean search(String s)
   {
+
+
     if(s != null)
     {
       if(lastSearch == null || !lastSearch.equals(s))
@@ -269,7 +268,7 @@ public class XEditorPanel extends javax.swing.JPanel
         {
           searchOffset = 0;
         }
-        
+
         String text =
           textArea.getText(searchOffset, textLength - searchOffset);
 
@@ -288,7 +287,7 @@ public class XEditorPanel extends javax.swing.JPanel
       {
       }
     }
-    
+
     searchOffset = 0;
     lastSearch = null;
     // reset any selection

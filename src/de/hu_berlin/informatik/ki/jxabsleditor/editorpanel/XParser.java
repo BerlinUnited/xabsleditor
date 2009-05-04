@@ -41,7 +41,7 @@ public class XParser implements Parser
 
       XTokenMaker tokenizer = new XTokenMaker();
       currentToken = tokenizer.getTokenList(text, Token.NULL, 0);
-
+      
       try
       {
         if(currentToken != null && currentToken.type != Token.NULL)
@@ -299,6 +299,10 @@ public class XParser implements Parser
 
   private void parseFunction() throws Exception
   {
+    if(isToken(Token.FUNCTION))
+    {
+      //currentToken.g
+    }
     isTokenAndEat(Token.FUNCTION);
     isTokenAndEat("(");
     parseFunctionParameter();
@@ -513,7 +517,8 @@ public class XParser implements Parser
 
     if(!result)
     {
-      noticeList.add(new ParserNotice("is " + currentToken.type + " but " + type + " expected", currentToken.offset, currentToken.getLexeme().length()));
+      noticeList.add(new ParserNotice("is " + getNameForTokenType(currentToken.type)
+        + " but " + getNameForTokenType(type) + " expected", currentToken.offset, currentToken.getLexeme().length()));
       throw new Exception("Unexpected token type.");
     }
 
@@ -562,6 +567,72 @@ public class XParser implements Parser
     this.stateTransitionList.add(transition);
   }//end addTransition
 
+  public static String getNameForTokenType(int type)
+  {
+    switch(type)
+    {
+      case Token.COMMENT:
+        return "COMMENT";
+      case Token.COMMENT_DOCUMENTATION:
+        return "COMMENT_DOCUMENTATION";
+      case Token.COMMENT_EOL:
+        return "COMMENT_EOL";
+      case Token.COMMENT_MULTILINE:
+        return "COMMENT_MULTILINE";
+      case Token.DATA_TYPE:
+        return "DATA_TYPE";
+      case Token.ERROR:
+        return "ERROR";
+      case Token.ERROR_CHAR:
+        return "ERROR_CHAR";
+      case Token.ERROR_IDENTIFIER:
+        return "ERROR_IDENTIFIER";
+      case Token.ERROR_NUMBER_FORMAT:
+        return "ERROR_NUMBER_FORMAT";
+      case Token.ERROR_STRING_DOUBLE:
+        return "ERROR_STRING_DOUBLE";
+      case Token.FUNCTION:
+        return "FUNCTION";
+      case Token.IDENTIFIER:
+        return "IDENTIFIER";
+      case Token.LITERAL:
+        return "LITERAL";
+      case Token.LITERAL_BACKQUOTE:
+        return "LITERAL_BACKQUOTE";
+      case Token.LITERAL_BOOLEAN:
+        return "LITERAL_BOOLEAN";
+      case Token.LITERAL_CHAR:
+        return "LITERAL_CHAR";
+      case Token.LITERAL_NUMBER_DECIMAL_INT:
+        return "LITERAL_NUMBER_DECIMAL_INT";
+      case Token.LITERAL_NUMBER_FLOAT:
+        return "LITERAL_NUMBER_FLOAT";
+      case Token.LITERAL_NUMBER_HEXADECIMAL:
+        return "LITERAL_NUMBER_HEXADECIMAL";
+      case Token.LITERAL_STRING_DOUBLE_QUOTE:
+        return "LITERAL_STRING_DOUBLE_QUOTE";
+      case Token.NULL:
+        return "NULL";
+      case Token.NUM_TOKEN_TYPES:
+        return "NUM_TOKEN_TYPES";
+      case Token.OPERATOR:
+        return "OPERATOR";
+      case Token.PREPROCESSOR:
+        return "PREPROCESSOR";
+      case Token.RESERVED_WORD:
+        return "RESERVED_WORD";
+      case Token.SEPARATOR:
+        return "SEPARATOR";
+      case Token.VARIABLE:
+        return "VARIABLE";
+      case Token.WHITESPACE:
+        return "WHITESPACE";
+
+      default:
+        return "<unknown: " + type + ">";
+    }
+  }
+
   public HashMap<String, State> getStateMap()
   {
     return stateMap;
@@ -571,7 +642,6 @@ public class XParser implements Parser
   {
     return stateTransitionList;
   }
-
 
   public class State
   {
@@ -674,8 +744,6 @@ public class XParser implements Parser
       hash = 67 * hash + (this.from != null ? this.from.hashCode() : 0);
       hash = 67 * hash + (this.to != null ? this.to.hashCode() : 0);
       return hash;
-    }
-
-    
+    }    
   }//end class Transition
 }//end class XParser
