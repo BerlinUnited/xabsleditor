@@ -10,7 +10,6 @@
 package de.hu_berlin.informatik.ki.jxabsleditor.graphpanel;
 
 import att.grappa.Graph;
-import att.grappa.GrappaAdapter;
 import att.grappa.GrappaListener;
 import att.grappa.GrappaPanel;
 import att.grappa.GrappaSupport;
@@ -33,9 +32,8 @@ public class XGraph extends javax.swing.JPanel
   {
     initComponents();
 
-    importGraphFromString("graph \"ER\" {node [	label = \"N\", shape = box ];" +
-      "course [pos=\"122,206\", width=\"0.75\", height=\"0.50\", tip=\"some course or other\"]" +
-      "}");
+    importGraphFromString("digraph \"G\" {\nnode [shape=box,width=6];\n" +
+      "\"Please open a file an press CTRL-R to get an visualization\";\n}\n");
 
   //System.err.println("The graph contains " + graph.countOfElements(Grappa.NODE|Grappa.EDGE|Grappa.SUBGRAPH) + " elements.");
   }
