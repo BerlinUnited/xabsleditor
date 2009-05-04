@@ -41,7 +41,7 @@ public class XParser implements Parser
 
       XTokenMaker tokenizer = new XTokenMaker();
       currentToken = tokenizer.getTokenList(text, Token.NULL, 0);
-      
+
       try
       {
         if(currentToken != null && currentToken.type != Token.NULL)
@@ -71,7 +71,7 @@ public class XParser implements Parser
       int pos = 1;
       for(State state : stateMap.values())
       {
-        graphString += state+"\n";
+        graphString += state + "\n";
       //System.out.println(state.name);
       }//end for
 
@@ -90,7 +90,7 @@ public class XParser implements Parser
       }//end for
 
       graphString += "}";
-      //System.out.println(graphString);
+    //System.out.println(graphString);
 
     }
     catch(java.io.IOException ioe)
@@ -107,14 +107,16 @@ public class XParser implements Parser
     isTokenAndEat("option");
     parseIdentifier();
     isTokenAndEat("{");
-    
+
     if(isToken("float") || isToken("bool"))
     {
       parseSymbolDefinition();
     }
 
     if(isToken("common"))
-        parseCommonDecision();
+    {
+      parseCommonDecision();
+    }
 
     while(!isToken("}"))
     {
@@ -151,9 +153,9 @@ public class XParser implements Parser
 
   private void parseCommonDecision() throws Exception
   {
-      isTokenAndEat("common");
-      isTokenAndEat("decision");
-      parseBlock();
+    isTokenAndEat("common");
+    isTokenAndEat("decision");
+    parseBlock();
   }//end parseState
 
   private void eatInitialOrTarget() throws Exception
@@ -183,7 +185,9 @@ public class XParser implements Parser
 
     isTokenAndEat("{");
     if(isToken("decision"))
-        parseDecision();
+    {
+      parseDecision();
+    }
     parseAction();
     isTokenAndEat("}");
   }//end parseState
@@ -198,43 +202,43 @@ public class XParser implements Parser
 
     while(resume)
     {
-      if(isToken("if"))
-      {
-        isTokenAndEat("if");
-        isTokenAndEat("(");
-        parseBooleanExpression();
-        isTokenAndEat(")");
-        isTokenAndEat("{");
-        parseSingleDecision();
-        isTokenAndEat("}");
-      }
-      else if(isToken("else"))
-      {
-        isTokenAndEat("else");
-        // "else if" ?
-        if(isToken("if"))
-        {
-          isTokenAndEat("if");
-          isTokenAndEat("(");
-          parseBooleanExpression();
-          isTokenAndEat(")");
-        }
-        else
-        {
-          // only one else allowed, and only at the end
-          resume = false;
-        }
+    if(isToken("if"))
+    {
+    isTokenAndEat("if");
+    isTokenAndEat("(");
+    parseBooleanExpression();
+    isTokenAndEat(")");
+    isTokenAndEat("{");
+    parseSingleDecision();
+    isTokenAndEat("}");
+    }
+    else if(isToken("else"))
+    {
+    isTokenAndEat("else");
+    // "else if" ?
+    if(isToken("if"))
+    {
+    isTokenAndEat("if");
+    isTokenAndEat("(");
+    parseBooleanExpression();
+    isTokenAndEat(")");
+    }
+    else
+    {
+    // only one else allowed, and only at the end
+    resume = false;
+    }
 
-        isTokenAndEat("{");
-        parseSingleDecision();
-        isTokenAndEat("}");
-      }
-      else
-      {
-        parseSingleDecision();
-        // nothing found
-        resume = false;
-      }
+    isTokenAndEat("{");
+    parseSingleDecision();
+    isTokenAndEat("}");
+    }
+    else
+    {
+    parseSingleDecision();
+    // nothing found
+    resume = false;
+    }
     }
      */
 
@@ -257,7 +261,7 @@ public class XParser implements Parser
     else
     {
       noticeList.add(new ParserNotice(
-        "Either \"stay\" or \"goto\" needed in decision", 
+        "Either \"stay\" or \"goto\" needed in decision",
         currentToken.offset, Math.max(currentToken.textCount, 2)));
 
     }
@@ -273,7 +277,7 @@ public class XParser implements Parser
       parseExpression();
     }//end while
     isTokenAndEat("}");
-    
+
   }//end parseAction
 
   private void parseGoto() throws Exception
@@ -292,9 +296,13 @@ public class XParser implements Parser
   private void parseExpression() throws Exception
   {
     if(isToken(Token.FUNCTION))
-        parseFunction();
+    {
+      parseFunction();
+    }
     else
-        parseAssignment();
+    {
+      parseAssignment();
+    }
   }//end parseExpression
 
   private void parseFunction() throws Exception
@@ -312,18 +320,24 @@ public class XParser implements Parser
 
   private void parseFunctionParameter() throws Exception
   {
-    if(isToken(")")) return;
-
-    parseIdentifier();
-    isTokenAndEat("=");
-    parseIdentifier();
-
+    boolean isFirst = true;
     while(!isToken(")"))
     {
+      if(!isFirst)
+      {
         isTokenAndEat(",");
+      }
+      isFirst = false;
+      parseIdentifier();
+      isTokenAndEat("=");
+      if(isToken(Token.LITERAL_NUMBER_DECIMAL_INT) || isToken(Token.LITERAL_NUMBER_FLOAT))
+      {
+        eat();
+      }
+      else
+      {
         parseIdentifier();
-        isTokenAndEat("=");
-        parseIdentifier();
+      }
     }
   }//end parseFunctionParameter
 
@@ -396,17 +410,22 @@ public class XParser implements Parser
 
     while(!isToken("}"))
     {
-        if(isToken("{"))
-            parseBlock();
-        else if(isToken("goto") || isToken("stay"))
-            parseSingleDecision();
-        else
-            eat();
+      if(isToken("{"))
+      {
+        parseBlock();
+      }
+      else if(isToken("goto") || isToken("stay"))
+      {
+        parseSingleDecision();
+      }
+      else
+      {
+        eat();
+      }
     }//end while
 
     isTokenAndEat("}");
   }//end parseBlock
-
 
   private void parseAssignment() throws Exception
   {
@@ -517,8 +536,7 @@ public class XParser implements Parser
 
     if(!result)
     {
-      noticeList.add(new ParserNotice("is " + getNameForTokenType(currentToken.type)
-        + " but " + getNameForTokenType(type) + " expected", currentToken.offset, currentToken.getLexeme().length()));
+      noticeList.add(new ParserNotice("is " + getNameForTokenType(currentToken.type) + " but " + getNameForTokenType(type) + " expected", currentToken.offset, currentToken.getLexeme().length()));
       throw new Exception("Unexpected token type.");
     }
 
@@ -656,13 +674,12 @@ public class XParser implements Parser
     public final String name;
     public final String comment;
     public final int offset;
-    
     private final int number;
 
     @Override
     public String toString()
     {
-        return "\"" + name + "\" [shape=\"circle\" pos=\"10," + (number * 70) + "\" URL=\"" + offset + "\"];";
+      return "\"" + name + "\" [shape=\"circle\" pos=\"10," + (number * 70) + "\" URL=\"" + offset + "\"];";
     }//end toString
 
     @Override
@@ -691,10 +708,8 @@ public class XParser implements Parser
       hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
       return hash;
     }
-
-
-
   }//end class State
+
   public class Transition
   {
 
@@ -711,7 +726,7 @@ public class XParser implements Parser
     @Override
     public String toString()
     {
-        return "\"" + from + "\" -> \"" + to + "\" [URL=\"" + offset + "\"]";
+      return "\"" + from + "\" -> \"" + to + "\" [URL=\"" + offset + "\"]";
     }//end toString
 
     @Override
@@ -744,6 +759,6 @@ public class XParser implements Parser
       hash = 67 * hash + (this.from != null ? this.from.hashCode() : 0);
       hash = 67 * hash + (this.to != null ? this.to.hashCode() : 0);
       return hash;
-    }    
+    }
   }//end class Transition
 }//end class XParser
