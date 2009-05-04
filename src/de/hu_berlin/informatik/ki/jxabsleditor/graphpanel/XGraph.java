@@ -72,8 +72,7 @@ public class XGraph extends javax.swing.JPanel
 
     Graph graph = parser.getGraph();
     graphPanel = new DynamicXGraph(graph);
-    graphPanel.addGrappaListener(new GrappaAdapter());
-
+    //graphPanel.addGrappaListener(new GrappaAdapter());
 
     graphPanel.addGrappaListener(listener);
 

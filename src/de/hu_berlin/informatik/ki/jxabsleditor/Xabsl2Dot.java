@@ -7,6 +7,7 @@ package de.hu_berlin.informatik.ki.jxabsleditor;
 
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XParser;
 import java.io.StringReader;
+import java.util.HashSet;
 
 /**
  *
@@ -27,16 +28,46 @@ public class Xabsl2Dot
     // let the parser do most of the job
     p.parse(new StringReader(xabsl));
 
+    HashSet<XParser.Transition> alreadWrittenTransitions = new HashSet<XParser.Transition>();
+    HashSet<XParser.State> alreadWrittenStates = new HashSet<XParser.State>();
+
+    HashSet<XParser.Transition> commonDecisions = new HashSet<XParser.Transition>();
+
     for(XParser.State s : p.getStateMap().values())
     {
-      r.append(s);
-      r.append("\n");
+      if(!alreadWrittenStates.contains(s))
+      {
+        alreadWrittenStates.add(s);
+        r.append(s);
+        r.append("\n");
+      }
     }
 
-    for(XParser.Transition s : p.getStateTransitionList())
+    for(XParser.Transition t : p.getStateTransitionList())
     {
-      r.append(s);
-      r.append("\n");
+      if(!alreadWrittenTransitions.contains(t))
+      {
+        alreadWrittenTransitions.add(t);
+        if(t.from == null)
+        {
+          commonDecisions.add(t);
+        }
+        else
+        {
+          r.append(t);
+          r.append("\n");
+        }
+      }
+    }
+
+    // common decisions
+    for(XParser.Transition t : commonDecisions)
+    {
+      for(XParser.State s : alreadWrittenStates)
+      {
+        r.append("\"" + s.name + "\" -> \"" + t.to + "\" [style=dashed,color=lightgray]");
+        r.append("\n");
+      }
     }
 
     r.append("}\n");

@@ -156,16 +156,23 @@ public class XParser implements Parser
       parseBlock();
   }//end parseState
 
-  private void parseState() throws Exception
+  private void eatInitialOrTarget() throws Exception
   {
     if(isToken("initial"))
     {
       eat();
     }
-    else if(isToken("final"))
+    else if(isToken("target"))
     {
       eat();
     }
+  }
+
+  private void parseState() throws Exception
+  {
+    eatInitialOrTarget();
+    // we can have initial *and* target state
+    eatInitialOrTarget();
 
     isTokenAndEat("state");
 
@@ -565,6 +572,7 @@ public class XParser implements Parser
     return stateTransitionList;
   }
 
+
   public class State
   {
 
@@ -586,8 +594,37 @@ public class XParser implements Parser
     {
         return "\"" + name + "\" [shape=\"circle\" pos=\"10," + (number * 70) + "\" URL=\"" + offset + "\"];";
     }//end toString
-  }//end class State
 
+    @Override
+    public boolean equals(Object obj)
+    {
+      if(obj == null)
+      {
+        return false;
+      }
+      if(getClass() != obj.getClass())
+      {
+        return false;
+      }
+      final State other = (State) obj;
+      if((this.name == null) ? (other.name != null) : !this.name.equals(other.name))
+      {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+      int hash = 7;
+      hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
+      return hash;
+    }
+
+
+
+  }//end class State
   public class Transition
   {
 
@@ -606,5 +643,39 @@ public class XParser implements Parser
     {
         return "\"" + from + "\" -> \"" + to + "\" [URL=\"" + offset + "\"]";
     }//end toString
+
+    @Override
+    public boolean equals(Object obj)
+    {
+      if(obj == null)
+      {
+        return false;
+      }
+      if(getClass() != obj.getClass())
+      {
+        return false;
+      }
+      final Transition other = (Transition) obj;
+      if((this.from == null) ? (other.from != null) : !this.from.equals(other.from))
+      {
+        return false;
+      }
+      if((this.to == null) ? (other.to != null) : !this.to.equals(other.to))
+      {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+      int hash = 3;
+      hash = 67 * hash + (this.from != null ? this.from.hashCode() : 0);
+      hash = 67 * hash + (this.to != null ? this.to.hashCode() : 0);
+      return hash;
+    }
+
+    
   }//end class Transition
 }//end class XParser
