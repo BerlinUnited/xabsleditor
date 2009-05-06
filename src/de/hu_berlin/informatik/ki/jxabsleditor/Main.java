@@ -5,26 +5,26 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor;
 
-import att.grappa.Attribute;
-import att.grappa.Element;
-import att.grappa.GrappaBox;
-import att.grappa.GrappaListener;
-import att.grappa.GrappaPanel;
-import att.grappa.GrappaPoint;
-import att.grappa.Subgraph;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilationFinishedReceiver;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
+import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.GraphVisualizer;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
+import edu.uci.ics.jung.visualization.control.GraphMouseListener;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -54,7 +54,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
   private HashMap<String, Component> openDocumentsMap;
   private HashMap<String, File> optionPathMap;
-  String defaultCompilationPath = null;
+  private String defaultCompilationPath = null;
+  private GraphVisualizer optionVisualizer;
+  private boolean splitterManuallySet = false;
+  private boolean ignoreSplitterMovedEvent = false;
 
   /** Creates new form Main */
   public Main()
@@ -102,10 +105,33 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     loadConfiguration();
 
-    this.xGraph.setListener(new MyGrappaListener());
-
     this.openDocumentsMap = new HashMap<String, Component>();
     this.optionPathMap = new HashMap<String, File>();
+
+    optionVisualizer = new GraphVisualizer();
+
+    optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
+    {
+
+      public void graphClicked(XabslNode v, MouseEvent me)
+      {
+        XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
+        if(editor != null && v.getPosInText() > -1)
+        {
+          editor.setCarretPosition(v.getPosInText());
+        }
+      }
+
+      public void graphPressed(XabslNode v, MouseEvent me)
+      {
+      }
+
+      public void graphReleased(XabslNode v, MouseEvent me)
+      {
+      }
+    });
+
+    panelOption.add(optionVisualizer, BorderLayout.CENTER);
 
   }
 
@@ -135,11 +161,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         new File(configuration.getProperty("lastOpenedFolder")));
     }
 
-    if(configuration.containsKey("dotInstallationPath"))
-    {
-      this.xGraph.setLayoutEngine(configuration.getProperty("dotInstallationPath"));
-    }
-
     if(configuration.containsKey("defaultCompilationPath"))
     {
       String path = configuration.getProperty("defaultCompilationPath");
@@ -162,7 +183,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     jSplitPane = new javax.swing.JSplitPane();
     tabbedPanelEditor = new javax.swing.JTabbedPane();
     tabbedPanelView = new javax.swing.JTabbedPane();
-    xGraph = new de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.XGraph();
+    panelOption = new javax.swing.JPanel();
     panelCompiler = new javax.swing.JPanel();
     scrollPaneCompilerOutput = new javax.swing.JScrollPane();
     txtCompilerOutput = new javax.swing.JTextArea();
@@ -196,14 +217,25 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     setTitle("XABSL Editor");
     setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     setLocationByPlatform(true);
+    addComponentListener(new java.awt.event.ComponentAdapter() {
+      public void componentResized(java.awt.event.ComponentEvent evt) {
+        formComponentResized(evt);
+      }
+    });
 
     jSplitPane.setDividerLocation(450);
     jSplitPane.setPreferredSize(new java.awt.Dimension(750, 600));
+    jSplitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+      public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        jSplitPanePropertyChange(evt);
+      }
+    });
 
     tabbedPanelEditor.setAutoscrolls(true);
     jSplitPane.setLeftComponent(tabbedPanelEditor);
 
-    tabbedPanelView.addTab("Option", null, xGraph, "The option graph.");
+    panelOption.setLayout(new java.awt.BorderLayout());
+    tabbedPanelView.addTab("Option", panelOption);
 
     txtCompilerOutput.setColumns(20);
     txtCompilerOutput.setEditable(false);
@@ -218,10 +250,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     );
     panelCompilerLayout.setVerticalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
     );
 
     tabbedPanelView.addTab("Compiler", null, panelCompiler, "The status and output of the compiler.");
+
+    tabbedPanelView.setSelectedComponent(panelOption);
 
     jSplitPane.setRightComponent(tabbedPanelView);
 
@@ -517,7 +551,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
     {//GEN-HEADEREND:event_miRefreshGraphActionPerformed
       String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
-      this.xGraph.importGraphFromString(Xabsl2Dot.convert(text));
+
+      // JUNG
+      XParser p = new XParser();
+      p.parse(new StringReader(text));
+      optionVisualizer.setGraph(p.getVisualizerGraph());
+
 }//GEN-LAST:event_miRefreshGraphActionPerformed
 
     private void miSaveAsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveAsActionPerformed
@@ -656,15 +695,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       }
 
-      CompilerDialog frame = new CompilerDialog(this, true,optionFile, fout, this);
+      CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout, this);
       frame.setVisible(true);
     }//GEN-LAST:event_compileAction
 
     private void miSearchActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchActionPerformed
     {//GEN-HEADEREND:event_miSearchActionPerformed
-      // TODO add your handling code here:
-
-
+      
       if(tabbedPanelEditor.getSelectedComponent() != null)
       {
         XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
@@ -673,6 +710,31 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
       }
     }//GEN-LAST:event_miSearchActionPerformed
+
+    private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
+    {//GEN-HEADEREND:event_formComponentResized
+      
+      if(!splitterManuallySet)
+      {
+        // position splitter in the middle
+        ignoreSplitterMovedEvent = true;
+        jSplitPane.setDividerLocation(this.getWidth() / 2);
+        ignoreSplitterMovedEvent = false;
+      }
+    }//GEN-LAST:event_formComponentResized
+
+    private void jSplitPanePropertyChange(java.beans.PropertyChangeEvent evt)//GEN-FIRST:event_jSplitPanePropertyChange
+    {//GEN-HEADEREND:event_jSplitPanePropertyChange
+
+      if(evt.getPropertyName().equals("dividerLocation"))
+      {
+        if(!ignoreSplitterMovedEvent)
+        {
+          splitterManuallySet = true;
+        }
+      }
+
+    }//GEN-LAST:event_jSplitPanePropertyChange
 
   /**
    * @param args the command line arguments
@@ -820,13 +882,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSaveAs;
   private javax.swing.JMenuItem miSearch;
   private javax.swing.JPanel panelCompiler;
+  private javax.swing.JPanel panelOption;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;
   private javax.swing.JToolBar.Separator seperator1;
   private javax.swing.JTabbedPane tabbedPanelEditor;
   private javax.swing.JTabbedPane tabbedPanelView;
   private javax.swing.JToolBar toolbarMain;
   private javax.swing.JTextArea txtCompilerOutput;
-  private de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.XGraph xGraph;
   // End of variables declaration//GEN-END:variables
 
   public void compilationFinished(CompileResult result)
@@ -834,7 +896,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     txtCompilerOutput.setText(result.messages);
     if(result.errors || result.warnings)
     {
-      tabbedPanelView.setSelectedIndex(1);
+      tabbedPanelView.setSelectedIndex(tabbedPanelView.getTabCount()-1);
     }
   }
   // End of variables declaration
@@ -968,39 +1030,4 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     }//end parseMessage
   }//end class XABSLErrorOutputStream
-
-  class MyGrappaListener implements GrappaListener
-  {
-
-    public void grappaClicked(Subgraph arg0, Element arg1, GrappaPoint arg2, int arg3, int arg4, GrappaPanel arg5)
-    {
-    }
-
-    public void grappaPressed(Subgraph arg0, Element arg1, GrappaPoint arg2, int arg3, GrappaPanel arg4)
-    {
-      if(arg1 != null)
-      {
-        Attribute url = arg1.getAttribute("URL");
-        if(url != null)
-        {
-          System.out.println(arg1.getName() + " " + url.getStringValue());
-          XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-          editor.setCarretPosition(Integer.parseInt(url.getStringValue()));
-        }
-      }//end if
-    }//end grappaPressed
-
-    public void grappaReleased(Subgraph arg0, Element arg1, GrappaPoint arg2, int arg3, Element arg4, GrappaPoint arg5, int arg6, GrappaBox arg7, GrappaPanel arg8)
-    {
-    }
-
-    public void grappaDragged(Subgraph arg0, GrappaPoint arg1, int arg2, Element arg3, GrappaPoint arg4, int arg5, GrappaBox arg6, GrappaPanel arg7)
-    {
-    }
-
-    public String grappaTip(Subgraph arg0, Element arg1, GrappaPoint arg2, int arg3, GrappaPanel arg4)
-    {
-      return "test";
-    }
-  }//end class MyGrappaListener
 }

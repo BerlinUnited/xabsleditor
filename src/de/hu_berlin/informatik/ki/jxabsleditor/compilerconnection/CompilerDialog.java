@@ -131,6 +131,14 @@ public class CompilerDialog extends javax.swing.JDialog
             {
               result.warnings = true;
             }
+
+            // check for syntax errors
+            String[] splitted = line.split(":");
+            if(splitted.length >= 2 && splitted[1].trim().startsWith("error"))
+            {
+              result.errors = true;
+            }
+
             stderr.append(line);
             stderr.append("\n");
           }

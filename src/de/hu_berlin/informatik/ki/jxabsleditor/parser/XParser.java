@@ -1,13 +1,16 @@
 /*
  * 
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
+package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+import edu.uci.ics.jung.graph.Graph;
 import java.io.Reader;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import javax.swing.text.Segment;
 import org.fife.ui.rsyntaxtextarea.Parser;
 import org.fife.ui.rsyntaxtextarea.ParserNotice;
@@ -25,17 +28,22 @@ public class XParser implements Parser
   private HashMap<String, State> stateMap = new HashMap<String, State>();
   private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
 
+  private Graph<XabslNode,XabslEdge> visualizerGraph;
+  private HashSet<Transition> commonDecisions = new HashSet<Transition>();
+
   public void parse(Reader reader)
   {
     noticeList.clear();
     stateMap.clear();
     stateTransitionList.clear();
+    commonDecisions.clear();
+
+    visualizerGraph = new DirectedSparseMultigraph<XabslNode, XabslEdge>();
 
     try
     {
       char[] buffer = new char[1024];
-      CharBuffer c;
-
+      
       int length = reader.read(buffer);
       Segment text = new Segment(buffer, 0, length);
 
@@ -54,43 +62,17 @@ public class XParser implements Parser
         System.err.println(e.getMessage());
       }
 
-      /*
-      while(currentToken != null && currentToken.type != Token.NULL)
+      // add common decisions
+      LinkedList<XabslNode> vertices = new LinkedList<XabslNode>(visualizerGraph.getVertices());
+      for(Transition t : commonDecisions)
       {
-      if(currentToken.type != Token.WHITESPACE && currentToken.type != Token.NULL)
-      //System.out.println(currentToken.type + " " + currentToken.getLexeme());
-      currentToken = currentToken.getNextToken();
-      }//end while
-       */
-
-      // construct the graph string
-      String graphString = "strict digraph option {\n";
-      graphString += "node [fontsize=\"10\"];\n";
-
-
-      int pos = 1;
-      for(State state : stateMap.values())
-      {
-        graphString += state + "\n";
-      //System.out.println(state.name);
-      }//end for
-
-      for(Transition transition : this.stateTransitionList)
-      {
-        if(!this.stateMap.containsKey(transition.to))
+        for(XabslNode nFrom : vertices)
         {
-          noticeList.add(new ParserNotice("State " + transition.to + " is not defined.",
-            transition.offset, transition.to.length()));
+          XabslNode nTo = new XabslNode(t.to, true);
+          XabslEdge e = new XabslEdge(true);
+          visualizerGraph.addEdge(e, nFrom, nTo);
         }
-        else
-        {
-          graphString += "\"" + transition.from + "\" -> \"" + transition.to + "\"\n";
-        //System.out.println(transition.from +" -> " + transition.to);
-        }
-      }//end for
-
-      graphString += "}";
-    //System.out.println(graphString);
+      }
 
     }
     catch(java.io.IOException ioe)
@@ -290,7 +272,7 @@ public class XParser implements Parser
     addTransition(new Transition(currentStateName, targetStateName, offset));
     isTokenAndEat(";");
 
-    System.out.println(currentStateName + " -> " + targetStateName);
+    //System.out.println(currentStateName + " -> " + targetStateName);
   }//end parseGoto
 
   private void parseExpression() throws Exception
@@ -430,7 +412,10 @@ public class XParser implements Parser
   private void parseAssignment() throws Exception
   {
     parseIdentifier();
-    isTokenAndEat("=");
+    if(!isTokenAndEat("="))
+    {
+      return;
+    }
 
     int parenthesisCount = 0;
 
@@ -486,6 +471,10 @@ public class XParser implements Parser
     if(isToken(Token.IDENTIFIER) || isTokenAndEat(Token.ERROR_IDENTIFIER))
     {
       String id = currentToken.getLexeme();
+      if(id.equals("motio"))
+      {
+        boolean b = true;
+      }
       eat();
       return id;
     }
@@ -601,6 +590,13 @@ public class XParser implements Parser
     return noticeList.iterator();
   }//end getNoticeIterator
 
+  /** Get a graph suited for visualizing */
+  public Graph<XabslNode, XabslEdge> getVisualizerGraph()
+  {
+    return visualizerGraph;
+  }
+
+
   private void addState(State state) throws Exception
   {
     if(this.stateMap.containsKey(state.name))
@@ -611,11 +607,34 @@ public class XParser implements Parser
     }//end if
 
     this.stateMap.put(state.name, state);
+
+    XabslNode n = new XabslNode();
+    n.setName(state.name);
+    n.setState(true);
+    n.setPosInText(state.offset);
+    
+    visualizerGraph.addVertex(n);
+
   }//end addState
 
   private void addTransition(Transition transition)
   {
     this.stateTransitionList.add(transition);
+
+    if(transition.from == null)
+    {
+      // common decision, add later when all states are known
+      commonDecisions.add(transition);
+    }
+    else
+    {
+      // not a common decision
+      XabslEdge e = new XabslEdge(false);
+      XabslNode nFrom = new XabslNode(transition.from, true);
+      XabslNode nTo = new XabslNode(transition.to, true);
+      visualizerGraph.addEdge(e, nFrom, nTo);
+    }
+
   }//end addTransition
 
   public static String getNameForTokenType(int type)

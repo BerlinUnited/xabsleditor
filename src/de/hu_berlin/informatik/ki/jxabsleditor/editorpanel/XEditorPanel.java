@@ -10,6 +10,8 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XTokenMaker;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;

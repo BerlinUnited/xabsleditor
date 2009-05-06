@@ -35,10 +35,6 @@ public class OptionsDialog extends javax.swing.JDialog
 
   private void loadOptions()
   {
-    if(configuration.containsKey("dotInstallationPath"))
-    {
-      this.dotInstallationPathTextField.setText(configuration.getProperty("dotInstallationPath"));
-    }
     
     if(configuration.containsKey("defaultCompilationPath"))
     {
@@ -55,9 +51,6 @@ public class OptionsDialog extends javax.swing.JDialog
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    dotInstallationPathTextField = new javax.swing.JTextField();
-    jLabel1 = new javax.swing.JLabel();
-    jButtonBrowse = new javax.swing.JButton();
     jButtonOK = new javax.swing.JButton();
     defaultCompilationPathTextField = new javax.swing.JTextField();
     jLabel2 = new javax.swing.JLabel();
@@ -69,15 +62,6 @@ public class OptionsDialog extends javax.swing.JDialog
     setModal(true);
     setName("Options"); // NOI18N
     setResizable(false);
-
-    jLabel1.setText("DOT layout engine installation path");
-
-    jButtonBrowse.setText("Browse...");
-    jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButtonBrowseActionPerformed(evt);
-      }
-    });
 
     jButtonOK.setText("OK");
     jButtonOK.addActionListener(new java.awt.event.ActionListener() {
@@ -111,21 +95,13 @@ public class OptionsDialog extends javax.swing.JDialog
           .addGroup(layout.createSequentialGroup()
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-              .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                  .addComponent(jLabel1)
-                  .addComponent(dotInstallationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButtonBrowse))
-              .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                  .addComponent(jLabel2)
-                  .addComponent(defaultCompilationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButtonBrowse1))
-              .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(293, 293, 293)
-                .addComponent(jButtonOK1, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))))
+              .addComponent(jLabel2)
+              .addComponent(defaultCompilationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jButtonBrowse1))
+          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGap(305, 305, 305)
+            .addComponent(jButtonOK1, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addGap(305, 305, 305)
             .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)))
@@ -135,20 +111,14 @@ public class OptionsDialog extends javax.swing.JDialog
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
-        .addComponent(jLabel1)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(dotInstallationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(jButtonBrowse))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(defaultCompilationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jButtonBrowse1))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
         .addComponent(jButtonOK)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(jButtonOK1)
         .addContainerGap())
     );
@@ -159,24 +129,11 @@ public class OptionsDialog extends javax.swing.JDialog
     private void jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOKActionPerformed
 
       // save settings
-      configuration.setProperty("dotInstallationPath", dotInstallationPathTextField.getText());
       configuration.setProperty("defaultCompilationPath", defaultCompilationPathTextField.getText());
 
       this.setVisible(false);
       this.dispose();
     }//GEN-LAST:event_jButtonOKActionPerformed
-
-    private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
-      JFileChooser dotFileChooser = new JFileChooser();
-      dotFileChooser.setFileFilter(new DotExecutableFilter());
-      int result = dotFileChooser.showOpenDialog(this);
-
-      if(JFileChooser.APPROVE_OPTION == result)
-      {
-        String path = dotFileChooser.getSelectedFile().getAbsolutePath();
-        this.dotInstallationPathTextField.setText(path);
-      }//end if
-    }//GEN-LAST:event_jButtonBrowseActionPerformed
 
     private void jButtonBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowse1ActionPerformed
       JFileChooser fileChooser = new JFileChooser();
@@ -197,31 +154,11 @@ public class OptionsDialog extends javax.swing.JDialog
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JTextField defaultCompilationPathTextField;
-  private javax.swing.JTextField dotInstallationPathTextField;
-  private javax.swing.JButton jButtonBrowse;
   private javax.swing.JButton jButtonBrowse1;
   private javax.swing.JButton jButtonOK;
   private javax.swing.JButton jButtonOK1;
-  private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   // End of variables declaration//GEN-END:variables
 
-  private class DotExecutableFilter extends javax.swing.filechooser.FileFilter
-  {
-
-    public boolean accept(File file)
-    {
-      if(file.isDirectory())
-      {
-        return true;
-      }
-      String filename = file.getName();
-      return filename.equalsIgnoreCase("dot.exe") || filename.equalsIgnoreCase("dot");
-    }
-
-    public String getDescription()
-    {
-      return "DOT Graph Layout Engine";
-    }
-  }//end class DotExecutableFilter
+ 
 }
