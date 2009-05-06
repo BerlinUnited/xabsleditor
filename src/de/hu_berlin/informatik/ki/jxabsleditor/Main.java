@@ -33,6 +33,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
@@ -131,8 +133,31 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     });
 
+    tabbedPanelEditor.addChangeListener(new ChangeListener()
+    {
+
+      public void stateChanged(ChangeEvent e)
+      {
+        refreshGraph();
+      }
+    });
+
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
 
+
+  }
+
+  private void refreshGraph()
+  {
+    if(tabbedPanelEditor.getSelectedComponent() != null)
+    {
+      String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
+
+      // Option
+      XParser p = new XParser();
+      p.parse(new StringReader(text));
+      optionVisualizer.setGraph(p.getVisualizerGraph());
+    }
   }
 
   private void createOptionList(File folder)
@@ -550,13 +575,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
     {//GEN-HEADEREND:event_miRefreshGraphActionPerformed
-      String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
-
-      // JUNG
-      XParser p = new XParser();
-      p.parse(new StringReader(text));
-      optionVisualizer.setGraph(p.getVisualizerGraph());
-
+      refreshGraph();
 }//GEN-LAST:event_miRefreshGraphActionPerformed
 
     private void miSaveAsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveAsActionPerformed
@@ -701,7 +720,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void miSearchActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchActionPerformed
     {//GEN-HEADEREND:event_miSearchActionPerformed
-      
+
       if(tabbedPanelEditor.getSelectedComponent() != null)
       {
         XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
@@ -713,7 +732,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
     {//GEN-HEADEREND:event_formComponentResized
-      
+
       if(!splitterManuallySet)
       {
         // position splitter in the middle
@@ -805,6 +824,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         //System.out.println(option);
         }
       });
+
     }
     catch(Exception e)
     {
@@ -896,7 +916,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     txtCompilerOutput.setText(result.messages);
     if(result.errors || result.warnings)
     {
-      tabbedPanelView.setSelectedIndex(tabbedPanelView.getTabCount()-1);
+      tabbedPanelView.setSelectedIndex(tabbedPanelView.getTabCount() - 1);
     }
   }
   // End of variables declaration
