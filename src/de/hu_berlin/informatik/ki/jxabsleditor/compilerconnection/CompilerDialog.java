@@ -11,9 +11,11 @@
 package de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection;
 
 import de.hu_berlin.informatik.ki.jxabsleditor.Helper;
+import de.hu_berlin.informatik.ki.jxabsleditor.OptionsDialog;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
@@ -28,15 +30,17 @@ public class CompilerDialog extends javax.swing.JDialog
   private File optionFile;
   private File outputFile;
   private CompilationFinishedReceiver receiver;
-  private CompilerDialog finalThis;
+  private final CompilerDialog finalThis;
+  private final Properties configuration;
 
   /** Creates new form CompilerDialog */
   public CompilerDialog(java.awt.Frame parent, boolean modal,
     File optionFile, File outputFile,
-    CompilationFinishedReceiver receiver)
+    CompilationFinishedReceiver receiver, Properties configuration)
   {
     super(parent, modal);
     finalThis = this;
+    this.configuration = configuration;
 
     this.optionFile = optionFile;
     this.outputFile = outputFile;
@@ -51,7 +55,6 @@ public class CompilerDialog extends javax.swing.JDialog
 
     worker.execute();
   }
-
 
   public class CompiliationWorker extends SwingWorker<CompileResult, Object>
   {
@@ -74,38 +77,26 @@ public class CompilerDialog extends javax.swing.JDialog
         try
         {
 
-          // find out path to Extern-directory
-          File extern = new File(agentsFile.getAbsolutePath());
-          extern = extern.getParentFile();
-          while(extern != null && extern.isDirectory() &&
-            (!extern.getName().equals("Projects") || !(new File(extern.getParentFile(), "Extern").exists()) || !(new File(extern.getParentFile(), "Documents").exists())))
+          Process compilerProcess;
+
+          if(configuration.containsKey(OptionsDialog.XABSL_COMPILER_COMMAND))
           {
-            extern = extern.getParentFile();
+            String cmd = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);
+            cmd += " " + agentsFile.getAbsolutePath() + " -i "
+              + outputFile.getAbsolutePath();
+            compilerProcess = Runtime.getRuntime().exec(cmd);
           }
-
-          if(extern != null)
+          else
           {
-            extern = new File(extern.getParentFile(), "Extern");
+            String[] cmdarray = autoSearchCommand(agentsFile);
+            compilerProcess = Runtime.getRuntime().exec(cmdarray);
           }
-
-          if(extern == null || !extern.isDirectory())
-          {
-            throw new Exception("Could not finde \"Extern\"-directory! Aborting.");
-          }
-
-          String[] cmdarray = new String[]
-          {
-            "java",
-            "-jar",
-            extern.getAbsolutePath() + "/java/jruby-complete-1.2.0.jar",
-            extern.getAbsolutePath() + "/ruby/xabsl-compiler/xabsl.rb",
-            agentsFile.getAbsolutePath(),
-            "-i",
-            outputFile.getAbsolutePath()
-          };
-
-          Process compilerProcess = Runtime.getRuntime().exec(cmdarray);
           compilerProcess.waitFor();
+
+          if(compilerProcess.exitValue() != 0)
+          {
+            result.errors = true;
+          }
 
           BufferedReader rIn = new BufferedReader(
             new InputStreamReader(compilerProcess.getInputStream()));
@@ -145,7 +136,6 @@ public class CompilerDialog extends javax.swing.JDialog
 
           System.out.println(stderr);
 
-
           result.messages = stderr.toString();
 
           pbCompiling.setIndeterminate(false);
@@ -172,8 +162,6 @@ public class CompilerDialog extends javax.swing.JDialog
         {
           Helper.handleException(ex);
         }
-
-
       }
 
       finalThis.setVisible(false);
@@ -184,6 +172,42 @@ public class CompilerDialog extends javax.swing.JDialog
       }
       return result;
     }
+  }
+
+  private String[] autoSearchCommand(File agentsFile) throws Exception
+  {
+    // find out path to Extern-directory
+    File extern = new File(agentsFile.getAbsolutePath());
+    extern = extern.getParentFile();
+    while(extern != null && extern.isDirectory() &&
+      (!extern.getName().equals("Projects") || !(new File(extern.getParentFile(), "Extern").exists()) || !(new File(extern.getParentFile(), "Documents").exists())))
+    {
+      extern = extern.getParentFile();
+    }
+
+    if(extern != null)
+    {
+      extern = new File(extern.getParentFile(), "Extern");
+    }
+
+    if(extern == null || !extern.isDirectory())
+    {
+      throw new Exception("Could not find \"Extern\"-directory! Aborting. " +
+        "Please specify your custom path in the options.");
+    }
+
+    String[] cmdarray = new String[]
+    {
+      "java",
+      "-jar",
+      extern.getAbsolutePath() + "/java/jruby-complete-1.2.0.jar",
+      extern.getAbsolutePath() + "/ruby/xabsl-compiler/xabsl.rb",
+      agentsFile.getAbsolutePath(),
+      "-i",
+      outputFile.getAbsolutePath()
+    };
+
+    return cmdarray;
   }
 
   /** This method is called from within the constructor to

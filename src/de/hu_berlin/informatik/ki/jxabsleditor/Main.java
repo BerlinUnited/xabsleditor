@@ -186,9 +186,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         new File(configuration.getProperty("lastOpenedFolder")));
     }
 
-    if(configuration.containsKey("defaultCompilationPath"))
+    if(configuration.containsKey(OptionsDialog.DEFAULT_COMPILATION_PATH))
     {
-      String path = configuration.getProperty("defaultCompilationPath");
+      String path = configuration.getProperty(OptionsDialog.DEFAULT_COMPILATION_PATH);
       if(new File(path).exists())
       {
         this.defaultCompilationPath = path;
@@ -558,6 +558,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           editor.setChanged(false);
           editor.setFile(file);
           tabbedPanelEditor.setTitleAt(tabbedPanelEditor.getSelectedIndex(), file.getName());
+          refreshGraph();
         }
       }
       catch(IOException e)
@@ -714,7 +715,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       }
 
-      CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout, this);
+      CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout,
+        this, configuration);
       frame.setVisible(true);
     }//GEN-LAST:event_compileAction
 

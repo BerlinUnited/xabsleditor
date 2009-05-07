@@ -94,9 +94,24 @@ public class GraphVisualizer extends javax.swing.JPanel
     vv.getRenderContext().setVertexFillPaintTransformer(new Transformer<XabslNode, Paint>()
     {
 
-      public Paint transform(XabslNode arg0)
+      public Paint transform(XabslNode n)
       {
-        return Color.white;
+        if(n.isInitialState() && n.isTargetState())
+        {
+          return new Color(255,128,255);
+        }
+        else if(n.isInitialState())
+        {
+          return new Color(128, 128, 255);
+        }
+        else if(n.isTargetState())
+        {
+          return new Color(255,128,128);
+        }
+        else
+        {
+          return Color.white;
+        }
       }
     });
 

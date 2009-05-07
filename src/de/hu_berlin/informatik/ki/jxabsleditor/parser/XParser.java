@@ -45,6 +45,8 @@ public class XParser implements Parser
       n.setName(s.name);
       n.setType(XabslNode.Type.State);
       n.setPosInText(s.offset);
+      n.setInitialState(s.initial);
+      n.setTargetState(s.target);
 
       visualizerGraph.addVertex(n);
     }
@@ -129,6 +131,8 @@ public class XParser implements Parser
   }//end parse
   private String currentStateName;
   private String currentComment;
+  private boolean currentStateInitial;
+  private boolean currentStateTarget;
 
   private void parseOption() throws Exception
   {
@@ -189,18 +193,24 @@ public class XParser implements Parser
 
   private void eatInitialOrTarget() throws Exception
   {
-    if(isToken("initial"))
+    if(!currentStateInitial && isToken("initial"))
     {
       eat();
+      currentStateInitial = true;
     }
-    else if(isToken("target"))
+    else if(!currentStateTarget && isToken("target"))
     {
       eat();
+      currentStateTarget = true;
     }
   }
 
   private void parseState() throws Exception
   {
+
+    currentStateInitial = false;
+    currentStateTarget = false;
+
     eatInitialOrTarget();
     // we can have initial *and* target state
     eatInitialOrTarget();
@@ -210,7 +220,8 @@ public class XParser implements Parser
     int offset = currentToken.offset;
     currentStateName = parseIdentifier();
 
-    addState(new State(currentStateName, currentComment, offset, this.stateMap.size()));
+    addState(new State(currentStateName, currentComment, offset, this.stateMap.size(),
+      currentStateTarget, currentStateInitial));
 
     isTokenAndEat("{");
     if(isToken("decision"))
@@ -742,16 +753,21 @@ public class XParser implements Parser
   public class State
   {
 
-    public State(String name, String comment, int offset, int number)
+    public State(String name, String comment, int offset, int number,
+      boolean target, boolean initial)
     {
       this.name = name;
       this.comment = comment;
       this.offset = offset;
       this.number = number;
+      this.target = target;
+      this.initial = initial;
     }
     public final String name;
     public final String comment;
     public final int offset;
+    public final boolean target;
+    public final boolean initial;
     private final int number;
 
     @Override

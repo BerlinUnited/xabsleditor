@@ -1,15 +1,10 @@
 /*
- * 
- */
-
-/*
  * Options.java
  *
  * Created on 28.01.2009, 01:18:01
  */
 package de.hu_berlin.informatik.ki.jxabsleditor;
 
-import java.io.File;
 import java.util.Properties;
 import javax.swing.JFileChooser;
 
@@ -19,7 +14,11 @@ import javax.swing.JFileChooser;
  */
 public class OptionsDialog extends javax.swing.JDialog
 {
-    
+
+  public static final String DEFAULT_COMPILATION_PATH
+    = "defaultCompilationPath";
+  public static final String XABSL_COMPILER_COMMAND
+    = "xabslCompilerCommand";
   private Properties configuration;
 
   /** Creates new form Options */
@@ -35,10 +34,15 @@ public class OptionsDialog extends javax.swing.JDialog
 
   private void loadOptions()
   {
-    
-    if(configuration.containsKey("defaultCompilationPath"))
+
+    if(configuration.containsKey(DEFAULT_COMPILATION_PATH))
     {
-      this.defaultCompilationPathTextField.setText(configuration.getProperty("defaultCompilationPath"));
+      this.txtDefaultCompilationPath.setText(configuration.getProperty(DEFAULT_COMPILATION_PATH));
+    }
+
+    if(configuration.containsKey(XABSL_COMPILER_COMMAND))
+    {
+      this.txtXabslCompilerCommand.setText(configuration.getProperty(XABSL_COMPILER_COMMAND));
     }
   }//end loadOptions
 
@@ -52,10 +56,12 @@ public class OptionsDialog extends javax.swing.JDialog
   private void initComponents() {
 
     jButtonOK = new javax.swing.JButton();
-    defaultCompilationPathTextField = new javax.swing.JTextField();
+    txtDefaultCompilationPath = new javax.swing.JTextField();
     jLabel2 = new javax.swing.JLabel();
-    jButtonBrowse1 = new javax.swing.JButton();
+    btBrowseCompilation = new javax.swing.JButton();
     jButtonOK1 = new javax.swing.JButton();
+    jLabel3 = new javax.swing.JLabel();
+    txtXabslCompilerCommand = new javax.swing.JTextField();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setLocationByPlatform(true);
@@ -72,10 +78,10 @@ public class OptionsDialog extends javax.swing.JDialog
 
     jLabel2.setText("Default compilation path");
 
-    jButtonBrowse1.setText("Browse...");
-    jButtonBrowse1.addActionListener(new java.awt.event.ActionListener() {
+    btBrowseCompilation.setText("Browse...");
+    btBrowseCompilation.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButtonBrowse1ActionPerformed(evt);
+        btBrowseCompilationActionPerformed(evt);
       }
     });
 
@@ -85,6 +91,8 @@ public class OptionsDialog extends javax.swing.JDialog
         jButtonOK1ActionPerformed(evt);
       }
     });
+
+    jLabel3.setText("XABSL Compiler command");
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
@@ -96,15 +104,22 @@ public class OptionsDialog extends javax.swing.JDialog
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(jLabel2)
-              .addComponent(defaultCompilationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
+              .addComponent(txtDefaultCompilationPath, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jButtonBrowse1))
+            .addComponent(btBrowseCompilation))
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addGap(305, 305, 305)
             .addComponent(jButtonOK1, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addGap(305, 305, 305)
-            .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)))
+            .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+              .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel3)
+                .addGap(124, 124, 124)))))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -114,9 +129,13 @@ public class OptionsDialog extends javax.swing.JDialog
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(defaultCompilationPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(jButtonBrowse1))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+          .addComponent(txtDefaultCompilationPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(btBrowseCompilation))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(jLabel3)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
         .addComponent(jButtonOK)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(jButtonOK1)
@@ -128,24 +147,36 @@ public class OptionsDialog extends javax.swing.JDialog
 
     private void jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOKActionPerformed
 
+      
       // save settings
-      configuration.setProperty("defaultCompilationPath", defaultCompilationPathTextField.getText());
+      if("".equals(txtDefaultCompilationPath.getText())
+        && configuration.containsKey(DEFAULT_COMPILATION_PATH))
+      {
+        configuration.remove(DEFAULT_COMPILATION_PATH);
+      }
+      else
+      {
+        configuration.setProperty(DEFAULT_COMPILATION_PATH, txtDefaultCompilationPath.getText());
+      }
+
+      if("".equals(txtXabslCompilerCommand.getText())
+        && configuration.containsKey(XABSL_COMPILER_COMMAND))
+      {
+        configuration.remove(XABSL_COMPILER_COMMAND);
+      }
+      else
+      {
+        configuration.setProperty(XABSL_COMPILER_COMMAND,
+          txtXabslCompilerCommand.getText());
+      }
 
       this.setVisible(false);
       this.dispose();
     }//GEN-LAST:event_jButtonOKActionPerformed
 
-    private void jButtonBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowse1ActionPerformed
-      JFileChooser fileChooser = new JFileChooser();
-      fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-      int result = fileChooser.showOpenDialog(this);
-
-      if(JFileChooser.APPROVE_OPTION == result)
-      {
-        String path = fileChooser.getSelectedFile().getAbsolutePath();
-        this.defaultCompilationPathTextField.setText(path);
-      }//end if
-    }//GEN-LAST:event_jButtonBrowse1ActionPerformed
+    private void btBrowseCompilationActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_btBrowseCompilationActionPerformed
+    {//GEN-HEADEREND:event_btBrowseCompilationActionPerformed
+}//GEN-LAST:event_btBrowseCompilationActionPerformed
 
     private void jButtonOK1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOK1ActionPerformed
       this.setVisible(false);
@@ -153,12 +184,12 @@ public class OptionsDialog extends javax.swing.JDialog
     }//GEN-LAST:event_jButtonOK1ActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JTextField defaultCompilationPathTextField;
-  private javax.swing.JButton jButtonBrowse1;
+  private javax.swing.JButton btBrowseCompilation;
   private javax.swing.JButton jButtonOK;
   private javax.swing.JButton jButtonOK1;
   private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
+  private javax.swing.JTextField txtDefaultCompilationPath;
+  private javax.swing.JTextField txtXabslCompilerCommand;
   // End of variables declaration//GEN-END:variables
-
- 
 }
