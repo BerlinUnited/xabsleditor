@@ -42,10 +42,18 @@ public class XParser implements Parser
 
     try
     {
-      char[] buffer = new char[1024];
-      
-      int length = reader.read(buffer);
-      Segment text = new Segment(buffer, 0, length);
+      StringBuilder buffer = new StringBuilder();
+
+      int c = 1;
+      while((c = reader.read()) > -1 )
+      {
+        buffer.append((char) c);
+      }
+      // construct char array
+      char[] charArray = new char[buffer.length()];
+      buffer.getChars(0, charArray.length-1, charArray, 0);
+      // create segment
+      Segment text = new Segment(charArray, 0, charArray.length);
 
       XTokenMaker tokenizer = new XTokenMaker();
       currentToken = tokenizer.getTokenList(text, Token.NULL, 0);
