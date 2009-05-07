@@ -56,7 +56,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     KKLayout<XabslNode, XabslEdge> layout = new KKLayout<XabslNode, XabslEdge>(g);
     //FRLayout<XabslNode,XabslEdge> layout = new FRLayout<XabslNode,XabslEdge>(g);
     //SpringLayout2<XabslNode,XabslEdge> layout = new SpringLayout2<XabslNode, XabslEdge>(g);
-
+    
     
     int w = 400;
     int h = 400;

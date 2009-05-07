@@ -3,7 +3,7 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -31,14 +31,63 @@ public class XParser implements Parser
   private Graph<XabslNode,XabslEdge> visualizerGraph;
   private HashSet<Transition> commonDecisions = new HashSet<Transition>();
 
+
+  private void convertInternalRepresentationsToGraph()
+  {
+    commonDecisions.clear();
+
+    visualizerGraph = new DirectedSparseGraph<XabslNode, XabslEdge>();
+
+    // states
+    for(State s : stateMap.values())
+    {
+      XabslNode n = new XabslNode();
+      n.setName(s.name);
+      n.setType(XabslNode.Type.State);
+      n.setPosInText(s.offset);
+
+      visualizerGraph.addVertex(n);
+    }
+
+    // transitions
+    for(Transition t : stateTransitionList)
+    {
+      if(t.from == null)
+      {
+        // common decision, add later when all states are known
+        commonDecisions.add(t);
+      }
+      else
+      {
+        // not a common decision
+        XabslEdge e = new XabslEdge(false, t.from, t.to);
+        XabslNode nFrom = new XabslNode(t.from, XabslNode.Type.State);
+        XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
+        visualizerGraph.addEdge(e, nFrom, nTo);
+      }
+    }
+
+    // common decisions
+    LinkedList<XabslNode> vertices = new LinkedList<XabslNode>(visualizerGraph.getVertices());
+    for(Transition t : commonDecisions)
+    {
+      for(XabslNode nFrom : vertices)
+      {
+        XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
+        XabslEdge e = new XabslEdge(true, nFrom.getName(), nTo.getName());
+
+        visualizerGraph.addEdge(e, nFrom, nTo);
+      }
+    }
+
+  }
+
   public void parse(Reader reader)
   {
     noticeList.clear();
     stateMap.clear();
     stateTransitionList.clear();
     commonDecisions.clear();
-
-    visualizerGraph = new DirectedSparseMultigraph<XabslNode, XabslEdge>();
 
     try
     {
@@ -70,17 +119,7 @@ public class XParser implements Parser
         System.err.println(e.getMessage());
       }
 
-      // add common decisions
-      LinkedList<XabslNode> vertices = new LinkedList<XabslNode>(visualizerGraph.getVertices());
-      for(Transition t : commonDecisions)
-      {
-        for(XabslNode nFrom : vertices)
-        {
-          XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
-          XabslEdge e = new XabslEdge(true);
-          visualizerGraph.addEdge(e, nFrom, nTo);
-        }
-      }
+      convertInternalRepresentationsToGraph();
 
     }
     catch(java.io.IOException ioe)
@@ -616,32 +655,11 @@ public class XParser implements Parser
 
     this.stateMap.put(state.name, state);
 
-    XabslNode n = new XabslNode();
-    n.setName(state.name);
-    n.setType(XabslNode.Type.State);
-    n.setPosInText(state.offset);
-    
-    visualizerGraph.addVertex(n);
-
   }//end addState
 
   private void addTransition(Transition transition)
   {
     this.stateTransitionList.add(transition);
-
-    if(transition.from == null)
-    {
-      // common decision, add later when all states are known
-      commonDecisions.add(transition);
-    }
-    else
-    {
-      // not a common decision
-      XabslEdge e = new XabslEdge(false);
-      XabslNode nFrom = new XabslNode(transition.from, XabslNode.Type.State);
-      XabslNode nTo = new XabslNode(transition.to, XabslNode.Type.State);
-      visualizerGraph.addEdge(e, nFrom, nTo);
-    }
 
   }//end addTransition
 
