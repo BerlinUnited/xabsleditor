@@ -51,7 +51,7 @@ public class XParser implements Parser
       }
       // construct char array
       char[] charArray = new char[buffer.length()];
-      buffer.getChars(0, charArray.length-1, charArray, 0);
+      buffer.getChars(0, charArray.length, charArray, 0);
       // create segment
       Segment text = new Segment(charArray, 0, charArray.length);
 
