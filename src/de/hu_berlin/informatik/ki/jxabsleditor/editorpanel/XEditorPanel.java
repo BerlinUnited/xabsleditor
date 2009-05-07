@@ -26,7 +26,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxHighlightingColorScheme;
+import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -96,17 +96,15 @@ public class XEditorPanel extends javax.swing.JPanel
     textArea.setCurrentLineHighlightColor(new Color(0.9f, 0.9f, 1.0f));
 
     // TODO: define new color scheme
-    SyntaxHighlightingColorScheme s = new SyntaxHighlightingColorScheme(true);
-    s.syntaxSchemes[Token.COMMENT_EOL] = new SyntaxScheme(new Color(255, 128, 0), null);
-    textArea.setSyntaxHighlightingColorScheme(s);
-
+    SyntaxScheme scheme = new SyntaxScheme(true);
+    scheme.setStyle(Token.COMMENT_EOL, new Style(new Color(255, 128, 0), null));
+    textArea.setSyntaxScheme(scheme);
     textArea.setWhitespaceVisible(true);
     textArea.setVisible(true);
 
     textArea.setHyperlinksEnabled(true);
     textArea.setHyperlinkForeground(Color.red);
-
-
+    
     // the tokenizer
     ((RSyntaxDocument) textArea.getDocument()).setSyntaxStyle(new XTokenMaker());
     // set parser

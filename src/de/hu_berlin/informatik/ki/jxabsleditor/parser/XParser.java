@@ -549,13 +549,11 @@ public class XParser implements Parser
     while(currentToken != null &&
       (currentToken.type == Token.WHITESPACE ||
       currentToken.type == Token.NULL ||
-      currentToken.type == Token.COMMENT ||
       currentToken.type == Token.COMMENT_DOCUMENTATION ||
       currentToken.type == Token.COMMENT_EOL ||
       currentToken.type == Token.COMMENT_MULTILINE))
     {
-      if(currentToken.type == Token.COMMENT ||
-        currentToken.type == Token.COMMENT_DOCUMENTATION ||
+      if(currentToken.type == Token.COMMENT_DOCUMENTATION ||
         currentToken.type == Token.COMMENT_EOL ||
         currentToken.type == Token.COMMENT_MULTILINE)
       {
@@ -678,8 +676,6 @@ public class XParser implements Parser
   {
     switch(type)
     {
-      case Token.COMMENT:
-        return "COMMENT";
       case Token.COMMENT_DOCUMENTATION:
         return "COMMENT_DOCUMENTATION";
       case Token.COMMENT_EOL:
@@ -688,8 +684,6 @@ public class XParser implements Parser
         return "COMMENT_MULTILINE";
       case Token.DATA_TYPE:
         return "DATA_TYPE";
-      case Token.ERROR:
-        return "ERROR";
       case Token.ERROR_CHAR:
         return "ERROR_CHAR";
       case Token.ERROR_IDENTIFIER:
@@ -702,8 +696,6 @@ public class XParser implements Parser
         return "FUNCTION";
       case Token.IDENTIFIER:
         return "IDENTIFIER";
-      case Token.LITERAL:
-        return "LITERAL";
       case Token.LITERAL_BACKQUOTE:
         return "LITERAL_BACKQUOTE";
       case Token.LITERAL_BOOLEAN:
