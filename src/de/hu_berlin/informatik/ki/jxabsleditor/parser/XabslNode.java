@@ -10,8 +10,14 @@ package de.hu_berlin.informatik.ki.jxabsleditor.parser;
  */
 public class XabslNode
 {
+
+  public static enum Type
+  {
+    State
+  };
+
   private String name;
-  private boolean state;
+  private Type type;
   private boolean targetState;
   private boolean initialState;
   private int posInText = -1;
@@ -20,10 +26,10 @@ public class XabslNode
   {
   }
 
-  public XabslNode(String name, boolean state)
+  public XabslNode(String name, Type type)
   {
     this.name = name;
-    this.state = state;
+    this.type = type;
   }
 
 
@@ -47,14 +53,14 @@ public class XabslNode
     this.name = name;
   }
 
-  public boolean isState()
+  public Type getType()
   {
-    return state;
+    return type;
   }
 
-  public void setState(boolean state)
+  public void setType(Type type)
   {
-    this.state = state;
+    this.type = type;
   }
 
   public boolean isTargetState()
@@ -101,7 +107,7 @@ public class XabslNode
     {
       return false;
     }
-    if(this.state != other.state)
+    if(this.type != other.type)
     {
       return false;
     }
@@ -111,11 +117,13 @@ public class XabslNode
   @Override
   public int hashCode()
   {
-    int hash = 3;
-    hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
-    hash = 43 * hash + (this.state ? 1 : 0);
+    int hash = 7;
+    hash = 17 * hash + (this.name != null ? this.name.hashCode() : 0);
+    hash = 17 * hash + (this.type != null ? this.type.hashCode() : 0);
     return hash;
   }
+
+
 
   
 }

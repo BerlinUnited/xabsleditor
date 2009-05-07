@@ -68,7 +68,7 @@ public class XParser implements Parser
       {
         for(XabslNode nFrom : vertices)
         {
-          XabslNode nTo = new XabslNode(t.to, true);
+          XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
           XabslEdge e = new XabslEdge(true);
           visualizerGraph.addEdge(e, nFrom, nTo);
         }
@@ -610,7 +610,7 @@ public class XParser implements Parser
 
     XabslNode n = new XabslNode();
     n.setName(state.name);
-    n.setState(true);
+    n.setType(XabslNode.Type.State);
     n.setPosInText(state.offset);
     
     visualizerGraph.addVertex(n);
@@ -630,8 +630,8 @@ public class XParser implements Parser
     {
       // not a common decision
       XabslEdge e = new XabslEdge(false);
-      XabslNode nFrom = new XabslNode(transition.from, true);
-      XabslNode nTo = new XabslNode(transition.to, true);
+      XabslNode nFrom = new XabslNode(transition.from, XabslNode.Type.State);
+      XabslNode nTo = new XabslNode(transition.to, XabslNode.Type.State);
       visualizerGraph.addEdge(e, nFrom, nTo);
     }
 
