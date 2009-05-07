@@ -79,7 +79,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     vv.addKeyListener(mouse.getModeKeyListener());
 
     // enable selecting the nodes
-    mouse.setMode(ModalGraphMouse.Mode.PICKING);
+    mouse.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 
     // add external mouse listener
     if(externalMouseListener != null)
