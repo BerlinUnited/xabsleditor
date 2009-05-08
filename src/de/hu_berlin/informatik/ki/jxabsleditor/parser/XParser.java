@@ -141,7 +141,7 @@ public class XParser implements Parser
     parseIdentifier();
     isTokenAndEat("{");
 
-    if(isToken("float") || isToken("bool"))
+    while(isToken("float") || isToken("bool"))
     {
       parseSymbolDefinition();
     }
@@ -480,10 +480,15 @@ public class XParser implements Parser
     while(isToken(Token.IDENTIFIER)
       || isToken(Token.LITERAL_BOOLEAN) || isToken(Token.LITERAL_NUMBER_DECIMAL_INT)
       || isToken(Token.LITERAL_NUMBER_FLOAT) || isToken(Token.OPERATOR)
-      || isToken("(") || isToken(")"))
+      || isToken("(") || isToken(")")
+      || isToken("@"))
     {
 
-      if(isToken(Token.IDENTIFIER))
+      if(isToken("@"))
+      {
+        isTokenAndEat("@");
+      }
+      else if(isToken(Token.IDENTIFIER))
       {
         parseIdentifier();
       }
@@ -529,10 +534,6 @@ public class XParser implements Parser
     if(isToken(Token.IDENTIFIER) || isTokenAndEat(Token.ERROR_IDENTIFIER))
     {
       String id = currentToken.getLexeme();
-      if(id.equals("motio"))
-      {
-        boolean b = true;
-      }
       eat();
       return id;
     }
