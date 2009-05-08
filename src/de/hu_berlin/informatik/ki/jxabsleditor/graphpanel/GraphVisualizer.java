@@ -19,9 +19,9 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.decorators.AbstractVertexShapeTransformer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
+import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,6 +29,10 @@ import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
 
@@ -88,7 +92,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     }
 
     // determine the shape of the nodes
-    vv.getRenderContext().setVertexShapeTransformer(new VertexShapeSizeAspect());
+    vv.getRenderContext().setVertexShapeTransformer(new VertexTransformer());
 
     // white background for nodes
     vv.getRenderContext().setVertexFillPaintTransformer(new Transformer<XabslNode, Paint>()
@@ -96,24 +100,10 @@ public class GraphVisualizer extends javax.swing.JPanel
 
       public Paint transform(XabslNode n)
       {
-        if(n.isInitialState() && n.isTargetState())
-        {
-          return new Color(255,128,255);
-        }
-        else if(n.isInitialState())
-        {
-          return new Color(128, 128, 255);
-        }
-        else if(n.isTargetState())
-        {
-          return new Color(255,128,128);
-        }
-        else
-        {
-          return Color.white;
-        }
+        return Color.white;
       }
     });
+    
 
 
     // howto render the edges (depending whether commond decision or not)
@@ -179,37 +169,56 @@ public class GraphVisualizer extends javax.swing.JPanel
     externalMouseListener = listener;
   }
 
-  private static class VertexShapeSizeAspect
-    extends AbstractVertexShapeTransformer<XabslNode>
+  private static class VertexTransformer
+    implements Transformer<XabslNode, Shape>
   {
 
-    public VertexShapeSizeAspect()
+    public VertexTransformer()
     {
-      setSizeTransformer(new Transformer<XabslNode, Integer>()
-      {
-
-        public Integer transform(XabslNode n)
-        {
-          String[] lines = n.getName().split("_");
-          int maxWidth = 1;
-          for(int i = 0; i < lines.length; i++)
-          {
-            maxWidth = Math.max(maxWidth, lines[i].length());
-          }
-
-          int maxHeight = lines.length;
-
-          int h = 15 * maxHeight;
-          int w = 10 * maxWidth;
-
-          return Math.max(h, w);
-        }
-      });
     }
 
     public Shape transform(XabslNode n)
     {
-      return factory.getEllipse(n);
+      String lines[] = n.getName().split("_");
+      int maxWidth = 1;
+      for(int i=0; i < lines.length; i++)
+      {
+        maxWidth = Math.max(maxWidth, lines[i].length());
+      }
+      int maxHeight = lines.length;
+
+      float s = (float) Math.max(20 * maxHeight, 11*maxWidth);
+
+      GeneralPath result = new GeneralPath(getCircleFromSize(s));
+
+      if(n.isTargetState())
+      {
+        // add bigger circle
+        result.append(getCircleFromSize(s+5), false);
+      }
+      if(n.isInitialState())
+      {
+        // add two horizontal lines
+        float h = s / 3.0f + 1.0f;
+        float v = s / 3.0f + 1.0f;
+        result.append(new Line2D.Float(-h, v, h, v), false);
+        result.append(new Line2D.Float(-h, -v, h, -v), false);
+      }
+
+      result.closePath();
+
+      return result;
+    }
+
+    private Shape getCircleFromSize(float s)
+    {
+      float width = s;
+      float height = width;
+      float h_offset = -(width / 2);
+      float v_offset = -(height / 2);
+
+      Shape circle = new Ellipse2D.Float(h_offset, v_offset, width, height);
+      return circle;
     }
 
   }
