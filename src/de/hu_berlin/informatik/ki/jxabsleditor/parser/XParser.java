@@ -113,8 +113,15 @@ public class XParser implements Parser
       {
         if(currentToken != null && currentToken.type != Token.NULL)
         {
-          parseOption();
+          skipSpace();
+          if(isToken("option"))
+            parseOption();
+          else if(isToken("namespace"))
+            parseNamespace();
         }
+
+        if(currentToken != null && currentToken.type != Token.NULL)
+          System.out.println("Unexpected end of File.");
       }
       catch(Exception e)
       {
@@ -129,6 +136,98 @@ public class XParser implements Parser
       ioe.printStackTrace();
     }
   }//end parse
+
+  // PARSE SYMBOLS
+  private void parseNamespace() throws Exception
+  {
+    isTokenAndEat("namespace");
+    isTokenAndEat(Token.FUNCTION);
+    isTokenAndEat("(");
+    isTokenAndEat(Token.LITERAL_STRING_DOUBLE_QUOTE);
+    isTokenAndEat(")");
+    isTokenAndEat("{");
+    
+    while(!isToken("}"))
+    {
+      parseSymbolsEntry();
+    }//end while
+    
+    isTokenAndEat("}");
+  }//end parseNamespace
+
+
+  private void parseSymbolsEntry() throws Exception
+  {
+    // enum
+    if(isToken("enum"))
+    {
+      boolean isInternal = false;
+      eat();
+      parseIdentifier();
+      if(isToken("internal")) {
+        isTokenAndEat("internal");
+        isInternal = true;
+      }
+      if(isToken("{"))
+        parseEnumDeclaration();
+      else
+      {
+        if(!isInternal)
+        {
+          if(isToken("output")) isTokenAndEat("output");
+            else isTokenAndEat("input");
+        }
+        parseIdentifier();
+        isTokenAndEat(";");
+      }
+    }else if(isToken("float") || isToken("bool"))
+    {
+      eat();
+      parseSymbolDeclaration();
+    }else
+    {
+      noticeList.add(new ParserNotice("A symbol declaration or enum definition expected.", currentToken.offset, currentToken.getLexeme().length()));
+    }
+  }//end parseSymbolsEntry
+
+  private void parseEnumDeclaration() throws Exception
+  {
+    isTokenAndEat("{");
+    do{
+      parseIdentifier();
+    }while(isToken(","));
+    isTokenAndEat("}");
+    isTokenAndEat(";");
+  }//end parseEnumDeclaration
+
+  private void parseSymbolDeclaration() throws Exception
+  {
+    if(isToken("output")) isTokenAndEat("output");
+    else if(isToken("input")) isTokenAndEat("input");
+    else isTokenAndEat("internal");
+
+    parseIdentifier();
+
+    if(isToken("["))
+    {
+      do
+      {
+        eat();
+      }while(!isToken("]"));
+
+      isTokenAndEat("]");
+    }//end if
+
+    if(isToken(Token.LITERAL_STRING_DOUBLE_QUOTE))
+      isTokenAndEat(Token.LITERAL_STRING_DOUBLE_QUOTE);
+
+    isTokenAndEat(";");
+  }//end parseSymbolDeclaration
+
+
+  // PARSE OPTION
+
+
   private String currentStateName;
   private String currentComment;
   private boolean currentStateInitial;
@@ -136,7 +235,6 @@ public class XParser implements Parser
 
   private void parseOption() throws Exception
   {
-    skipSpace();
     isTokenAndEat("option");
     parseIdentifier();
     isTokenAndEat("{");

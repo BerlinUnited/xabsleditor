@@ -131,6 +131,8 @@ public class XTokenMaker extends AbstractTokenMaker
     int currentTokenStart = offset;
     int currentTokenType = initialTokenType;
 
+    boolean stringStarted = false;
+
     // See, when we find a token, its starting position is always of the
     // form: 'startOffset + (currentTokenStart-offset)'; but since
     // startOffset and offset are constant, tokens' starting positions
@@ -256,6 +258,20 @@ public class XTokenMaker extends AbstractTokenMaker
             addToken(text, currentTokenStart, i - 1, Token.COMMENT_EOL, newStartOffset + currentTokenStart);
           }
           break;
+        case Token.LITERAL_STRING_DOUBLE_QUOTE:
+          if(c == '"')
+          {
+            if(stringStarted)
+            {
+              stringStarted = false;
+              currentTokenType = Token.NULL;
+              addToken(text, currentTokenStart, i, Token.LITERAL_STRING_DOUBLE_QUOTE, newStartOffset + currentTokenStart);
+            }
+            else
+              stringStarted = true;
+          }
+          i++;
+          break;
 
         case Token.SEPARATOR:
           if(is(separators, c))
@@ -320,6 +336,9 @@ public class XTokenMaker extends AbstractTokenMaker
     else if(is(dotSeparators, c))
     {
       return Token.ERROR_IDENTIFIER;
+    }else if(c == '"')
+    {
+      return Token.LITERAL_STRING_DOUBLE_QUOTE;
     }
 
     // unknown identifier...
