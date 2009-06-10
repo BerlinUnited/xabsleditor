@@ -49,6 +49,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 {
 
   private JFileChooser fileChooser = new JFileChooser();
+  private SearchInProjectDialog searchInProjectDialog;
   private Properties configuration = new Properties();
   private File fConfig;
   private FileFilter dotFilter = new DotFileFilter();
@@ -83,6 +84,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       this.getClass().getResource("res/XabslEditor.png"));
     setIconImage(icon);
 
+    searchInProjectDialog = new SearchInProjectDialog(this, false);
+
     // load configuration
     fConfig = new File(System.getProperty("user.home") + "/.jxabsleditor");
 
@@ -115,6 +118,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
     {
 
+      @Override
       public void graphClicked(XabslNode v, MouseEvent me)
       {
         XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
@@ -124,10 +128,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       }
 
+      @Override
       public void graphPressed(XabslNode v, MouseEvent me)
       {
       }
 
+      @Override
       public void graphReleased(XabslNode v, MouseEvent me)
       {
       }
@@ -136,6 +142,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     tabbedPanelEditor.addChangeListener(new ChangeListener()
     {
 
+      @Override
       public void stateChanged(ChangeEvent e)
       {
         refreshGraph();
@@ -230,6 +237,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     miQuit = new javax.swing.JMenuItem();
     mEdit = new javax.swing.JMenu();
     miSearch = new javax.swing.JMenuItem();
+    miSearchProject = new javax.swing.JMenuItem();
     jSeparator4 = new javax.swing.JSeparator();
     miCompile = new javax.swing.JMenuItem();
     miRefreshGraph = new javax.swing.JMenuItem();
@@ -426,6 +434,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     });
     mEdit.add(miSearch);
+
+    miSearchProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+    miSearchProject.setText("Search in Project");
+    miSearchProject.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        miSearchProjectActionPerformed(evt);
+      }
+    });
+    mEdit.add(miSearchProject);
     mEdit.add(jSeparator4);
 
     miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
@@ -654,28 +671,34 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         return;
       }
 
-      // test if the file is allready opened
-      for(int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
-      {
-        Component c = tabbedPanelEditor.getComponentAt(i);
-        if(((XEditorPanel) c).getFile().compareTo(selectedFile) == 0)
-        {
-          tabbedPanelEditor.setSelectedComponent(c);
-          return;
-        }//end if
-      }//end for
+      openFile(selectedFile);
 
-      configuration.setProperty("lastOpenedFolder",
-        fileChooser.getCurrentDirectory().getAbsolutePath());
-      saveConfiguration();
-
-      // TODO: make it better
-      this.optionPathMap.clear();
-      File agentsFile = Helper.getAgentFileForOption(selectedFile);
-      createOptionList(agentsFile.getParentFile());
-
-      createDocumentTab(selectedFile);
     }//GEN-LAST:event_openFileAction
+
+  public void openFile(File selectedFile)
+  {
+    // test if the file is allready opened
+    for(int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
+    {
+      Component c = tabbedPanelEditor.getComponentAt(i);
+      if(((XEditorPanel) c).getFile().compareTo(selectedFile) == 0)
+      {
+        tabbedPanelEditor.setSelectedComponent(c);
+        return;
+      }//end if
+    }//end for
+
+    configuration.setProperty("lastOpenedFolder",
+      fileChooser.getCurrentDirectory().getAbsolutePath());
+    saveConfiguration();
+
+    // TODO: make it better
+    this.optionPathMap.clear();
+    File agentsFile = Helper.getAgentFileForOption(selectedFile);
+    createOptionList(agentsFile.getParentFile());
+
+    createDocumentTab(selectedFile);
+  }
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
@@ -756,6 +779,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
 
     }//GEN-LAST:event_jSplitPanePropertyChange
+
+    private void miSearchProjectActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchProjectActionPerformed
+    {//GEN-HEADEREND:event_miSearchProjectActionPerformed
+     
+      searchInProjectDialog.setVisible(true);
+
+    }//GEN-LAST:event_miSearchProjectActionPerformed
 
   /**
    * @param args the command line arguments
@@ -878,6 +908,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     return selectedFile;
   }//end saveStringToFile
 
+  public HashMap<String, File> getOptionPathMap()
+  {
+    return optionPathMap;
+  }
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton btCompile;
   private javax.swing.JButton btNew;
@@ -903,6 +937,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSave;
   private javax.swing.JMenuItem miSaveAs;
   private javax.swing.JMenuItem miSearch;
+  private javax.swing.JMenuItem miSearchProject;
   private javax.swing.JPanel panelCompiler;
   private javax.swing.JPanel panelOption;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;
@@ -1053,3 +1088,4 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }//end parseMessage
   }//end class XABSLErrorOutputStream
 }
+

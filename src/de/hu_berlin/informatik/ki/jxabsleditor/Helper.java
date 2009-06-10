@@ -8,6 +8,8 @@ package de.hu_berlin.informatik.ki.jxabsleditor;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,6 +81,7 @@ public class Helper
 
     return agent;
   }
+  
 
   public static String readFileToString(File file) throws IOException
   {
