@@ -6,16 +6,27 @@ package de.hu_berlin.informatik.ki.jxabsleditor.parser;
  */
 public class XabslEdge
 {
-  private boolean commonDecision;
-  
-  public XabslEdge(boolean commonDecision)
+
+  public enum Type
   {
-    this.commonDecision = commonDecision;
+    Normal,
+    CommonDecision,
+    Outgoing
   }
 
-  public boolean isCommonDecision()
+  private Type type;
+  
+  public XabslEdge(Type type)
   {
-    return commonDecision;
-  }  
+    this.type = type;
+  }
+
+  public Type getType()
+  {
+    return type;
+  }
+
+
+
 
 }

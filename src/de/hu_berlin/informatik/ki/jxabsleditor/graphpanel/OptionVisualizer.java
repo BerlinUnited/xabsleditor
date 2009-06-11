@@ -54,8 +54,8 @@ public class OptionVisualizer extends javax.swing.JPanel
     KKLayout<XabslNode, XabslEdge> layout = new KKLayout<XabslNode, XabslEdge>(g);
     //FRLayout<XabslNode,XabslEdge> layout = new FRLayout<XabslNode,XabslEdge>(g);
     //SpringLayout2<XabslNode,XabslEdge> layout = new SpringLayout2<XabslNode, XabslEdge>(g);
-    
-    
+
+
     int w = 400;
     int h = 400;
     w = Math.max(w, this.getSize().width);
@@ -95,10 +95,17 @@ public class OptionVisualizer extends javax.swing.JPanel
       @Override
       public Paint transform(XabslNode n)
       {
-        return Color.white;
+        if(n.getType() == XabslNode.Type.Option)
+        {
+          return Color.lightGray;
+        }
+        else
+        {
+          return Color.white;
+        }
       }
     });
-    
+
 
 
     // howto render the edges (depending whether commond decision or not)
@@ -108,7 +115,7 @@ public class OptionVisualizer extends javax.swing.JPanel
       @Override
       public Stroke transform(XabslEdge e)
       {
-        if(e.isCommonDecision())
+        if(e.getType() == XabslEdge.Type.CommonDecision)
         {
           return vv.getRenderContext().DASHED;
         }
@@ -124,7 +131,7 @@ public class OptionVisualizer extends javax.swing.JPanel
       @Override
       public Paint transform(XabslEdge e)
       {
-        if(e.isCommonDecision())
+        if(e.getType() == XabslEdge.Type.CommonDecision || e.getType() == XabslEdge.Type.Outgoing)
         {
           return Color.gray;
         }
@@ -143,7 +150,7 @@ public class OptionVisualizer extends javax.swing.JPanel
         new Transformer<String, String>()
         {
 
-      @Override
+          @Override
           public String transform(String s)
           {
             return "<html><center>" + s.replaceAll("_", "_<br>") + "</center></html>";
@@ -181,13 +188,13 @@ public class OptionVisualizer extends javax.swing.JPanel
 
       String lines[] = n.getName().split("_");
       int maxWidth = 1;
-      for(int i=0; i < lines.length; i++)
+      for(int i = 0; i < lines.length; i++)
       {
         maxWidth = Math.max(maxWidth, lines[i].length());
       }
       int maxHeight = lines.length;
 
-      float s = (float) Math.max(20 * maxHeight, 11*maxWidth);
+      float s = (float) Math.max(20 * maxHeight, 11 * maxWidth);
 
       GeneralPath result = null;
 
@@ -202,7 +209,7 @@ public class OptionVisualizer extends javax.swing.JPanel
       if(n.isTargetState())
       {
         // add bigger circle
-        result.append(getCircleFromSize(s+5), false);
+        result.append(getCircleFromSize(s + 5), false);
       }
       if(n.isInitialState())
       {
@@ -239,8 +246,6 @@ public class OptionVisualizer extends javax.swing.JPanel
       Shape circle = new Rectangle2D.Float(h_offset, v_offset, width, height);
       return circle;
     }
-
-
   }
 
   /** This method is called from within the constructor to

@@ -55,7 +55,7 @@ public class XParser implements Parser
         XabslNode outNode = new XabslNode();
         outNode.setName(o);
         outNode.setType(XabslNode.Type.Option);
-        optionGraph.addEdge(new XabslEdge(false), n, outNode);
+        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.Outgoing), n, outNode);
       }
     }
 
@@ -72,7 +72,7 @@ public class XParser implements Parser
         // not a common decision
         XabslNode nFrom = new XabslNode(t.from, XabslNode.Type.State);
         XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
-        optionGraph.addEdge(new XabslEdge(false), nFrom, nTo);
+        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.Normal), nFrom, nTo);
       }
     }
 
@@ -84,7 +84,7 @@ public class XParser implements Parser
       {
         XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
         
-        optionGraph.addEdge(new XabslEdge(true), nFrom, nTo);
+        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.CommonDecision), nFrom, nTo);
       }
     }
 
