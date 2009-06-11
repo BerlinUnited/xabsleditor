@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
 import javax.swing.text.Segment;
 import org.fife.ui.rsyntaxtextarea.Parser;
 import org.fife.ui.rsyntaxtextarea.ParserNotice;
@@ -26,17 +27,16 @@ public class XParser implements Parser
   private java.util.ArrayList noticeList = new java.util.ArrayList(1);
   private Token currentToken;
   private HashMap<String, State> stateMap = new HashMap<String, State>();
+  
   private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
-
-  private Graph<XabslNode,XabslEdge> visualizerGraph;
+  private Graph<XabslNode, XabslEdge> optionGraph;
   private HashSet<Transition> commonDecisions = new HashSet<Transition>();
-
 
   private void convertInternalRepresentationsToGraph()
   {
     commonDecisions.clear();
 
-    visualizerGraph = new DirectedSparseGraph<XabslNode, XabslEdge>();
+    optionGraph = new DirectedSparseGraph<XabslNode, XabslEdge>();
 
     // states
     for(State s : stateMap.values())
@@ -48,7 +48,15 @@ public class XParser implements Parser
       n.setInitialState(s.initial);
       n.setTargetState(s.target);
 
-      visualizerGraph.addVertex(n);
+      optionGraph.addVertex(n);
+
+      for(String o : s.outgoingOptions)
+      {
+        XabslNode outNode = new XabslNode();
+        outNode.setName(o);
+        outNode.setType(XabslNode.Type.Option);
+        optionGraph.addEdge(new XabslEdge(false), n, outNode);
+      }
     }
 
     // transitions
@@ -62,28 +70,27 @@ public class XParser implements Parser
       else
       {
         // not a common decision
-        XabslEdge e = new XabslEdge(false, t.from, t.to);
         XabslNode nFrom = new XabslNode(t.from, XabslNode.Type.State);
         XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
-        visualizerGraph.addEdge(e, nFrom, nTo);
+        optionGraph.addEdge(new XabslEdge(false), nFrom, nTo);
       }
     }
 
     // common decisions
-    LinkedList<XabslNode> vertices = new LinkedList<XabslNode>(visualizerGraph.getVertices());
+    LinkedList<XabslNode> vertices = new LinkedList<XabslNode>(optionGraph.getVertices());
     for(Transition t : commonDecisions)
     {
       for(XabslNode nFrom : vertices)
       {
         XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
-        XabslEdge e = new XabslEdge(true, nFrom.getName(), nTo.getName());
-
-        visualizerGraph.addEdge(e, nFrom, nTo);
+        
+        optionGraph.addEdge(new XabslEdge(true), nFrom, nTo);
       }
     }
 
   }
 
+  @Override
   public void parse(Reader reader)
   {
     noticeList.clear();
@@ -96,7 +103,7 @@ public class XParser implements Parser
       StringBuilder buffer = new StringBuilder();
 
       int c = 1;
-      while((c = reader.read()) > -1 )
+      while((c = reader.read()) > -1)
       {
         buffer.append((char) c);
       }
@@ -115,13 +122,19 @@ public class XParser implements Parser
         {
           skipSpace();
           if(isToken("option"))
+          {
             parseOption();
+          }
           else if(isToken("namespace"))
+          {
             parseNamespace();
+          }
         }
 
         if(currentToken != null && currentToken.type != Token.NULL)
+        {
           System.out.println("Unexpected end of File.");
+        }
       }
       catch(Exception e)
       {
@@ -146,15 +159,14 @@ public class XParser implements Parser
     isTokenAndEat(Token.LITERAL_STRING_DOUBLE_QUOTE);
     isTokenAndEat(")");
     isTokenAndEat("{");
-    
+
     while(!isToken("}"))
     {
       parseSymbolsEntry();
     }//end while
-    
+
     isTokenAndEat("}");
   }//end parseNamespace
-
 
   private void parseSymbolsEntry() throws Exception
   {
@@ -164,27 +176,38 @@ public class XParser implements Parser
       boolean isInternal = false;
       eat();
       parseIdentifier();
-      if(isToken("internal")) {
+      if(isToken("internal"))
+      {
         isTokenAndEat("internal");
         isInternal = true;
       }
       if(isToken("{"))
+      {
         parseEnumDeclaration();
+      }
       else
       {
         if(!isInternal)
         {
-          if(isToken("output")) isTokenAndEat("output");
-            else isTokenAndEat("input");
+          if(isToken("output"))
+          {
+            isTokenAndEat("output");
+          }
+          else
+          {
+            isTokenAndEat("input");
+          }
         }
         parseIdentifier();
         isTokenAndEat(";");
       }
-    }else if(isToken("float") || isToken("bool"))
+    }
+    else if(isToken("float") || isToken("bool"))
     {
       eat();
       parseSymbolDeclaration();
-    }else
+    }
+    else
     {
       noticeList.add(new ParserNotice("A symbol declaration or enum definition expected.", currentToken.offset, currentToken.getLexeme().length()));
     }
@@ -193,18 +216,29 @@ public class XParser implements Parser
   private void parseEnumDeclaration() throws Exception
   {
     isTokenAndEat("{");
-    do{
+    do
+    {
       parseIdentifier();
-    }while(isToken(","));
+    }
+    while(isToken(","));
     isTokenAndEat("}");
     isTokenAndEat(";");
   }//end parseEnumDeclaration
 
   private void parseSymbolDeclaration() throws Exception
   {
-    if(isToken("output")) isTokenAndEat("output");
-    else if(isToken("input")) isTokenAndEat("input");
-    else isTokenAndEat("internal");
+    if(isToken("output"))
+    {
+      isTokenAndEat("output");
+    }
+    else if(isToken("input"))
+    {
+      isTokenAndEat("input");
+    }
+    else
+    {
+      isTokenAndEat("internal");
+    }
 
     parseIdentifier();
 
@@ -213,22 +247,22 @@ public class XParser implements Parser
       do
       {
         eat();
-      }while(!isToken("]"));
+      }
+      while(!isToken("]"));
 
       isTokenAndEat("]");
     }//end if
 
     if(isToken(Token.LITERAL_STRING_DOUBLE_QUOTE))
+    {
       isTokenAndEat(Token.LITERAL_STRING_DOUBLE_QUOTE);
+    }
 
     isTokenAndEat(";");
   }//end parseSymbolDeclaration
-
-
   // PARSE OPTION
-
-
   private String currentStateName;
+  private Set<String> currentOutgoingOptions;
   private String currentComment;
   private boolean currentStateInitial;
   private boolean currentStateTarget;
@@ -308,6 +342,7 @@ public class XParser implements Parser
 
     currentStateInitial = false;
     currentStateTarget = false;
+    currentOutgoingOptions = new HashSet<String>();
 
     eatInitialOrTarget();
     // we can have initial *and* target state
@@ -318,8 +353,6 @@ public class XParser implements Parser
     int offset = currentToken.offset;
     currentStateName = parseIdentifier();
 
-    addState(new State(currentStateName, currentComment, offset, this.stateMap.size(),
-      currentStateTarget, currentStateInitial));
 
     isTokenAndEat("{");
     if(isToken("decision"))
@@ -327,6 +360,9 @@ public class XParser implements Parser
       parseDecision();
     }
     parseAction();
+
+    addState(new State(currentStateName, currentComment, offset, this.stateMap.size(),
+      currentStateTarget, currentStateInitial, currentOutgoingOptions));
     isTokenAndEat("}");
   }//end parseState
 
@@ -428,7 +464,7 @@ public class XParser implements Parser
     addTransition(new Transition(currentStateName, targetStateName, offset));
     isTokenAndEat(";");
 
-    //System.out.println(currentStateName + " -> " + targetStateName);
+  //System.out.println(currentStateName + " -> " + targetStateName);
   }//end parseGoto
 
   private void parseExpression() throws Exception
@@ -447,7 +483,7 @@ public class XParser implements Parser
   {
     if(isToken(Token.FUNCTION))
     {
-      //currentToken.g
+      currentOutgoingOptions.add(currentToken.getLexeme());
     }
     isTokenAndEat(Token.FUNCTION);
     isTokenAndEat("(");
@@ -575,11 +611,7 @@ public class XParser implements Parser
 
     int parenthesisCount = 0;
 
-    while(isToken(Token.IDENTIFIER)
-      || isToken(Token.LITERAL_BOOLEAN) || isToken(Token.LITERAL_NUMBER_DECIMAL_INT)
-      || isToken(Token.LITERAL_NUMBER_FLOAT) || isToken(Token.OPERATOR)
-      || isToken("(") || isToken(")")
-      || isToken("@"))
+    while(isToken(Token.IDENTIFIER) || isToken(Token.LITERAL_BOOLEAN) || isToken(Token.LITERAL_NUMBER_DECIMAL_INT) || isToken(Token.LITERAL_NUMBER_FLOAT) || isToken(Token.OPERATOR) || isToken("(") || isToken(")") || isToken("@"))
     {
 
       if(isToken("@"))
@@ -609,21 +641,19 @@ public class XParser implements Parser
     if(parenthesisCount < 0)
     {
       noticeList.add(new ParserNotice(
-        "More right paranthesis than left ones ("
-        + Math.abs(parenthesisCount) + ")",
+        "More right paranthesis than left ones (" + Math.abs(parenthesisCount) + ")",
         currentToken.offset, Math.max(currentToken.textCount, 2)));
     }
     else if(parenthesisCount > 0)
     {
       noticeList.add(new ParserNotice(
-        "More left paranthesis than right ones ("
-        + Math.abs(parenthesisCount) + ")",
+        "More left paranthesis than right ones (" + Math.abs(parenthesisCount) + ")",
         currentToken.offset, Math.max(currentToken.textCount, 2)));
     }
-    
+
     isTokenAndEat(";");
 
-    
+
 
   }//end parseAssignment
 
@@ -740,17 +770,17 @@ public class XParser implements Parser
     return result;
   }//end isTokenAndEat
 
+  @Override
   public Iterator getNoticeIterator()
   {
     return noticeList.iterator();
   }//end getNoticeIterator
 
   /** Get a graph suited for visualizing */
-  public Graph<XabslNode, XabslEdge> getVisualizerGraph()
+  public Graph<XabslNode, XabslEdge> getOptionGraph()
   {
-    return visualizerGraph;
+    return optionGraph;
   }
-
 
   private void addState(State state) throws Exception
   {
@@ -845,7 +875,7 @@ public class XParser implements Parser
   {
 
     public State(String name, String comment, int offset, int number,
-      boolean target, boolean initial)
+      boolean target, boolean initial, Set<String> outgoingOptions)
     {
       this.name = name;
       this.comment = comment;
@@ -853,12 +883,14 @@ public class XParser implements Parser
       this.number = number;
       this.target = target;
       this.initial = initial;
+      this.outgoingOptions = outgoingOptions;
     }
     public final String name;
     public final String comment;
     public final int offset;
     public final boolean target;
     public final boolean initial;
+    public final Set<String> outgoingOptions;
     private final int number;
 
     @Override

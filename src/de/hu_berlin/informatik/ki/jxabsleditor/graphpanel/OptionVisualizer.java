@@ -1,10 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * GraphVisualizer.java
+ * OptionVisualizer.java
  *
  * Created on 06.05.2009, 16:15:50
  */
@@ -21,7 +16,6 @@ import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -40,7 +33,7 @@ import org.apache.commons.collections15.functors.ChainedTransformer;
  *
  * @author thomas
  */
-public class GraphVisualizer extends javax.swing.JPanel
+public class OptionVisualizer extends javax.swing.JPanel
 {
 
   /** The main visualization component */
@@ -48,8 +41,8 @@ public class GraphVisualizer extends javax.swing.JPanel
   private GraphZoomScrollPane scrollPane;
   private GraphMouseListener<XabslNode> externalMouseListener;
 
-  /** Creates new form GraphVisualizer */
-  public GraphVisualizer()
+  /** Creates new form OptionVisualizer */
+  public OptionVisualizer()
   {
     initComponents();
   }
@@ -98,6 +91,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     vv.getRenderContext().setVertexFillPaintTransformer(new Transformer<XabslNode, Paint>()
     {
 
+      @Override
       public Paint transform(XabslNode n)
       {
         return Color.white;
@@ -110,6 +104,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     vv.getRenderContext().setEdgeStrokeTransformer(new Transformer<XabslEdge, Stroke>()
     {
 
+      @Override
       public Stroke transform(XabslEdge e)
       {
         if(e.isCommonDecision())
@@ -125,6 +120,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     vv.getRenderContext().setEdgeDrawPaintTransformer(new Transformer<XabslEdge, Paint>()
     {
 
+      @Override
       public Paint transform(XabslEdge e)
       {
         if(e.isCommonDecision())
@@ -146,6 +142,7 @@ public class GraphVisualizer extends javax.swing.JPanel
         new Transformer<String, String>()
         {
 
+      @Override
           public String transform(String s)
           {
             return "<html><center>" + s.replaceAll("_", "_<br>") + "</center></html>";
@@ -177,6 +174,7 @@ public class GraphVisualizer extends javax.swing.JPanel
     {
     }
 
+    @Override
     public Shape transform(XabslNode n)
     {
       String lines[] = n.getName().split("_");

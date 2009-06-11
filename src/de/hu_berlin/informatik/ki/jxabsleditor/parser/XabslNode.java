@@ -13,7 +13,8 @@ public class XabslNode
 
   public static enum Type
   {
-    State
+    State,
+    Option
   };
 
   private String name;

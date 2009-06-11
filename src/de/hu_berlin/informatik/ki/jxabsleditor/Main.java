@@ -10,7 +10,8 @@ import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
-import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.GraphVisualizer;
+import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
+import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
@@ -58,7 +59,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private HashMap<String, Component> openDocumentsMap;
   private HashMap<String, File> optionPathMap;
   private String defaultCompilationPath = null;
-  private GraphVisualizer optionVisualizer;
+  private OptionVisualizer optionVisualizer;
+  private AgentVisualizer agentVisualizer;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
@@ -113,7 +115,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     this.openDocumentsMap = new HashMap<String, Component>();
     this.optionPathMap = new HashMap<String, File>();
 
-    optionVisualizer = new GraphVisualizer();
+    optionVisualizer = new OptionVisualizer();
+    agentVisualizer = new AgentVisualizer();
 
     optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
     {
@@ -150,7 +153,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
-
+    panelAgent.add(agentVisualizer, BorderLayout.CENTER);
 
   }
 
@@ -163,7 +166,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       // Option
       XParser p = new XParser();
       p.parse(new StringReader(text));
-      optionVisualizer.setGraph(p.getVisualizerGraph());
+      optionVisualizer.setGraph(p.getOptionGraph());
     }
   }
 
@@ -216,6 +219,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     tabbedPanelEditor = new javax.swing.JTabbedPane();
     tabbedPanelView = new javax.swing.JTabbedPane();
     panelOption = new javax.swing.JPanel();
+    panelAgent = new javax.swing.JPanel();
     panelCompiler = new javax.swing.JPanel();
     scrollPaneCompilerOutput = new javax.swing.JScrollPane();
     txtCompilerOutput = new javax.swing.JTextArea();
@@ -269,6 +273,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     panelOption.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Option", panelOption);
+
+    panelAgent.setLayout(new java.awt.BorderLayout());
+    tabbedPanelView.addTab("Agent", panelAgent);
 
     txtCompilerOutput.setColumns(20);
     txtCompilerOutput.setEditable(false);
@@ -938,6 +945,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSaveAs;
   private javax.swing.JMenuItem miSearch;
   private javax.swing.JMenuItem miSearchProject;
+  private javax.swing.JPanel panelAgent;
   private javax.swing.JPanel panelCompiler;
   private javax.swing.JPanel panelOption;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;
