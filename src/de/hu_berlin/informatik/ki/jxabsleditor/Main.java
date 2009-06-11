@@ -125,9 +125,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       public void graphClicked(XabslNode v, MouseEvent me)
       {
         XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-        if(editor != null && v.getPosInText() > -1)
+        if(editor != null && v.getType() == XabslNode.Type.State &&  v.getPosInText() > -1)
         {
           editor.setCarretPosition(v.getPosInText());
+        }
+        else if(v.getType() == XabslNode.Type.Option)
+        {
+          String option = v.getName();
+          File file = optionPathMap.get(option);
+
+          if(file != null)
+          {
+            openFile(file);
+          }
         }
       }
 
@@ -858,7 +868,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
           if(file != null)
           {
-            createDocumentTab(file);
+            openFile(file);
           }
         //System.out.println(option);
         }
