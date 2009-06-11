@@ -10,22 +10,26 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
+import edu.uci.ics.jung.visualization.renderers.VertexLabelAsShapeRenderer;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
 
@@ -177,6 +181,7 @@ public class OptionVisualizer extends javax.swing.JPanel
     @Override
     public Shape transform(XabslNode n)
     {
+
       String lines[] = n.getName().split("_");
       int maxWidth = 1;
       for(int i=0; i < lines.length; i++)
@@ -187,8 +192,16 @@ public class OptionVisualizer extends javax.swing.JPanel
 
       float s = (float) Math.max(20 * maxHeight, 11*maxWidth);
 
-      GeneralPath result = new GeneralPath(getCircleFromSize(s));
+      GeneralPath result = null;
 
+      if(n.getType() == XabslNode.Type.State)
+      {
+        result = new GeneralPath(getCircleFromSize(s));
+      }
+      else
+      {
+        result = new GeneralPath(getRectangleFromSize(s));
+      }
       if(n.isTargetState())
       {
         // add bigger circle
@@ -218,6 +231,18 @@ public class OptionVisualizer extends javax.swing.JPanel
       Shape circle = new Ellipse2D.Float(h_offset, v_offset, width, height);
       return circle;
     }
+
+    private Shape getRectangleFromSize(float s)
+    {
+      float width = s;
+      float height = width;
+      float h_offset = -(width / 2);
+      float v_offset = -(height / 2);
+
+      Shape circle = new Rectangle2D.Float(h_offset, v_offset, width, height);
+      return circle;
+    }
+
 
   }
 
