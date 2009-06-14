@@ -815,7 +815,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   {
     java.awt.EventQueue.invokeLater(new Runnable()
     {
-
+      @Override
       public void run()
       {
         new Main().setVisible(true);
@@ -848,7 +848,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
       editor.addDocumentChangedListener(new DocumentChangedListener()
       {
-
+        @Override
         public void documentChanged(XEditorPanel document)
         {
           tabbedPanelEditor.setSelectedComponent(document);
@@ -863,7 +863,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
       editor.addHyperlinkListener(new HyperlinkListener()
       {
-
+        @Override
         public void hyperlinkUpdate(HyperlinkEvent e)
         {
           String option = e.getDescription();
@@ -970,6 +970,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JTextArea txtCompilerOutput;
   // End of variables declaration//GEN-END:variables
 
+  @Override
   public void compilationFinished(CompileResult result)
   {
     txtCompilerOutput.setText(result.messages);
@@ -982,7 +983,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private class XABSLFileFilter extends javax.swing.filechooser.FileFilter
   {
-
+    @Override
     public boolean accept(File file)
     {
       if(file.isDirectory())
@@ -994,6 +995,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       return filename.endsWith(".xabsl") || filename.endsWith(".XABSL");
     }
 
+    @Override
     public String getDescription()
     {
       return "Extensible Agent Behavior Language (*.xabsl)";
@@ -1008,7 +1010,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private class DotFileFilter extends javax.swing.filechooser.FileFilter
   {
-
+    @Override
     public boolean accept(File file)
     {
       if(file.isDirectory())
@@ -1019,6 +1021,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       return filename.endsWith(".dot") || filename.endsWith(".DOT");
     }
 
+    @Override
     public String getDescription()
     {
       return "DOT (*.dot)";

@@ -34,7 +34,7 @@
                   <Component id="spDetails" alignment="1" pref="484" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="btDetails" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="337" max="32767" attributes="0"/>
+                      <EmptySpace pref="358" max="32767" attributes="0"/>
                       <Component id="btClose" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="lblCaption" alignment="0" pref="484" max="32767" attributes="0"/>

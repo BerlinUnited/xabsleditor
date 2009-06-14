@@ -173,7 +173,7 @@ public class ExceptionDialog extends javax.swing.JDialog
   {
     java.awt.EventQueue.invokeLater(new Runnable()
     {
-
+      @Override
       public void run()
       {
         ExceptionDialog dialog = new ExceptionDialog(new javax.swing.JFrame(), null);

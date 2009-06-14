@@ -112,17 +112,19 @@ public class XEditorPanel extends javax.swing.JPanel
 
     textArea.getDocument().addDocumentListener(new DocumentListener()
     {
-
+      @Override
       public void insertUpdate(DocumentEvent e)
       {
         setChanged(true);
       }
 
+      @Override
       public void removeUpdate(DocumentEvent e)
       {
         setChanged(true);
       }
 
+      @Override
       public void changedUpdate(DocumentEvent e)
       {
         setChanged(true);

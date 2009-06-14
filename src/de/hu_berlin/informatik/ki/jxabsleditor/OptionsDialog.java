@@ -6,7 +6,6 @@
 package de.hu_berlin.informatik.ki.jxabsleditor;
 
 import java.util.Properties;
-import javax.swing.JFileChooser;
 
 /**
  *
