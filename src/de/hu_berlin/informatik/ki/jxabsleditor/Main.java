@@ -694,11 +694,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   public void openFile(File selectedFile)
   {
+    if(selectedFile == null) return;
+    
     // test if the file is allready opened
     for(int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
     {
       Component c = tabbedPanelEditor.getComponentAt(i);
-      if(((XEditorPanel) c).getFile().compareTo(selectedFile) == 0)
+      if( c != null &&
+          ((XEditorPanel) c).getFile() != null &&
+          selectedFile.compareTo(((XEditorPanel) c).getFile()) == 0)
       {
         tabbedPanelEditor.setSelectedComponent(c);
         return;
@@ -715,7 +719,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     createOptionList(agentsFile.getParentFile());
 
     createDocumentTab(selectedFile);
-  }
+  }//end openFile
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
