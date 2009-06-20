@@ -209,6 +209,7 @@ public class XParser implements Parser
     }
     else
     {
+      eat();
       noticeList.add(new ParserNotice("A symbol declaration or enum definition expected.", currentToken.offset, currentToken.getLexeme().length()));
     }
   }//end parseSymbolsEntry
