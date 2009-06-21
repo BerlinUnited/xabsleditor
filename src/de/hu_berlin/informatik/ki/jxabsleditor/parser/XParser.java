@@ -482,24 +482,22 @@ public class XParser implements Parser
 
   private void parseFunction() throws Exception
   {
+    if(isToken(Token.FUNCTION))
+    {
+      currentOutgoingOptions.add(currentToken.getLexeme());
+    }
     parseFunctionSingle();
     isTokenAndEat(";");
   }//end parseFunction
 
   private void parseFunctionSingle() throws Exception
-  {
-    if(isToken(Token.FUNCTION))
-    {
-      currentOutgoingOptions.add(currentToken.getLexeme());
-    }
+  {    
     isTokenAndEat(Token.FUNCTION);
     parseFunctionParameter();
   }
 
   private void parseFunctionParameter() throws Exception
-  {
-
-    
+  {    
 
     isTokenAndEat("(");
     int bracketCount = 1;
@@ -642,7 +640,10 @@ public class XParser implements Parser
 
     int parenthesisCount = 0;
 
-    while(isToken(Token.IDENTIFIER) || isToken(Token.LITERAL_BOOLEAN) || isToken(Token.LITERAL_NUMBER_DECIMAL_INT) || isToken(Token.LITERAL_NUMBER_FLOAT) || isToken(Token.OPERATOR) || isToken("(") || isToken(")") || isToken("@"))
+    while(isToken(Token.IDENTIFIER) || isToken(Token.LITERAL_BOOLEAN) 
+      || isToken(Token.LITERAL_NUMBER_DECIMAL_INT)
+      || isToken(Token.LITERAL_NUMBER_FLOAT) || isToken(Token.OPERATOR)
+      || isToken("(") || isToken(")") || isToken("@") || isToken(Token.FUNCTION))
     {
 
       if(isToken("@"))
@@ -662,6 +663,10 @@ public class XParser implements Parser
       {
         eat();
         parenthesisCount--;
+      }
+      else if(isToken(Token.FUNCTION))
+      {
+        parseFunctionSingle();
       }
       else
       {
