@@ -493,15 +493,18 @@ public class XParser implements Parser
       currentOutgoingOptions.add(currentToken.getLexeme());
     }
     isTokenAndEat(Token.FUNCTION);
-    isTokenAndEat("(");
     parseFunctionParameter();
-    isTokenAndEat(")");
   }
 
   private void parseFunctionParameter() throws Exception
   {
 
-    while(!isToken(")"))
+    
+
+    isTokenAndEat("(");
+    int bracketCount = 1;
+
+    while(bracketCount > 0)
     {
       if(isToken(Token.LITERAL_NUMBER_DECIMAL_INT) || isToken(Token.LITERAL_NUMBER_FLOAT))
       {
@@ -518,6 +521,16 @@ public class XParser implements Parser
       else if(isToken("="))
       {
         isTokenAndEat("=");
+      }
+      else if(isToken("("))
+      {
+        isTokenAndEat("(");
+        bracketCount++;
+      }
+      else if(isToken(")"))
+      {
+        isTokenAndEat(")");
+        bracketCount--;
       }
       else
       {
