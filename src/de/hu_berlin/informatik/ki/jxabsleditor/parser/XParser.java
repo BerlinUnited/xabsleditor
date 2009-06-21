@@ -482,6 +482,12 @@ public class XParser implements Parser
 
   private void parseFunction() throws Exception
   {
+    parseFunctionSingle();
+    isTokenAndEat(";");
+  }//end parseFunction
+
+  private void parseFunctionSingle() throws Exception
+  {
     if(isToken(Token.FUNCTION))
     {
       currentOutgoingOptions.add(currentToken.getLexeme());
@@ -490,29 +496,40 @@ public class XParser implements Parser
     isTokenAndEat("(");
     parseFunctionParameter();
     isTokenAndEat(")");
-    isTokenAndEat(";");
-  }//end parseFunction
+  }
 
   private void parseFunctionParameter() throws Exception
   {
-    boolean isFirst = true;
+
     while(!isToken(")"))
     {
-      if(!isFirst)
-      {
-        isTokenAndEat(",");
-      }
-      isFirst = false;
-      parseIdentifier();
-      isTokenAndEat("=");
       if(isToken(Token.LITERAL_NUMBER_DECIMAL_INT) || isToken(Token.LITERAL_NUMBER_FLOAT))
       {
         eat();
       }
-      else
+      else if(isToken(Token.FUNCTION))
+      {
+        parseFunctionSingle();
+      }
+      else if(isToken(Token.IDENTIFIER))
       {
         parseIdentifier();
       }
+      else if(isToken("="))
+      {
+        isTokenAndEat("=");
+      }
+      else
+      {
+        // skip
+        eat();
+      }
+
+      if(isToken(","))
+      {
+        isTokenAndEat(",");
+      }
+
     }
   }//end parseFunctionParameter
 
