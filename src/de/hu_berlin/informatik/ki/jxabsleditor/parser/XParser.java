@@ -274,7 +274,7 @@ public class XParser implements Parser
     parseIdentifier();
     isTokenAndEat("{");
 
-    while(isToken("float") || isToken("bool"))
+    while(isToken("float") || isToken("bool") || isToken("enum"))
     {
       parseSymbolDefinition();
     }
@@ -297,15 +297,20 @@ public class XParser implements Parser
     {
       isTokenAndEat("bool");
     }
-    else
+    else if(isToken("float"))
     {
       isTokenAndEat("float");
+    }else
+    {
+      // try to parse enum
+      isTokenAndEat("enum");
+      parseIdentifier();
     }
 
     isTokenAndEat("@");
 
     // eat name
-    eat();
+    parseIdentifier();
 
     if(isToken("["))
     {
