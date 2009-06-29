@@ -5,7 +5,9 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor;
 
+import java.io.File;
 import java.util.Properties;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -14,10 +16,8 @@ import java.util.Properties;
 public class OptionsDialog extends javax.swing.JDialog
 {
 
-  public static final String DEFAULT_COMPILATION_PATH
-    = "defaultCompilationPath";
-  public static final String XABSL_COMPILER_COMMAND
-    = "xabslCompilerCommand";
+  public static final String DEFAULT_COMPILATION_PATH = "defaultCompilationPath";
+  public static final String XABSL_COMPILER_COMMAND = "xabslCompilerCommand";
   private Properties configuration;
 
   /** Creates new form Options */
@@ -54,6 +54,7 @@ public class OptionsDialog extends javax.swing.JDialog
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    fileChooserCompilationPath = new javax.swing.JFileChooser();
     jButtonOK = new javax.swing.JButton();
     txtDefaultCompilationPath = new javax.swing.JTextField();
     jLabel2 = new javax.swing.JLabel();
@@ -61,6 +62,8 @@ public class OptionsDialog extends javax.swing.JDialog
     jButtonOK1 = new javax.swing.JButton();
     jLabel3 = new javax.swing.JLabel();
     txtXabslCompilerCommand = new javax.swing.JTextField();
+
+    fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setLocationByPlatform(true);
@@ -115,7 +118,7 @@ public class OptionsDialog extends javax.swing.JDialog
           .addGroup(layout.createSequentialGroup()
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-              .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+              .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
               .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel3)
                 .addGap(124, 124, 124)))))
@@ -146,10 +149,9 @@ public class OptionsDialog extends javax.swing.JDialog
 
     private void jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOKActionPerformed
 
-      
+
       // save settings
-      if("".equals(txtDefaultCompilationPath.getText())
-        && configuration.containsKey(DEFAULT_COMPILATION_PATH))
+      if("".equals(txtDefaultCompilationPath.getText()) && configuration.containsKey(DEFAULT_COMPILATION_PATH))
       {
         configuration.remove(DEFAULT_COMPILATION_PATH);
       }
@@ -158,8 +160,7 @@ public class OptionsDialog extends javax.swing.JDialog
         configuration.setProperty(DEFAULT_COMPILATION_PATH, txtDefaultCompilationPath.getText());
       }
 
-      if("".equals(txtXabslCompilerCommand.getText())
-        && configuration.containsKey(XABSL_COMPILER_COMMAND))
+      if("".equals(txtXabslCompilerCommand.getText()) && configuration.containsKey(XABSL_COMPILER_COMMAND))
       {
         configuration.remove(XABSL_COMPILER_COMMAND);
       }
@@ -175,6 +176,20 @@ public class OptionsDialog extends javax.swing.JDialog
 
     private void btBrowseCompilationActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_btBrowseCompilationActionPerformed
     {//GEN-HEADEREND:event_btBrowseCompilationActionPerformed
+
+      File fPath = new File(System.getProperty("user.dir"));
+      if(!"".equals(txtDefaultCompilationPath.getText()))
+      {
+        fPath = new File(txtDefaultCompilationPath.getText());
+        
+      }
+
+      fileChooserCompilationPath.setSelectedFile(fPath);
+      if(fileChooserCompilationPath.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+      {
+        txtDefaultCompilationPath.setText(fileChooserCompilationPath.getSelectedFile().getAbsolutePath());
+      }
+
 }//GEN-LAST:event_btBrowseCompilationActionPerformed
 
     private void jButtonOK1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOK1ActionPerformed
@@ -184,6 +199,7 @@ public class OptionsDialog extends javax.swing.JDialog
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton btBrowseCompilation;
+  private javax.swing.JFileChooser fileChooserCompilationPath;
   private javax.swing.JButton jButtonOK;
   private javax.swing.JButton jButtonOK1;
   private javax.swing.JLabel jLabel2;
