@@ -3,7 +3,6 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
-import java.util.regex.Pattern;
 import javax.swing.text.Segment;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMaker;
 import org.fife.ui.rsyntaxtextarea.Token;
@@ -19,8 +18,6 @@ public class XTokenMaker extends AbstractTokenMaker
   private static String KEYWORDS = "" +
     "option|action|decision|common|state|initial|target|agent|float|bool" +
     "|if|else|enum|include|namespace|input|output|internal|goto|stay"; // to be extended
-  private static Pattern FLOAT = Pattern.compile("" +
-    "([\\d\\.])*");
   protected final String operators = "+-*/%!=<>^&|?:";
   protected final String separators = "()[]{}";
   protected final String dotSeparators = ".,;";
@@ -213,13 +210,29 @@ public class XTokenMaker extends AbstractTokenMaker
             currentTokenType = Token.LITERAL_NUMBER_DECIMAL_INT;
             i++;
           }
+          else if(c == '.')
+          {
+            currentTokenType = Token.LITERAL_NUMBER_FLOAT;
+            i++;
+          }
           else
           {
             currentTokenType = Token.NULL;
             addToken(text, currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset + currentTokenStart);
           }
           break;
-
+        case Token.LITERAL_NUMBER_FLOAT:
+          if(Character.isDigit(c))
+          {
+            currentTokenType = Token.LITERAL_NUMBER_FLOAT;
+            i++;
+          }
+          else
+          {
+            currentTokenType = Token.NULL;
+            addToken(text, currentTokenStart, i - 1, Token.LITERAL_NUMBER_FLOAT, newStartOffset + currentTokenStart);
+          }
+          break;
         case Token.OPERATOR:
           if(is(operators, c))
           {
