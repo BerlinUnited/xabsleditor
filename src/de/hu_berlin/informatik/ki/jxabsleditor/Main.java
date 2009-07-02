@@ -723,45 +723,54 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
-
-      XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-      File optionFile = editor.getFile();
-
-      File fout = null;
-
-      if(defaultCompilationPath == null)
+      if(tabbedPanelEditor.getSelectedComponent() != null)
       {
-        fileChooser.setFileFilter(icFilter);
-        int result = fileChooser.showSaveDialog(this);
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        if(result == JFileChooser.APPROVE_OPTION)
-        {
-          fout = fileChooser.getSelectedFile();
-        }
+
+          XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
+          File optionFile = editor.getFile();
+
+          File fout = null;
+
+          if(defaultCompilationPath == null)
+          {
+            fileChooser.setFileFilter(icFilter);
+            int result = fileChooser.showSaveDialog(this);
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            if(result == JFileChooser.APPROVE_OPTION)
+            {
+              fout = fileChooser.getSelectedFile();
+            }
+          }
+          else
+          {
+            fout = new File(defaultCompilationPath + "/behavior-ic.dat");
+          }
+
+          if(fout == null)
+          {
+            JOptionPane.showMessageDialog(this, "No file selected");
+            return;
+          }
+          else if(fout.exists())
+          {
+            if(!fout.delete())
+            {
+              JOptionPane.showMessageDialog(this, "Can not overwrite the file " +
+                fout.getAbsolutePath());
+              return;
+            }
+          }
+
+          CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout,
+            this, configuration);
+          frame.setVisible(true);
       }
       else
       {
-        fout = new File(defaultCompilationPath + "/behavior-ic.dat");
+         JOptionPane.showMessageDialog(this,
+          "Please open an *.xabsl file first before compiling", "Error",
+          JOptionPane.ERROR_MESSAGE);
       }
-
-      if(fout == null)
-      {
-        JOptionPane.showMessageDialog(this, "No file selected");
-        return;
-      }
-      else if(fout.exists())
-      {
-        if(!fout.delete())
-        {
-          JOptionPane.showMessageDialog(this, "Can not overwrite the file " +
-            fout.getAbsolutePath());
-          return;
-        }
-      }
-
-      CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout,
-        this, configuration);
-      frame.setVisible(true);
     }//GEN-LAST:event_compileAction
 
     private void miSearchActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchActionPerformed
