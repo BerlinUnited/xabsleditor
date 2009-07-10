@@ -51,7 +51,7 @@ public class Helper
         {
           return current;
         }
-      }
+      }//end if
 
       // find options- or symbols-folder
       current = current.getParentFile();
