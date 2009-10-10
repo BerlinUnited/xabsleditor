@@ -19,17 +19,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.CCompletionProvider;
+import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.fife.ui.autocomplete.ShorthandCompletion;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.ToolTipSupplier;
 
 /**
  *
@@ -130,6 +137,18 @@ public class XEditorPanel extends javax.swing.JPanel
         setChanged(true);
       }
     });
+
+    CompletionProvider provider = new CCompletionProvider(createCodeCompletionProvider());
+
+    AutoCompletion ac = new AutoCompletion(provider);
+		//ac.setListCellRenderer(new CCellRenderer());
+		ac.setShowDescWindow(true);
+		ac.setParameterAssistanceEnabled(true);
+		ac.install(textArea);
+    
+    textArea.setToolTipSupplier((ToolTipSupplier)provider);
+		ToolTipManager.sharedInstance().registerComponent(textArea);
+
 
     RTextScrollPane scrolPane = new RTextScrollPane(500, 400, textArea, true);
     add(scrolPane);
@@ -300,6 +319,57 @@ public class XEditorPanel extends javax.swing.JPanel
 
     return false;
   }
+
+
+  private CompletionProvider createCodeCompletionProvider()
+  {
+    
+		// Add completions for the C standard library.
+		DefaultCompletionProvider cp = new DefaultCompletionProvider();
+
+		// First try loading resource (running from demo jar), then try
+		// accessing file (debugging in Eclipse).
+		ClassLoader cl = getClass().getClassLoader();
+		/*
+    InputStream in = cl.getResourceAsStream("c.xml");
+		try {
+			if (in!=null) {
+				cp.loadFromXML(in);
+				in.close();
+			}
+			else {
+				cp.loadFromXML(new File("c.xml"));
+			}
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+    */
+		// Add some handy shorthand completions.
+		cp.addCompletion(new ShorthandCompletion(cp,
+            "game.state", "game.state", "State of the game", "State of the game"));
+
+    cp.addCompletion(new ShorthandCompletion(cp,
+            "game.team_color", "game.team_color", "Own team color", "Own team color: red, blue or unknown"));
+
+    cp.addCompletion(new ShorthandCompletion(cp,
+            "game.player_number", "game.player_number", "test", "big test"));
+
+    cp.addCompletion(new ShorthandCompletion(cp,
+            "game.own_kickoff", "game.own_kickoff", "test", "big test"));
+
+
+    cp.addCompletion(new ShorthandCompletion(cp,
+            "ball_far_away_situation", "ball_far_away_situation(dist = );", "test", "big test"));
+
+    cp.addCompletion(new ShorthandCompletion(cp,
+            "state",
+            "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}",
+            "behavior state",
+            ""));
+
+		return cp;
+
+	}
   
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
