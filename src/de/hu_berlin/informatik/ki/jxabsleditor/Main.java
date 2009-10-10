@@ -41,6 +41,8 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.fife.ui.autocomplete.ShorthandCompletion;
 
 /**
  *
@@ -63,6 +65,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private AgentVisualizer agentVisualizer;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
+
+  private DefaultCompletionProvider completionProvider = new DefaultCompletionProvider()
+  {
+    @Override
+    protected boolean isValidChar(char ch) {
+      return super.isValidChar(ch) || ch == '.';
+    }
+  };
 
   /** Creates new form Main */
   public Main()
@@ -179,6 +189,40 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       optionVisualizer.setGraph(p.getOptionGraph());
     }
   }
+
+  private void loadSymbolsTable(File folder)
+  {
+    File[] fileList = folder.listFiles();
+    for(File file : fileList)
+    {
+      if(file.isDirectory())
+      {
+        loadSymbolsTable(file);
+      }
+      else if(file.getName().toLowerCase().endsWith(".xabsl"))
+      {
+        // parse symbols file
+        try{
+          //System.out.println("parse: " + file.getName()); // debug stuff
+          String text = Helper.readFileToString(file);
+          XParser p = new XParser();
+          p.parse(new StringReader(text));
+
+          for(XParser.XABSLSymbol symbol: p.getSymbolsList())
+          {
+            completionProvider.addCompletion(new ShorthandCompletion(completionProvider,
+              symbol.getName(), symbol.toString(), "Symbol")
+            );
+            
+            //System.out.println(symbol); // debug stuff
+          }//end for
+        }catch(Exception e)
+        {
+          System.err.println("Couldn't read the symbols file " + file.getAbsolutePath());
+        }
+      }
+    }//end for
+  }//end loadSymbolsTable
 
   private void createOptionList(File folder)
   {
@@ -716,7 +760,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // TODO: make it better
     this.optionPathMap.clear();
     File agentsFile = Helper.getAgentFileForOption(selectedFile);
+
+    // needed for function-links
     createOptionList(agentsFile.getParentFile());
+
+    // needed by autocomletition
+    loadSymbolsTable(agentsFile.getParentFile());
 
     createDocumentTab(selectedFile);
   }//end openFile
@@ -846,13 +895,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
       else
       {
-        String content = readFileToString(file);
+        String content = Helper.readFileToString(file);
         editor = new XEditorPanel(content);
         editor.setFile(file);
         // create a tab
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
+      editor.setCompletionProvider(completionProvider);
+      
       tabbedPanelEditor.setSelectedComponent(editor);
 
       editor.addDocumentChangedListener(new DocumentChangedListener()
@@ -895,22 +946,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
 
   }//end createDocumentTab
-
-  private String readFileToString(File file) throws IOException
-  {
-    FileReader reader = new FileReader(file);
-    StringBuilder buffer = new StringBuilder();
-
-    int c = reader.read();
-    while(c != -1)
-    {
-      buffer.append((char) c);
-      c = reader.read();
-    }//end while
-
-    reader.close();
-    return buffer.toString();
-  }//end readFileToString
 
   private File saveStringToFile(File selectedFile, String text) throws Exception
   {

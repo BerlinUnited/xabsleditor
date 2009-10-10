@@ -138,16 +138,7 @@ public class XEditorPanel extends javax.swing.JPanel
       }
     });
 
-    CompletionProvider provider = new CCompletionProvider(createCodeCompletionProvider());
-
-    AutoCompletion ac = new AutoCompletion(provider);
-		//ac.setListCellRenderer(new CCellRenderer());
-		ac.setShowDescWindow(true);
-		ac.setParameterAssistanceEnabled(true);
-		ac.install(textArea);
-    
-    textArea.setToolTipSupplier((ToolTipSupplier)provider);
-		ToolTipManager.sharedInstance().registerComponent(textArea);
+    setCompletionProvider(createCodeCompletionProvider());
 
 
     RTextScrollPane scrolPane = new RTextScrollPane(500, 400, textArea, true);
@@ -329,8 +320,9 @@ public class XEditorPanel extends javax.swing.JPanel
 
 		// First try loading resource (running from demo jar), then try
 		// accessing file (debugging in Eclipse).
-		ClassLoader cl = getClass().getClassLoader();
 		/*
+    ClassLoader cl = getClass().getClassLoader();
+		
     InputStream in = cl.getResourceAsStream("c.xml");
 		try {
 			if (in!=null) {
@@ -370,6 +362,19 @@ public class XEditorPanel extends javax.swing.JPanel
 		return cp;
 
 	}
+
+  public void setCompletionProvider(CompletionProvider completionProvider) {
+    CompletionProvider provider = new CCompletionProvider(completionProvider);
+
+    AutoCompletion ac = new AutoCompletion(provider);
+		//ac.setListCellRenderer(new CCellRenderer());
+		ac.setShowDescWindow(true);
+		ac.setParameterAssistanceEnabled(true);
+		ac.install(textArea);
+
+    textArea.setToolTipSupplier((ToolTipSupplier)provider);
+		ToolTipManager.sharedInstance().registerComponent(textArea);
+  }
   
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

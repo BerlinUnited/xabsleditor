@@ -27,7 +27,8 @@ public class XParser implements Parser
   private java.util.ArrayList noticeList = new java.util.ArrayList(1);
   private Token currentToken;
   private HashMap<String, State> stateMap = new HashMap<String, State>();
-  
+
+  private ArrayList<XABSLSymbol> symbolsList = new ArrayList<XABSLSymbol>();
   private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
   private Graph<XabslNode, XabslEdge> optionGraph;
   private HashSet<Transition> commonDecisions = new HashSet<Transition>();
@@ -133,7 +134,8 @@ public class XParser implements Parser
 
         if(currentToken != null && currentToken.type != Token.NULL)
         {
-          System.out.println("Unexpected end of File.");
+          throw new Exception("Unexpected end of file.");
+          //System.out.println("Unexpected end of File.");
         }
       }
       catch(Exception e)
@@ -151,6 +153,8 @@ public class XParser implements Parser
   }//end parse
 
   // PARSE SYMBOLS
+  XABSLSymbol currentSymbol;
+
   private void parseNamespace() throws Exception
   {
     isTokenAndEat("namespace");
@@ -170,22 +174,27 @@ public class XParser implements Parser
 
   private void parseSymbolsEntry() throws Exception
   {
+    
+    String type;
+    String name;
+
     // enum
     if(isToken("enum"))
     {
       boolean isInternal = false;
       eat();
-      parseIdentifier();
+      type = parseIdentifier();
       if(isToken("internal"))
       {
         isTokenAndEat("internal");
         isInternal = true;
       }
+      
       if(isToken("{"))
       {
         parseEnumDeclaration();
       }
-      else
+      else // it's a enum symbol definition :)
       {
         if(!isInternal)
         {
@@ -198,14 +207,22 @@ public class XParser implements Parser
             isTokenAndEat("input");
           }
         }
-        parseIdentifier();
+        name = parseIdentifier();
         isTokenAndEat(";");
+        
+        symbolsList.add(new XABSLSymbol(type, name));
       }
     }
     else if(isToken("float") || isToken("bool"))
     {
+      currentSymbol = new XABSLSymbol();
+      currentSymbol.setType(currentToken.getLexeme());
+      
       eat();
+      
       parseSymbolDeclaration();
+      
+      symbolsList.add(currentSymbol);
     }
     else
     {
@@ -230,18 +247,21 @@ public class XParser implements Parser
   {
     if(isToken("output"))
     {
+      currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.output);
       isTokenAndEat("output");
     }
     else if(isToken("input"))
     {
+      currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.input);
       isTokenAndEat("input");
     }
     else
     {
+      currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.internal);
       isTokenAndEat("internal");
     }
 
-    parseIdentifier();
+    currentSymbol.setName(parseIdentifier());
 
     if(isToken("["))
     {
@@ -259,8 +279,23 @@ public class XParser implements Parser
       isTokenAndEat(Token.LITERAL_STRING_DOUBLE_QUOTE);
     }
 
+    
+    // parse function symbol parameters
+    if(isToken("("))
+    {
+      do
+      {
+        eat();
+      }
+      while(!isToken(")"));
+
+      isTokenAndEat(")");
+    }//end if
+
+
     isTokenAndEat(";");
   }//end parseSymbolDeclaration
+  
   // PARSE OPTION
   private String currentStateName;
   private Set<String> currentOutgoingOptions;
@@ -907,6 +942,10 @@ public class XParser implements Parser
     return stateMap;
   }
 
+  public ArrayList<XABSLSymbol> getSymbolsList() {
+    return symbolsList;
+  }
+
   public ArrayList<Transition> getStateTransitionList()
   {
     return stateTransitionList;
@@ -1019,4 +1058,60 @@ public class XParser implements Parser
       return hash;
     }
   }//end class Transition
+
+
+  public static class XABSLSymbol
+  {
+    private String name;
+    private String type;
+    private SecondaryType secondaryType;
+
+    public enum SecondaryType
+    {
+      output,
+      input,
+      internal
+    }
+
+    public XABSLSymbol()
+    {
+    }
+
+    public XABSLSymbol(String type, String name)
+    {
+      this.type = type;
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    public void setType(String type) {
+      this.type = type;
+    }
+
+    public SecondaryType getSecondaryType() {
+      return secondaryType;
+    }
+
+    public void setSecondaryType(SecondaryType secondaryType) {
+      this.secondaryType = secondaryType;
+    }
+
+    @Override
+    public String toString()
+    {
+        return type + " " + secondaryType.name() + " " + name;
+    }
+  }//end class XABSLSymbol
+
 }//end class XParser
