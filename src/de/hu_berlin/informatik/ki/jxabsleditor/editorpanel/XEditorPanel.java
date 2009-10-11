@@ -27,6 +27,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CCompletionProvider;
+import org.fife.ui.autocomplete.CompletionCellRenderer;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
@@ -367,7 +368,8 @@ public class XEditorPanel extends javax.swing.JPanel
     CompletionProvider provider = new CCompletionProvider(completionProvider);
 
     AutoCompletion ac = new AutoCompletion(provider);
-		//ac.setListCellRenderer(new CCellRenderer());
+    //ac.setListCellRenderer(new CompletionCellRenderer());
+		ac.setListCellRenderer(new CCellRenderer());
 		ac.setShowDescWindow(true);
 		ac.setParameterAssistanceEnabled(true);
 		ac.install(textArea);

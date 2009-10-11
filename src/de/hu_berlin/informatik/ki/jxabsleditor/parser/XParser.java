@@ -29,6 +29,8 @@ public class XParser implements Parser
   private HashMap<String, State> stateMap = new HashMap<String, State>();
 
   private ArrayList<XABSLSymbol> symbolsList = new ArrayList<XABSLSymbol>();
+  private HashMap<String, XABSLEnum> enumList = new HashMap<String, XABSLEnum>();
+
   private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
   private Graph<XabslNode, XabslEdge> optionGraph;
   private HashSet<Transition> commonDecisions = new HashSet<Transition>();
@@ -154,6 +156,7 @@ public class XParser implements Parser
 
   // PARSE SYMBOLS
   XABSLSymbol currentSymbol;
+  XABSLEnum currentEnumDeclaration;
 
   private void parseNamespace() throws Exception
   {
@@ -174,9 +177,9 @@ public class XParser implements Parser
 
   private void parseSymbolsEntry() throws Exception
   {
-    
     String type;
-    String name;
+    String comment = this.currentComment;
+    this.currentComment = "";
 
     // enum
     if(isToken("enum"))
@@ -192,31 +195,49 @@ public class XParser implements Parser
       
       if(isToken("{"))
       {
+        currentEnumDeclaration = new XABSLEnum(type);
         parseEnumDeclaration();
+        this.enumList.put(type, currentEnumDeclaration);
       }
       else // it's a enum symbol definition :)
       {
+        currentSymbol = new XABSLSymbol();
+
+        XABSLEnum enumType = this.enumList.get(type);
+        if(enumType != null)
+          currentSymbol.setType(enumType);
+        else // enum type is not declared
+          currentSymbol.setType(type);
+        currentSymbol.setComment(comment);
+
         if(!isInternal)
         {
           if(isToken("output"))
           {
+            currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.output);
             isTokenAndEat("output");
           }
           else
           {
+            currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.input);
             isTokenAndEat("input");
           }
+        }else
+        {
+          currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.internal);
         }
-        name = parseIdentifier();
+        
+        currentSymbol.setName(parseIdentifier());
         isTokenAndEat(";");
         
-        symbolsList.add(new XABSLSymbol(type, name));
+        symbolsList.add(currentSymbol);
       }
     }
     else if(isToken("float") || isToken("bool"))
     {
       currentSymbol = new XABSLSymbol();
       currentSymbol.setType(currentToken.getLexeme());
+      currentSymbol.setComment(comment);
       
       eat();
       
@@ -229,6 +250,7 @@ public class XParser implements Parser
       eat();
       noticeList.add(new ParserNotice("A symbol declaration or enum definition expected.", currentToken.offset, currentToken.getLexeme().length()));
     }
+    
   }//end parseSymbolsEntry
 
   private void parseEnumDeclaration() throws Exception
@@ -236,7 +258,7 @@ public class XParser implements Parser
     isTokenAndEat("{");
     do
     {
-      parseIdentifier();
+      currentEnumDeclaration.add(parseIdentifier());
     }
     while(isToken(","));
     isTokenAndEat("}");
@@ -1060,11 +1082,34 @@ public class XParser implements Parser
   }//end class Transition
 
 
+
+  public static class XABSLEnum
+  {
+    public final String name;
+    private ArrayList<String> elements;
+
+    public XABSLEnum(String name) {
+      this.name = name;
+      this.elements = new ArrayList<String>();
+    }
+
+    public boolean add(String element) {
+      return elements.add(element);
+    }
+
+    public ArrayList<String> getElements() {
+      return elements;
+    }
+  }//end class XABSLEnum
+  
+  
   public static class XABSLSymbol
   {
     private String name;
     private String type;
+    private XABSLEnum enumDeclaration;
     private SecondaryType secondaryType;
+    private String comment;
 
     public enum SecondaryType
     {
@@ -1081,6 +1126,8 @@ public class XParser implements Parser
     {
       this.type = type;
       this.name = name;
+      this.comment = "";
+      this.enumDeclaration = null;
     }
 
     public String getName() {
@@ -1099,12 +1146,29 @@ public class XParser implements Parser
       this.type = type;
     }
 
+    public void setType(XABSLEnum enumDeclaration) {
+      this.type = "enum";
+      this.enumDeclaration = enumDeclaration;
+    }
+
     public SecondaryType getSecondaryType() {
       return secondaryType;
     }
 
     public void setSecondaryType(SecondaryType secondaryType) {
       this.secondaryType = secondaryType;
+    }
+
+    public String getComment() {
+      return comment;
+    }
+
+    public void setComment(String comment) {
+      this.comment = comment;
+    }
+
+    public XABSLEnum getEnumDeclaration() {
+      return enumDeclaration;
     }
 
     @Override

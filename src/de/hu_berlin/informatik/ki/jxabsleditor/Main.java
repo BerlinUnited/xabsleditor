@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -58,21 +59,17 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileFilter dotFilter = new DotFileFilter();
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
-  private HashMap<String, Component> openDocumentsMap;
-  private HashMap<String, File> optionPathMap;
-  private String defaultCompilationPath = null;
+  
   private OptionVisualizer optionVisualizer;
   private AgentVisualizer agentVisualizer;
+
+  private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
-  private DefaultCompletionProvider completionProvider = new DefaultCompletionProvider()
-  {
-    @Override
-    protected boolean isValidChar(char ch) {
-      return super.isValidChar(ch) || ch == '.';
-    }
-  };
+  private HashMap<String, Component> openDocumentsMap;
+  private HashMap<String, File> optionPathMap;
+  private ArrayList<XParser.XABSLSymbol> globalSymbolsTable = null;
 
   /** Creates new form Main */
   public Main()
@@ -192,6 +189,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private void loadSymbolsTable(File folder)
   {
+    this.globalSymbolsTable = new ArrayList<XParser.XABSLSymbol>();
+    
     File[] fileList = folder.listFiles();
     for(File file : fileList)
     {
@@ -204,18 +203,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         // parse symbols file
         try{
           //System.out.println("parse: " + file.getName()); // debug stuff
+
           String text = Helper.readFileToString(file);
           XParser p = new XParser();
           p.parse(new StringReader(text));
-
-          for(XParser.XABSLSymbol symbol: p.getSymbolsList())
-          {
-            completionProvider.addCompletion(new ShorthandCompletion(completionProvider,
-              symbol.getName(), symbol.toString(), "Symbol")
-            );
-            
-            //System.out.println(symbol); // debug stuff
-          }//end for
+          this.globalSymbolsTable.addAll(p.getSymbolsList());
         }catch(Exception e)
         {
           System.err.println("Couldn't read the symbols file " + file.getAbsolutePath());
@@ -223,6 +215,47 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     }//end for
   }//end loadSymbolsTable
+
+  private DefaultCompletionProvider createCompletitionProvider()
+  {
+    DefaultCompletionProvider provider = new DefaultCompletionProvider()
+    {
+      @Override
+      protected boolean isValidChar(char ch) {
+        return super.isValidChar(ch) || ch == '.';
+      }
+    };
+
+    for(XParser.XABSLSymbol symbol: this.globalSymbolsTable)
+    {
+      String helpHeader = "<b><font color=\"#0000FF\">" + symbol.getType() + " " + symbol.getSecondaryType().name() + "</font> " + symbol.getName()+"</b>";
+      String helpBody = symbol.getComment();
+
+      // list the enum elements
+      if(symbol.getType().equals("enum"))
+      {
+        helpBody += "<br><br><font color=\"#0000FF\">enum</font> ";
+        helpBody += "<b>" + symbol.getEnumDeclaration().name + "</b>";
+
+        helpBody += "<ul>";
+        for(String element: symbol.getEnumDeclaration().getElements())
+        {
+          helpBody += "<li><i>" + element + "</i></li>";
+        }
+        helpBody += "</ul>";
+      }//end if
+
+      provider.addCompletion(new ShorthandCompletion(provider,
+        symbol.getName(),
+        symbol.getName(),
+        symbol.toString(),
+        helpHeader + "<hr>" + helpBody)
+      );
+
+      //System.out.println(symbol); // debug stuff
+    }//end for
+    return provider;
+  }//end createCompletitionProvider
 
   private void createOptionList(File folder)
   {
@@ -237,7 +270,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       {
         String name = file.getName().toLowerCase().replace(".xabsl", "");
         optionPathMap.put(name, file);
-      //System.out.println(name + " : " + file.getAbsolutePath());
+        //System.out.println(name + " : " + file.getAbsolutePath());
       }
     }//end for
   }//end createOptionList
@@ -765,10 +798,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     createOptionList(agentsFile.getParentFile());
 
     // needed by autocomletition
-    loadSymbolsTable(agentsFile.getParentFile());
+    if(this.globalSymbolsTable == null)
+      loadSymbolsTable(agentsFile.getParentFile());
 
     createDocumentTab(selectedFile);
   }//end openFile
+
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
@@ -902,7 +937,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
-      editor.setCompletionProvider(completionProvider);
+      editor.setCompletionProvider(createCompletitionProvider());
       
       tabbedPanelEditor.setSelectedComponent(editor);
 
