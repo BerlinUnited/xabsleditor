@@ -5,6 +5,8 @@ package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -27,11 +29,13 @@ class CCellRenderer extends CompletionCellRenderer {
 
 	private Icon variableIcon;
 	private Icon functionIcon;
+  private Icon macroIcon;
 	private Icon emptyIcon;
 
 	public CCellRenderer() {
 		variableIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/var.png");
 		functionIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/function.png");
+    macroIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/macro.png");
 		emptyIcon = new EmptyIcon(16);
 	}
 
@@ -44,19 +48,145 @@ class CCellRenderer extends CompletionCellRenderer {
 	 * @return The icon.
 	 */
 	private Icon getIcon(String resource) {
-		ClassLoader cl = getClass().getClassLoader();
-		URL url = cl.getResource(resource);
-		if (url==null) {
-			File file = new File(resource);
-			try {
-				url = file.toURI().toURL();
-			} catch (MalformedURLException mue) {
-				mue.printStackTrace(); // Never happens
+		return new ImageIcon(Toolkit.getDefaultToolkit().getImage(
+      this.getClass().getResource(resource)));
+	}//end getIcon
+
+
+  /**
+	 * {@inheritDoc}
+	 */
+  @Override
+  public Component getListCellRendererComponent(JList list, Object value,
+						int index, boolean selected, boolean hasFocus) {
+
+		super.getListCellRendererComponent(list,value,index,selected,hasFocus);
+
+    if (value instanceof XABSLSymbolCompletion) {
+			XABSLSymbolCompletion xc = (XABSLSymbolCompletion)value;
+			prepareForXABSLSymbolCompletion(list, xc, index, selected, hasFocus);
+		}
+		else if (value instanceof XABSLSymbolSimpleCompletion) {
+			XABSLSymbolSimpleCompletion xc = (XABSLSymbolSimpleCompletion)value;
+			prepareForXABSLSymbolSimpleCompletion(list, xc, index, selected, hasFocus);
+		}
+    else if (value instanceof XABSLOptionCompletion) {
+			XABSLOptionCompletion oc = (XABSLOptionCompletion)value;
+			prepareForXABSLOptionCompletion(list, oc, index, selected, hasFocus);
+		}
+
+    return this;
+  }//end getListCellRendererComponent
+
+  
+  protected void prepareForXABSLSymbolSimpleCompletion(JList list,
+		XABSLSymbolSimpleCompletion xc, int index, boolean selected, boolean hasFocus) {
+
+		StringBuffer sb = new StringBuffer("<html><b><em>");
+		sb.append(xc.getName());
+		sb.append("</em></b>");
+
+		if (xc.getType()!=null) {
+			sb.append(" : ");
+			if (!selected) {
+				sb.append("<font color='#a0a0ff'>");
+			}
+			sb.append(xc.getType());
+			if (!selected) {
+				sb.append("</font>");
+			}
+		}//end if
+
+		setText(sb.toString());
+    setIcon(variableIcon);
+	}//end prepareForXABSLSymbolSimpleCompletion
+
+
+
+  protected void prepareForXABSLSymbolCompletion(JList list,
+		XABSLSymbolCompletion xc, int index, boolean selected, boolean hasFocus) {
+
+		StringBuffer sb = new StringBuffer("<html><b><em>");
+		sb.append(xc.getName());
+		sb.append("</em></b>");
+
+		sb.append(xc.getProvider().getParameterListStart());
+		int paramCount = xc.getParamCount();
+		for (int i=0; i<paramCount; i++) {
+			FunctionCompletion.Parameter param = xc.getParam(i);
+			String type = param.getType();
+			String name = param.getName();
+			if (type!=null) {
+				if (!selected) {
+					sb.append("<font color='#aa0077'>");
+				}
+				sb.append(type);
+				if (!selected) {
+					sb.append("</font>");
+				}
+				if (name!=null) {
+					sb.append(' ');
+				}
+			}
+			if (name!=null) {
+				sb.append(name);
+			}
+			if (i<paramCount-1) {
+				sb.append(xc.getProvider().getParameterListSeparator());
 			}
 		}
-		return url!=null ? new ImageIcon(url) : null;
-	}
+		sb.append(xc.getProvider().getParameterListEnd());
+		sb.append(" : ");
+		if (!selected) {
+			sb.append("<font color='#a0a0ff'>");
+		}
+		sb.append(xc.getType());
+		if (!selected) {
+			sb.append("</font>");
+		}
 
+		setText(sb.toString());
+    setIcon(variableIcon);
+	}//end prepareForXABSLSymbolCompletion
+
+
+  protected void prepareForXABSLOptionCompletion(JList list,
+		XABSLOptionCompletion oc, int index, boolean selected, boolean hasFocus) {
+
+		StringBuffer sb = new StringBuffer("<html><b><em>");
+		sb.append(oc.getName());
+		sb.append("</em></b>");
+
+		sb.append(oc.getProvider().getParameterListStart());
+		int paramCount = oc.getParamCount();
+		for (int i=0; i<paramCount; i++) {
+			FunctionCompletion.Parameter param = oc.getParam(i);
+			String type = param.getType();
+			String name = param.getName();
+			if (type!=null) {
+				if (!selected) {
+					sb.append("<font color='#aa0077'>");
+				}
+				sb.append(type);
+				if (!selected) {
+					sb.append("</font>");
+				}
+				if (name!=null) {
+					sb.append(' ');
+				}
+			}
+			if (name!=null) {
+				sb.append(name);
+			}
+			if (i<paramCount-1) {
+				sb.append(oc.getProvider().getParameterListSeparator());
+			}
+		}
+		sb.append(oc.getProvider().getParameterListEnd());
+
+		setText(sb.toString());
+    setIcon(functionIcon);
+	}//end prepareForXABSLOptionCompletion
 
 	/**
 	 * {@inheritDoc}
@@ -66,7 +196,7 @@ class CCellRenderer extends CompletionCellRenderer {
 			Completion c, int index, boolean selected, boolean hasFocus) {
 		super.prepareForOtherCompletion(list, c, index, selected, hasFocus);
 		setIcon(emptyIcon);
-	}
+	}//end prepareForOtherCompletion
 
 
 	/**
@@ -79,7 +209,7 @@ class CCellRenderer extends CompletionCellRenderer {
 		super.prepareForVariableCompletion(list, vc, index, selected,
 										hasFocus);
 		setIcon(variableIcon);
-	}
+	}//end prepareForVariableCompletion
 
 
 	/**
@@ -92,7 +222,7 @@ class CCellRenderer extends CompletionCellRenderer {
 		super.prepareForFunctionCompletion(list, fc, index, selected,
 										hasFocus);
 		setIcon(functionIcon);
-	}
+	}//end prepareForFunctionCompletion
 
 
 	private static class EmptyIcon implements Icon, Serializable {

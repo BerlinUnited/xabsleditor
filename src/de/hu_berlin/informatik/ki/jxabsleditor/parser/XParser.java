@@ -3,6 +3,10 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLBasicSymbol;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLEnum;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLOption;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 import java.io.Reader;
@@ -28,12 +32,26 @@ public class XParser implements Parser
   private Token currentToken;
   private HashMap<String, State> stateMap = new HashMap<String, State>();
 
-  private ArrayList<XABSLSymbol> symbolsList = new ArrayList<XABSLSymbol>();
-  private HashMap<String, XABSLEnum> enumList = new HashMap<String, XABSLEnum>();
-
   private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
   private Graph<XabslNode, XabslEdge> optionGraph;
   private HashSet<Transition> commonDecisions = new HashSet<Transition>();
+
+  private XABSLContext xabslContext = null;
+
+
+  public XParser(XABSLContext xabslContext)
+  {
+    this.xabslContext = xabslContext;
+    if(xabslContext == null)
+    {
+      this.xabslContext = new XABSLContext();
+    }
+  }
+
+  public XParser()
+  {
+    this.xabslContext = new XABSLContext();
+  }
 
   private void convertInternalRepresentationsToGraph()
   {
@@ -197,13 +215,13 @@ public class XParser implements Parser
       {
         currentEnumDeclaration = new XABSLEnum(type);
         parseEnumDeclaration();
-        this.enumList.put(type, currentEnumDeclaration);
+        this.xabslContext.add(currentEnumDeclaration);
       }
       else // it's a enum symbol definition :)
       {
         currentSymbol = new XABSLSymbol();
 
-        XABSLEnum enumType = this.enumList.get(type);
+        XABSLEnum enumType = this.xabslContext.getEnumMap().get(type);
         if(enumType != null)
           currentSymbol.setType(enumType);
         else // enum type is not declared
@@ -230,7 +248,7 @@ public class XParser implements Parser
         currentSymbol.setName(parseIdentifier());
         isTokenAndEat(";");
         
-        symbolsList.add(currentSymbol);
+        this.xabslContext.add(currentSymbol);
       }
     }
     else if(isToken("float") || isToken("bool"))
@@ -243,7 +261,7 @@ public class XParser implements Parser
       
       parseSymbolDeclaration();
       
-      symbolsList.add(currentSymbol);
+      this.xabslContext.add(currentSymbol);
     }
     else
     {
@@ -256,11 +274,14 @@ public class XParser implements Parser
   private void parseEnumDeclaration() throws Exception
   {
     isTokenAndEat("{");
-    do
+    currentEnumDeclaration.add(parseIdentifier());
+
+    while(isToken(","))
     {
+      eat(); // eat ","
       currentEnumDeclaration.add(parseIdentifier());
-    }
-    while(isToken(","));
+    }//end while
+    
     isTokenAndEat("}");
     isTokenAndEat(";");
   }//end parseEnumDeclaration
@@ -305,12 +326,68 @@ public class XParser implements Parser
     // parse function symbol parameters
     if(isToken("("))
     {
-      do
-      {
-        eat();
-      }
-      while(!isToken(")"));
+      this.currentComment = "";
+      eat();// eat "("
 
+      // parse symbol parameter
+      while(!isToken(")"))
+      {
+        XABSLBasicSymbol parameter = new XABSLBasicSymbol();
+        parameter.setComment(this.currentComment);
+        
+        // parse parameter type if given (float by default)
+        parameter.setType("float");
+        if(isToken("bool"))
+        {
+          isTokenAndEat("bool");
+          parameter.setType("bool");
+        }else if(isToken("float"))
+        {
+          isTokenAndEat("float");
+        }else if(isToken("enum"))
+        {
+          isTokenAndEat("enum");
+          
+          String enumName = parseIdentifier();
+          XABSLEnum enumType = this.xabslContext.getEnumMap().get(enumName);
+          if(enumType == null)
+            parameter.setType(enumName);
+          else
+            parameter.setType(enumType);
+        }
+
+        parameter.setName(parseIdentifier()); // parameter name
+
+        if(parameter.getType().equals("float"))
+        {
+          // parse range if defined
+          String range = "";
+          if(isToken("["))
+          {
+            eat();
+            while(!isToken("]"))
+            {
+              range += this.currentToken.getLexeme();
+              eat();
+            }//end while
+            isTokenAndEat("]");
+            parameter.setRange(range);
+          }//end if
+
+          // parse unit if defined
+          if(isToken(Token.LITERAL_STRING_DOUBLE_QUOTE))
+          {
+            parameter.setUnit(this.currentToken.getLexeme());
+            isTokenAndEat(Token.LITERAL_STRING_DOUBLE_QUOTE);
+          }//end if
+          //System.out.println(parameter);
+        }//end if type = float
+
+        this.currentSymbol.addParameter(parameter);
+
+        isTokenAndEat(";");
+      }//end while
+      
       isTokenAndEat(")");
     }//end if
 
@@ -325,10 +402,12 @@ public class XParser implements Parser
   private boolean currentStateInitial;
   private boolean currentStateTarget;
 
+  private XABSLOption currentOption;
+
   private void parseOption() throws Exception
   {
     isTokenAndEat("option");
-    parseIdentifier();
+    currentOption = new XABSLOption(parseIdentifier());
     isTokenAndEat("{");
 
     while(isToken("float") || isToken("bool") || isToken("enum"))
@@ -346,38 +425,47 @@ public class XParser implements Parser
       parseState();
     }//end while
     isTokenAndEat("}");
+
+    this.xabslContext.add(currentOption);
   }//end parseOption
 
   private void parseSymbolDefinition() throws Exception
   {
+    XABSLBasicSymbol parameter = new XABSLBasicSymbol();
+    parameter.setComment(this.currentComment);
+    
     if(isToken("bool"))
     {
+      parameter.setType("bool");
       isTokenAndEat("bool");
     }
     else if(isToken("float"))
     {
+      parameter.setType("float");
       isTokenAndEat("float");
     }else
     {
       // try to parse enum
       isTokenAndEat("enum");
-      parseIdentifier();
+      String type = parseIdentifier();
+      parameter.setType(this.xabslContext.getEnumMap().get(type));
     }
 
     isTokenAndEat("@");
 
     // eat name
-    parseIdentifier();
+    parameter.setName(parseIdentifier());
 
     if(isToken("["))
     {
       eat();
       eat();
       isTokenAndEat("]");
-    }
+    }//end if
 
     isTokenAndEat(";");
-  }
+    this.currentOption.addParameter(parameter);
+  }//end parseSymbolDefinition
 
   private void parseCommonDecision() throws Exception
   {
@@ -757,7 +845,7 @@ public class XParser implements Parser
 
   private String parseIdentifier() throws Exception
   {
-    if(isToken(Token.IDENTIFIER) || isTokenAndEat(Token.ERROR_IDENTIFIER))
+    if(isToken(Token.IDENTIFIER) || isToken(Token.ERROR_IDENTIFIER) || isToken(Token.FUNCTION))
     {
       String id = currentToken.getLexeme();
       eat();
@@ -784,7 +872,7 @@ public class XParser implements Parser
         currentToken.type == Token.COMMENT_EOL ||
         currentToken.type == Token.COMMENT_MULTILINE)
       {
-        currentComment = currentToken.getLexeme(); // remember last coment
+        currentComment = getCommentString(currentToken.getLexeme()); // remember last coment
       }
       currentToken = currentToken.getNextToken();
     }//end while
@@ -841,8 +929,9 @@ public class XParser implements Parser
 
     if(!result)
     {
-      noticeList.add(new ParserNotice("is " + getNameForTokenType(currentToken.type) + " but " + getNameForTokenType(type) + " expected", currentToken.offset, currentToken.getLexeme().length()));
-      throw new Exception("Unexpected token type.");
+      String message = "is " + getNameForTokenType(currentToken.type) + " but " + getNameForTokenType(type) + " expected";
+      noticeList.add(new ParserNotice(message, currentToken.offset, currentToken.getLexeme().length()));
+      throw new Exception("Unexpected token type: " + message);
     }
 
     eat();
@@ -860,8 +949,9 @@ public class XParser implements Parser
 
     if(!result)
     {
-      noticeList.add(new ParserNotice(keyWord + " expected", currentToken.offset, currentToken.getLexeme().length()));
-      throw new Exception("Unexpected token.");
+      String message = keyWord + " expected";
+      noticeList.add(new ParserNotice(message, currentToken.offset, currentToken.getLexeme().length()));
+      throw new Exception("Unexpected token: " + message);
     }//end if
 
     eat();
@@ -896,7 +986,6 @@ public class XParser implements Parser
   private void addTransition(Transition transition)
   {
     this.stateTransitionList.add(transition);
-
   }//end addTransition
 
   public static String getNameForTokenType(int type)
@@ -957,7 +1046,16 @@ public class XParser implements Parser
       default:
         return "<unknown: " + type + ">";
     }
-  }
+  }//end getNameForTokenType
+
+  private String getCommentString(String comment)
+  {
+    String result = comment;
+    result = result.replaceFirst("( |\n|\r|\t)*\\/\\/( |\n|\r|\t)*", "");
+    result = result.replaceFirst("( |\n|\r|\t)*(\\/\\*(\\*)?)( |\n|\r|\t)*", "");
+    result = result.replaceFirst("( |\n|\r|\t)*\\*\\/( |\n|\r|\t)*", "");
+    return result;
+  }//end getCommentString
 
   public HashMap<String, State> getStateMap()
   {
@@ -965,12 +1063,16 @@ public class XParser implements Parser
   }
 
   public ArrayList<XABSLSymbol> getSymbolsList() {
-    return symbolsList;
+    return this.xabslContext.getSymbolsList();
   }
 
   public ArrayList<Transition> getStateTransitionList()
   {
     return stateTransitionList;
+  }
+
+  public XABSLOption getCurrentOption() {
+    return currentOption;
   }
 
   public class State
@@ -1080,102 +1182,5 @@ public class XParser implements Parser
       return hash;
     }
   }//end class Transition
-
-
-
-  public static class XABSLEnum
-  {
-    public final String name;
-    private ArrayList<String> elements;
-
-    public XABSLEnum(String name) {
-      this.name = name;
-      this.elements = new ArrayList<String>();
-    }
-
-    public boolean add(String element) {
-      return elements.add(element);
-    }
-
-    public ArrayList<String> getElements() {
-      return elements;
-    }
-  }//end class XABSLEnum
   
-  
-  public static class XABSLSymbol
-  {
-    private String name;
-    private String type;
-    private XABSLEnum enumDeclaration;
-    private SecondaryType secondaryType;
-    private String comment;
-
-    public enum SecondaryType
-    {
-      output,
-      input,
-      internal
-    }
-
-    public XABSLSymbol()
-    {
-    }
-
-    public XABSLSymbol(String type, String name)
-    {
-      this.type = type;
-      this.name = name;
-      this.comment = "";
-      this.enumDeclaration = null;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getType() {
-      return type;
-    }
-
-    public void setType(String type) {
-      this.type = type;
-    }
-
-    public void setType(XABSLEnum enumDeclaration) {
-      this.type = "enum";
-      this.enumDeclaration = enumDeclaration;
-    }
-
-    public SecondaryType getSecondaryType() {
-      return secondaryType;
-    }
-
-    public void setSecondaryType(SecondaryType secondaryType) {
-      this.secondaryType = secondaryType;
-    }
-
-    public String getComment() {
-      return comment;
-    }
-
-    public void setComment(String comment) {
-      this.comment = comment;
-    }
-
-    public XABSLEnum getEnumDeclaration() {
-      return enumDeclaration;
-    }
-
-    @Override
-    public String toString()
-    {
-        return type + " " + secondaryType.name() + " " + name;
-    }
-  }//end class XABSLSymbol
-
 }//end class XParser

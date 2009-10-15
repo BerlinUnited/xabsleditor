@@ -9,9 +9,13 @@ import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilationFin
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLOptionCompletion;
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
@@ -26,7 +30,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -67,9 +70,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
-  private HashMap<String, Component> openDocumentsMap;
   private HashMap<String, File> optionPathMap;
-  private ArrayList<XParser.XABSLSymbol> globalSymbolsTable = null;
+  
+  
+  private XABSLContext globalXABSLContext = null;
 
   /** Creates new form Main */
   public Main()
@@ -119,7 +123,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     loadConfiguration();
 
-    this.openDocumentsMap = new HashMap<String, Component>();
     this.optionPathMap = new HashMap<String, File>();
 
     optionVisualizer = new OptionVisualizer();
@@ -181,22 +184,25 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
 
       // Option
-      XParser p = new XParser();
+      XParser p = new XParser(this.globalXABSLContext);
       p.parse(new StringReader(text));
       optionVisualizer.setGraph(p.getOptionGraph());
     }
-  }
+  }//end refreshGraph
 
-  private void loadSymbolsTable(File folder)
+  private void loadXABSLContext(File folder)
   {
-    this.globalSymbolsTable = new ArrayList<XParser.XABSLSymbol>();
-    
+    if(this.globalXABSLContext == null)
+    {
+      this.globalXABSLContext = new XABSLContext();
+    }
+
     File[] fileList = folder.listFiles();
     for(File file : fileList)
     {
       if(file.isDirectory())
       {
-        loadSymbolsTable(file);
+        loadXABSLContext(file);
       }
       else if(file.getName().toLowerCase().endsWith(".xabsl"))
       {
@@ -205,16 +211,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           //System.out.println("parse: " + file.getName()); // debug stuff
 
           String text = Helper.readFileToString(file);
-          XParser p = new XParser();
+          XParser p = new XParser(this.globalXABSLContext);
           p.parse(new StringReader(text));
-          this.globalSymbolsTable.addAll(p.getSymbolsList());
+          
         }catch(Exception e)
         {
           System.err.println("Couldn't read the symbols file " + file.getAbsolutePath());
         }
       }
     }//end for
+    int x = 0;
   }//end loadSymbolsTable
+
 
   private DefaultCompletionProvider createCompletitionProvider()
   {
@@ -226,34 +234,32 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     };
 
-    for(XParser.XABSLSymbol symbol: this.globalSymbolsTable)
+    provider.setParameterizedCompletionParams('(', ", ", ')');
+
+    for(XABSLContext.XABSLSymbol symbol: this.globalXABSLContext.getSymbolsList())
     {
-      String helpHeader = "<b><font color=\"#0000FF\">" + symbol.getType() + " " + symbol.getSecondaryType().name() + "</font> " + symbol.getName()+"</b>";
-      String helpBody = symbol.getComment();
-
-      // list the enum elements
-      if(symbol.getType().equals("enum"))
+      if(symbol.getParameter().size() == 0)
       {
-        helpBody += "<br><br><font color=\"#0000FF\">enum</font> ";
-        helpBody += "<b>" + symbol.getEnumDeclaration().name + "</b>";
-
-        helpBody += "<ul>";
-        for(String element: symbol.getEnumDeclaration().getElements())
-        {
-          helpBody += "<li><i>" + element + "</i></li>";
-        }
-        helpBody += "</ul>";
-      }//end if
-
-      provider.addCompletion(new ShorthandCompletion(provider,
-        symbol.getName(),
-        symbol.getName(),
-        symbol.toString(),
-        helpHeader + "<hr>" + helpBody)
-      );
-
+        provider.addCompletion(new XABSLSymbolSimpleCompletion(provider, symbol));
+      }else
+      {
+        provider.addCompletion(new XABSLSymbolCompletion(provider, symbol));
+      }
       //System.out.println(symbol); // debug stuff
     }//end for
+
+    for(XABSLContext.XABSLOption option: this.globalXABSLContext.getOptionMap().values())
+    {
+      provider.addCompletion(new XABSLOptionCompletion(provider, option));
+    }//end for
+
+    // add some default macros
+    provider.addCompletion(new ShorthandCompletion(provider,
+      "state",
+      "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}",
+      "behavior state",
+      "behavior state"));
+    
     return provider;
   }//end createCompletitionProvider
 
@@ -798,8 +804,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     createOptionList(agentsFile.getParentFile());
 
     // needed by autocomletition
-    if(this.globalSymbolsTable == null)
-      loadSymbolsTable(agentsFile.getParentFile());
+    if(this.globalXABSLContext == null)
+      loadXABSLContext(agentsFile.getParentFile());
 
     createDocumentTab(selectedFile);
   }//end openFile
@@ -937,6 +943,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
+      editor.setXABSLContext(this.globalXABSLContext);
       editor.setCompletionProvider(createCompletitionProvider());
       
       tabbedPanelEditor.setSelectedComponent(editor);
@@ -1188,8 +1195,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         row = Integer.parseInt(splStr[1]);
         col = Integer.parseInt(splStr[2]);
         message = splStr[3];
-      }
+      }//end if
     }//end parseMessage
   }//end class XABSLErrorOutputStream
-}
+}//end class Main
 

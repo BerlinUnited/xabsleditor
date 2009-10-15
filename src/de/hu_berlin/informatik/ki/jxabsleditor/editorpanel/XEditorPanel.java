@@ -10,6 +10,7 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XTokenMaker;
 import java.awt.Color;
@@ -27,7 +28,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CCompletionProvider;
-import org.fife.ui.autocomplete.CompletionCellRenderer;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
@@ -369,6 +369,7 @@ public class XEditorPanel extends javax.swing.JPanel
 
     AutoCompletion ac = new AutoCompletion(provider);
     //ac.setListCellRenderer(new CompletionCellRenderer());
+    ac.setDescriptionWindowSize(300, 200);
 		ac.setListCellRenderer(new CCellRenderer());
 		ac.setShowDescWindow(true);
 		ac.setParameterAssistanceEnabled(true);
@@ -377,7 +378,11 @@ public class XEditorPanel extends javax.swing.JPanel
     textArea.setToolTipSupplier((ToolTipSupplier)provider);
 		ToolTipManager.sharedInstance().registerComponent(textArea);
   }
-  
+
+  public void setXABSLContext(XABSLContext xabslContext)
+  {
+    textArea.setParser(new XParser(xabslContext));
+  }//end setXABSLContext
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.SearchPanel searchPanel;
