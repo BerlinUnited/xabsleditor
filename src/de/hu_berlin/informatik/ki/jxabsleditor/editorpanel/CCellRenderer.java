@@ -3,14 +3,11 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol.SecondaryType;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.File;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
@@ -31,11 +28,22 @@ class CCellRenderer extends CompletionCellRenderer {
 	private Icon functionIcon;
   private Icon macroIcon;
 	private Icon emptyIcon;
+  private Icon testIcon;
+
+  private Icon downarrowIcon;
+  private Icon leftarrowIcon;
+  private Icon rightarrowIcon;
 
 	public CCellRenderer() {
 		variableIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/var.png");
 		functionIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/function.png");
     macroIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/macro.png");
+    testIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/test.png");
+
+    downarrowIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/downarrow.png");
+    leftarrowIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/leftarrow.png");
+    rightarrowIcon = getIcon("/de/hu_berlin/informatik/ki/jxabsleditor/res/rightarrow.png");
+
 		emptyIcon = new EmptyIcon(16);
 	}
 
@@ -74,6 +82,10 @@ class CCellRenderer extends CompletionCellRenderer {
 			XABSLOptionCompletion oc = (XABSLOptionCompletion)value;
 			prepareForXABSLOptionCompletion(list, oc, index, selected, hasFocus);
 		}
+    else if (value instanceof XABSLEnumCompletion) {
+			XABSLEnumCompletion ec = (XABSLEnumCompletion)value;
+			prepareForXABSLEnumCompletion(list, ec, index, selected, hasFocus);
+		}
 
     return this;
   }//end getListCellRendererComponent
@@ -98,10 +110,38 @@ class CCellRenderer extends CompletionCellRenderer {
 		}//end if
 
 		setText(sb.toString());
-    setIcon(variableIcon);
+
+    
+    switch(xc.getSecondaryType())
+    {
+      case input: setIcon(rightarrowIcon); break;
+      case output: setIcon(leftarrowIcon); break;
+      case internal: setIcon(downarrowIcon); break;
+    }//end switch
+
 	}//end prepareForXABSLSymbolSimpleCompletion
 
 
+
+  protected void prepareForXABSLEnumCompletion(JList list,
+		XABSLEnumCompletion xe, int index, boolean selected, boolean hasFocus) {
+
+		StringBuffer sb = new StringBuffer("<html><em>");
+		if (!selected) {
+			sb.append("<font color='#a0a0a0'>");
+		}
+    sb.append(xe.getType())
+      .append(".")
+      .append(xe.getName());
+    if (!selected) {
+			sb.append("</font>");
+		}
+		sb.append("</em>");
+
+		setText(sb.toString());
+    setIcon(functionIcon);
+	}//end prepareForXABSLEnumCompletion
+  
 
   protected void prepareForXABSLSymbolCompletion(JList list,
 		XABSLSymbolCompletion xc, int index, boolean selected, boolean hasFocus) {
@@ -185,7 +225,7 @@ class CCellRenderer extends CompletionCellRenderer {
 		sb.append(oc.getProvider().getParameterListEnd());
 
 		setText(sb.toString());
-    setIcon(functionIcon);
+    setIcon(macroIcon);
 	}//end prepareForXABSLOptionCompletion
 
 	/**

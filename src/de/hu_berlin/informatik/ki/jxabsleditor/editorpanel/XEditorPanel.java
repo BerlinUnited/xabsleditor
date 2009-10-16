@@ -29,8 +29,6 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CCompletionProvider;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
-import org.fife.ui.autocomplete.ShorthandCompletion;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
@@ -138,9 +136,6 @@ public class XEditorPanel extends javax.swing.JPanel
         setChanged(true);
       }
     });
-
-    setCompletionProvider(createCodeCompletionProvider());
-
 
     RTextScrollPane scrolPane = new RTextScrollPane(500, 400, textArea, true);
     add(scrolPane);
@@ -265,8 +260,6 @@ public class XEditorPanel extends javax.swing.JPanel
    */
   public boolean search(String s)
   {
-
-
     if(s != null)
     {
       if(lastSearch == null || !lastSearch.equals(s))
@@ -291,8 +284,13 @@ public class XEditorPanel extends javax.swing.JPanel
           textArea.grabFocus();
           textArea.setCaretPosition(searchOffset + found);
           textArea.moveCaretPosition(searchOffset + found + s.length());
+
+          //Highlighter.HighlightPainter p = new ChangeableHighlightPainter(Color.BLUE, true, 0.5f);
+          //textArea.getHighlighter().addHighlight(searchOffset + found, searchOffset + found + s.length(), p);
+          
           searchOffset = searchOffset + found + 1;
           lastSearch = s;
+
           return true;
         }
       }
@@ -310,59 +308,7 @@ public class XEditorPanel extends javax.swing.JPanel
     textArea.setCaretPosition(oldCaretPos);
 
     return false;
-  }
-
-
-  private CompletionProvider createCodeCompletionProvider()
-  {
-    
-		// Add completions for the C standard library.
-		DefaultCompletionProvider cp = new DefaultCompletionProvider();
-
-		// First try loading resource (running from demo jar), then try
-		// accessing file (debugging in Eclipse).
-		/*
-    ClassLoader cl = getClass().getClassLoader();
-		
-    InputStream in = cl.getResourceAsStream("c.xml");
-		try {
-			if (in!=null) {
-				cp.loadFromXML(in);
-				in.close();
-			}
-			else {
-				cp.loadFromXML(new File("c.xml"));
-			}
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-    */
-		// Add some handy shorthand completions.
-		cp.addCompletion(new ShorthandCompletion(cp,
-            "game.state", "game.state", "State of the game", "State of the game"));
-
-    cp.addCompletion(new ShorthandCompletion(cp,
-            "game.team_color", "game.team_color", "Own team color", "Own team color: red, blue or unknown"));
-
-    cp.addCompletion(new ShorthandCompletion(cp,
-            "game.player_number", "game.player_number", "test", "big test"));
-
-    cp.addCompletion(new ShorthandCompletion(cp,
-            "game.own_kickoff", "game.own_kickoff", "test", "big test"));
-
-
-    cp.addCompletion(new ShorthandCompletion(cp,
-            "ball_far_away_situation", "ball_far_away_situation(dist = );", "test", "big test"));
-
-    cp.addCompletion(new ShorthandCompletion(cp,
-            "state",
-            "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}",
-            "behavior state",
-            ""));
-
-		return cp;
-
-	}
+  }//end search
 
   public void setCompletionProvider(CompletionProvider completionProvider) {
     CompletionProvider provider = new CCompletionProvider(completionProvider);
@@ -377,7 +323,7 @@ public class XEditorPanel extends javax.swing.JPanel
 
     textArea.setToolTipSupplier((ToolTipSupplier)provider);
 		ToolTipManager.sharedInstance().registerComponent(textArea);
-  }
+  }//end setCompletionProvider
 
   public void setXABSLContext(XABSLContext xabslContext)
   {

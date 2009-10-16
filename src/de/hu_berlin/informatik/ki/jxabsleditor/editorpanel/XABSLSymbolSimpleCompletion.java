@@ -5,6 +5,7 @@
 package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol.SecondaryType;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
@@ -81,4 +82,9 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
 	public String getType() {
 		return symbol.getType();
 	}
+
+  public SecondaryType getSecondaryType() {
+    return symbol.getSecondaryType();
+  }
+  
 }//end class XABSLSymbolSimpleCompletion

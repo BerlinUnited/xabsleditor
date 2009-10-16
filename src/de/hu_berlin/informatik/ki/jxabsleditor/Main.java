@@ -9,6 +9,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilationFin
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLEnumCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLOptionCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
@@ -83,6 +84,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     try
     {
       UIManager.setLookAndFeel(new MetalLookAndFeel());
+      //UIManager.setLookAndFeel(new NimbusLookAndFeel());
     }
     catch(UnsupportedLookAndFeelException ex)
     {
@@ -220,7 +222,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       }
     }//end for
-    int x = 0;
   }//end loadSymbolsTable
 
 
@@ -251,6 +252,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     for(XABSLContext.XABSLOption option: this.globalXABSLContext.getOptionMap().values())
     {
       provider.addCompletion(new XABSLOptionCompletion(provider, option));
+    }//end for
+
+    for(XABSLContext.XABSLEnum xabslEnum: this.globalXABSLContext.getEnumMap().values())
+    {
+      for(String param: xabslEnum.getElements())
+      {
+        provider.addCompletion(new XABSLEnumCompletion(provider, xabslEnum.name, param));
+      }//end for
     }//end for
 
     // add some default macros
