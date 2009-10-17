@@ -7,14 +7,15 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLBasicSym
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLEnum;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLOption;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.Transition;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.Transition;
 import edu.uci.ics.jung.graph.Graph;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.text.Segment;
 import org.fife.ui.rsyntaxtextarea.Parser;
@@ -30,14 +31,9 @@ public class XParser implements Parser
 
   private java.util.ArrayList noticeList = new java.util.ArrayList(1);
   private Token currentToken;
-  private HashMap<String, State> stateMap = new HashMap<String, State>();
-
-  private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
-  private Graph<XabslNode, XabslEdge> optionGraph;
-  private HashSet<Transition> commonDecisions = new HashSet<Transition>();
 
   private XABSLContext xabslContext = null;
-
+  private XABSLOptionContext xabslOptionContext = null;
 
   public XParser(XABSLContext xabslContext)
   {
@@ -52,72 +48,12 @@ public class XParser implements Parser
   {
     this.xabslContext = new XABSLContext();
   }
-
-  private void convertInternalRepresentationsToGraph()
-  {
-    commonDecisions.clear();
-
-    optionGraph = new DirectedSparseGraph<XabslNode, XabslEdge>();
-
-    // states
-    for(State s : stateMap.values())
-    {
-      XabslNode n = new XabslNode();
-      n.setName(s.name);
-      n.setType(XabslNode.Type.State);
-      n.setPosInText(s.offset);
-      n.setInitialState(s.initial);
-      n.setTargetState(s.target);
-
-      optionGraph.addVertex(n);
-
-      for(String o : s.outgoingOptions)
-      {
-        XabslNode outNode = new XabslNode();
-        outNode.setName(o);
-        outNode.setType(XabslNode.Type.Option);
-        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.Outgoing), n, outNode);
-      }
-    }
-
-    // transitions
-    for(Transition t : stateTransitionList)
-    {
-      if(t.from == null)
-      {
-        // common decision, add later when all states are known
-        commonDecisions.add(t);
-      }
-      else
-      {
-        // not a common decision
-        XabslNode nFrom = new XabslNode(t.from, XabslNode.Type.State);
-        XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
-        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.Normal), nFrom, nTo);
-      }
-    }
-
-    // common decisions
-    LinkedList<XabslNode> vertices = new LinkedList<XabslNode>(optionGraph.getVertices());
-    for(Transition t : commonDecisions)
-    {
-      for(XabslNode nFrom : vertices)
-      {
-        XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
-        
-        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.CommonDecision), nFrom, nTo);
-      }
-    }
-
-  }
+  
 
   @Override
   public void parse(Reader reader)
   {
     noticeList.clear();
-    stateMap.clear();
-    stateTransitionList.clear();
-    commonDecisions.clear();
 
     try
     {
@@ -144,6 +80,7 @@ public class XParser implements Parser
           skipSpace();
           if(isToken("option"))
           {
+            xabslOptionContext = new XABSLOptionContext();
             parseOption();
           }
           else if(isToken("namespace"))
@@ -162,8 +99,6 @@ public class XParser implements Parser
       {
         System.err.println(e.getMessage());
       }
-
-      convertInternalRepresentationsToGraph();
 
     }
     catch(java.io.IOException ioe)
@@ -408,6 +343,8 @@ public class XParser implements Parser
   {
     isTokenAndEat("option");
     currentOption = new XABSLOption(parseIdentifier());
+    currentOption.setComment(currentComment);
+    currentComment = "";
     isTokenAndEat("{");
 
     while(isToken("float") || isToken("bool") || isToken("enum"))
@@ -512,8 +449,13 @@ public class XParser implements Parser
     }
     parseAction();
 
-    addState(new State(currentStateName, currentComment, offset, this.stateMap.size(),
-      currentStateTarget, currentStateInitial, currentOutgoingOptions));
+    addState(currentStateName, 
+             currentComment,
+             offset,
+             currentStateTarget,
+             currentStateInitial,
+             currentOutgoingOptions);
+    
     isTokenAndEat("}");
   }//end parseState
 
@@ -580,7 +522,7 @@ public class XParser implements Parser
     else if(isToken("stay"))
     {
       isTokenAndEat("stay");
-      addTransition(new Transition(currentStateName, currentStateName, currentToken.offset));
+      addTransition(currentStateName, currentStateName, currentToken.offset);
       isTokenAndEat(";");
     }
     else
@@ -612,7 +554,7 @@ public class XParser implements Parser
     int offset = currentToken.offset;
     String targetStateName = parseIdentifier();
 
-    addTransition(new Transition(currentStateName, targetStateName, offset));
+    addTransition(currentStateName, targetStateName, offset);
     isTokenAndEat(";");
 
   //System.out.println(currentStateName + " -> " + targetStateName);
@@ -868,9 +810,10 @@ public class XParser implements Parser
       currentToken.type == Token.COMMENT_EOL ||
       currentToken.type == Token.COMMENT_MULTILINE))
     {
-      if(currentToken.type == Token.COMMENT_DOCUMENTATION ||
-        currentToken.type == Token.COMMENT_EOL ||
-        currentToken.type == Token.COMMENT_MULTILINE)
+      // accept only dokumentation comments (i.e. /** ... */)
+      if( //currentToken.type == Token.COMMENT_EOL ||
+          //currentToken.type == Token.COMMENT_MULTILINE ||
+          currentToken.type == Token.COMMENT_DOCUMENTATION )
       {
         currentComment = getCommentString(currentToken.getLexeme()); // remember last coment
       }
@@ -967,27 +910,44 @@ public class XParser implements Parser
   /** Get a graph suited for visualizing */
   public Graph<XabslNode, XabslEdge> getOptionGraph()
   {
-    return optionGraph;
+    return this.xabslOptionContext.getOptionGraph();
   }
 
-  private void addState(State state) throws Exception
+
+  private void addState(
+          String name,
+          String comment,
+          int offset,
+          boolean target,
+          boolean initial,
+          Set<String> outgoingOptions
+          ) throws Exception
   {
-    if(this.stateMap.containsKey(state.name))
+    if(this.xabslOptionContext.getStateMap().containsKey(name))
     {
-      noticeList.add(new ParserNotice("State " + state.name + " already defined.",
-        state.offset, state.name.length()));
-      throw new Exception("State " + state.name + " already defined.");
+      noticeList.add(new ParserNotice("State " + name + " already defined.", offset, name.length()));
+      throw new Exception("State " + name + " already defined.");
     }//end if
 
-    this.stateMap.put(state.name, state);
-
+    // create new state :)
+    this.xabslOptionContext.new State(
+            currentStateName,
+            currentComment,
+            offset,
+            currentStateTarget,
+            currentStateInitial,
+            currentOutgoingOptions);
+    
   }//end addState
 
-  private void addTransition(Transition transition)
+
+  private void addTransition(String from, String to, int offset)
   {
-    this.stateTransitionList.add(transition);
+    // create new transition
+    this.xabslOptionContext.new Transition(from, to, offset);
   }//end addTransition
 
+  
   public static String getNameForTokenType(int type)
   {
     switch(type)
@@ -1059,7 +1019,7 @@ public class XParser implements Parser
 
   public HashMap<String, State> getStateMap()
   {
-    return stateMap;
+    return this.xabslOptionContext.getStateMap();
   }
 
   public ArrayList<XABSLSymbol> getSymbolsList() {
@@ -1068,119 +1028,11 @@ public class XParser implements Parser
 
   public ArrayList<Transition> getStateTransitionList()
   {
-    return stateTransitionList;
+    return this.xabslOptionContext.getStateTransitionList();
   }
 
   public XABSLOption getCurrentOption() {
     return currentOption;
   }
-
-  public class State
-  {
-
-    public State(String name, String comment, int offset, int number,
-      boolean target, boolean initial, Set<String> outgoingOptions)
-    {
-      this.name = name;
-      this.comment = comment;
-      this.offset = offset;
-      this.number = number;
-      this.target = target;
-      this.initial = initial;
-      this.outgoingOptions = outgoingOptions;
-    }
-    public final String name;
-    public final String comment;
-    public final int offset;
-    public final boolean target;
-    public final boolean initial;
-    public final Set<String> outgoingOptions;
-    private final int number;
-
-    @Override
-    public String toString()
-    {
-      return "\"" + name + "\" [shape=\"circle\" pos=\"10," + (number * 70) + "\" URL=\"" + offset + "\"];";
-    }//end toString
-
-    @Override
-    public boolean equals(Object obj)
-    {
-      if(obj == null)
-      {
-        return false;
-      }
-      if(getClass() != obj.getClass())
-      {
-        return false;
-      }
-      final State other = (State) obj;
-      if((this.name == null) ? (other.name != null) : !this.name.equals(other.name))
-      {
-        return false;
-      }
-      return true;
-    }
-
-    @Override
-    public int hashCode()
-    {
-      int hash = 7;
-      hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
-      return hash;
-    }
-  }//end class State
-
-  public class Transition
-  {
-
-    public Transition(String from, String to, int offset)
-    {
-      this.from = from;
-      this.to = to;
-      this.offset = offset;
-    }
-    public final String from;
-    public final String to;
-    public final int offset;
-
-    @Override
-    public String toString()
-    {
-      return "\"" + from + "\" -> \"" + to + "\" [URL=\"" + offset + "\"]";
-    }//end toString
-
-    @Override
-    public boolean equals(Object obj)
-    {
-      if(obj == null)
-      {
-        return false;
-      }
-      if(getClass() != obj.getClass())
-      {
-        return false;
-      }
-      final Transition other = (Transition) obj;
-      if((this.from == null) ? (other.from != null) : !this.from.equals(other.from))
-      {
-        return false;
-      }
-      if((this.to == null) ? (other.to != null) : !this.to.equals(other.to))
-      {
-        return false;
-      }
-      return true;
-    }
-
-    @Override
-    public int hashCode()
-    {
-      int hash = 3;
-      hash = 67 * hash + (this.from != null ? this.from.hashCode() : 0);
-      hash = 67 * hash + (this.to != null ? this.to.hashCode() : 0);
-      return hash;
-    }
-  }//end class Transition
   
 }//end class XParser

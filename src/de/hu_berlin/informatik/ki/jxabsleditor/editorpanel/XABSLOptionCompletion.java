@@ -36,7 +36,7 @@ public class XABSLOptionCompletion
       .append("</b>")
       .append("<hr>");
 
-    //sb.append(option.getComment());
+    sb.append(option.getComment());
 
     return sb.toString();
   }//end createSummary

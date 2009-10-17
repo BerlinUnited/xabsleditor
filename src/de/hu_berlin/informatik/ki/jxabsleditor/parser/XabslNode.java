@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * 
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
@@ -124,7 +123,4 @@ public class XabslNode
     return hash;
   }
 
-
-
-  
-}
+}//end class XabslNode

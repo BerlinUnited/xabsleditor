@@ -26,7 +26,4 @@ public class XabslEdge
     return type;
   }
 
-
-
-
-}
+}//end class XabslEdge
