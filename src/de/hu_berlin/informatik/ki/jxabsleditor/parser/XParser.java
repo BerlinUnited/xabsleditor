@@ -931,12 +931,12 @@ public class XParser implements Parser
 
     // create new state :)
     this.xabslOptionContext.new State(
-            currentStateName,
-            currentComment,
+            name,
+            comment,
             offset,
-            currentStateTarget,
-            currentStateInitial,
-            currentOutgoingOptions);
+            target,
+            initial,
+            outgoingOptions);
     
   }//end addState
 
