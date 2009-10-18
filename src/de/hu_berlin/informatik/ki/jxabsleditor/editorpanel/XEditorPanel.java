@@ -313,25 +313,32 @@ public class XEditorPanel extends javax.swing.JPanel
 
   private CCompletionProvider completionProvider = null;
   
-  public void setCompletionProvider(DefaultCompletionProvider completionProvider) {
-    this.completionProvider = new CCompletionProvider(completionProvider);
+  
+  private void createCompletionProvider()
+  {
+    this.completionProvider = new CCompletionProvider(new DefaultCompletionProvider());
 
     AutoCompletion ac = new AutoCompletion(this.completionProvider);
-    //ac.setListCellRenderer(new CompletionCellRenderer());
     ac.setDescriptionWindowSize(300, 200);
 		ac.setListCellRenderer(new CCellRenderer());
 		ac.setShowDescWindow(true);
 		ac.setParameterAssistanceEnabled(true);
 		ac.install(textArea);
-    
+
     textArea.setToolTipSupplier((ToolTipSupplier)this.completionProvider);
 		ToolTipManager.sharedInstance().registerComponent(textArea);
+  }//end createCompletionProvider
+
+
+  public void setCompletionProvider(DefaultCompletionProvider completionProvider) {
+    if(this.completionProvider == null) createCompletionProvider();
+    this.completionProvider.setDefaultCompletionProvider(completionProvider);
   }//end setCompletionProvider
 
   
   public void setLocalCompletionProvider(DefaultCompletionProvider completionProvider) {
-    if(this.completionProvider != null)
-      this.completionProvider.setXabslLocalCompletionProvider(completionProvider);
+    if(this.completionProvider == null) createCompletionProvider();
+    this.completionProvider.setXabslLocalCompletionProvider(completionProvider);
   }//end setLocalCompletionProvider
   
 
