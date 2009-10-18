@@ -8,6 +8,7 @@ package de.hu_berlin.informatik.ki.jxabsleditor.graphpanel;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslEdge;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
+import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -26,6 +27,7 @@ import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
@@ -42,6 +44,10 @@ public class OptionVisualizer extends javax.swing.JPanel
   private GraphZoomScrollPane scrollPane;
   private GraphMouseListener<XabslNode> externalMouseListener;
 
+  private double lastX;
+  private double lastY;
+  private int nodeCounter;
+
   /** Creates new form OptionVisualizer */
   public OptionVisualizer()
   {
@@ -51,15 +57,36 @@ public class OptionVisualizer extends javax.swing.JPanel
   /** (Re-) set to a new graph and display it */
   public void setGraph(Graph<XabslNode, XabslEdge> g)
   {
+    lastX = 0.0;
+    lastY = 0.0;
+    nodeCounter = 0;
+
+    final int w = Math.max(400, this.getSize().width);
+    final int h = Math.max(400, this.getSize().height);
+
     KKLayout<XabslNode, XabslEdge> layout = new KKLayout<XabslNode, XabslEdge>(g);
     //FRLayout<XabslNode,XabslEdge> layout = new FRLayout<XabslNode,XabslEdge>(g);
     //SpringLayout2<XabslNode,XabslEdge> layout = new SpringLayout2<XabslNode, XabslEdge>(g);
 
+    final double nodesPerRow = Math.sqrt(g.getVertexCount());
 
-    int w = 400;
-    int h = 400;
-    w = Math.max(w, this.getSize().width);
-    h = Math.max(h, this.getSize().height);
+    layout.setInitializer(new Transformer<XabslNode, Point2D>() {
+
+      @Override
+      public Point2D transform(XabslNode n)
+      {
+        lastX += (w / nodesPerRow);
+        nodeCounter++;
+        if(nodeCounter % ((int) nodesPerRow) == 0)
+        {
+          lastX = 0;
+          lastY += (h / nodesPerRow);
+        }
+        return new Point2D.Double(lastX, lastY);
+      }
+    });
+
+    
     layout.setSize(new Dimension(w, h));
 
     if(scrollPane != null)
