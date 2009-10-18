@@ -61,7 +61,7 @@ public class XABSLEnumCompletion extends BasicCompletion
 	 */
   @Override
 	public String getInputText() {
-		return this.enumName+"+"+this.enumElement;
+		return this.enumName+"."+this.enumElement;
 	}
 
 

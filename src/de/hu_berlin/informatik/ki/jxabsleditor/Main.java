@@ -11,12 +11,14 @@ import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLEnumCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLOptionCompletion;
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLStateCompetion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
@@ -31,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -75,6 +78,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   
   
   private XABSLContext globalXABSLContext = null;
+  private ArrayList<XABSLStateCompetion> localOptionCompletions = null;
 
   /** Creates new form Main */
   public Main()
@@ -181,15 +185,29 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private void refreshGraph()
   {
-    if(tabbedPanelEditor.getSelectedComponent() != null)
-    {
-      String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
+    if(tabbedPanelEditor.getSelectedComponent() == null)
+      return;
+    
+    String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
 
-      // Option
-      XParser p = new XParser(this.globalXABSLContext);
-      p.parse(new StringReader(text));
-      optionVisualizer.setGraph(p.getOptionGraph());
-    }
+    // Option
+    XParser p = new XParser(this.globalXABSLContext);
+    p.parse(new StringReader(text));
+    optionVisualizer.setGraph(p.getOptionGraph());
+
+
+
+    // refresh autocompetion
+    DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
+
+    for(State state: p.getStateMap().values())
+    {
+      completionProvider.addCompletion(
+              new XABSLStateCompetion(completionProvider, state.name));
+    }//end for
+
+    ((XEditorPanel) tabbedPanelEditor.getSelectedComponent())
+            .setLocalCompletionProvider(completionProvider);
   }//end refreshGraph
 
   private void loadXABSLContext(File folder)
@@ -994,6 +1012,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       JOptionPane.showMessageDialog(this,
         e.toString(), "The file could not be read.", JOptionPane.ERROR_MESSAGE);
+
+      e.printStackTrace();
     }
 
   }//end createDocumentTab

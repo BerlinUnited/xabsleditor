@@ -29,6 +29,7 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CCompletionProvider;
 import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
@@ -137,7 +138,7 @@ public class XEditorPanel extends javax.swing.JPanel
       }
     });
 
-    RTextScrollPane scrolPane = new RTextScrollPane(500, 400, textArea, true);
+    RTextScrollPane scrolPane = new RTextScrollPane(textArea, true);
     add(scrolPane);
 
     searchPanel.setVisible(false);
@@ -310,20 +311,29 @@ public class XEditorPanel extends javax.swing.JPanel
     return false;
   }//end search
 
-  public void setCompletionProvider(CompletionProvider completionProvider) {
-    CompletionProvider provider = new CCompletionProvider(completionProvider);
+  private CCompletionProvider completionProvider = null;
+  
+  public void setCompletionProvider(DefaultCompletionProvider completionProvider) {
+    this.completionProvider = new CCompletionProvider(completionProvider);
 
-    AutoCompletion ac = new AutoCompletion(provider);
+    AutoCompletion ac = new AutoCompletion(this.completionProvider);
     //ac.setListCellRenderer(new CompletionCellRenderer());
     ac.setDescriptionWindowSize(300, 200);
 		ac.setListCellRenderer(new CCellRenderer());
 		ac.setShowDescWindow(true);
 		ac.setParameterAssistanceEnabled(true);
 		ac.install(textArea);
-
-    textArea.setToolTipSupplier((ToolTipSupplier)provider);
+    
+    textArea.setToolTipSupplier((ToolTipSupplier)this.completionProvider);
 		ToolTipManager.sharedInstance().registerComponent(textArea);
   }//end setCompletionProvider
+
+  
+  public void setLocalCompletionProvider(DefaultCompletionProvider completionProvider) {
+    if(this.completionProvider != null)
+      this.completionProvider.setXabslLocalCompletionProvider(completionProvider);
+  }//end setLocalCompletionProvider
+  
 
   public void setXABSLContext(XABSLContext xabslContext)
   {
