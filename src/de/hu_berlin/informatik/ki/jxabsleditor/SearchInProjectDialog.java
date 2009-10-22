@@ -6,6 +6,7 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor;
 
+import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -145,7 +146,11 @@ public class SearchInProjectDialog extends javax.swing.JDialog
   private void openFile()
   {
     String path = (String) resultList.getModel().getElementAt(resultList.getSelectedIndex());
-    parent.openFile(new File(path));
+    XEditorPanel p = parent.openFile(new File(path));
+    if(p != null)
+    {
+      p.search(txtSearch.getText());
+    }
   }
 
   private void search()

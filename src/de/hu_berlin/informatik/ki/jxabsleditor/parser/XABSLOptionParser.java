@@ -56,6 +56,10 @@ public class XABSLOptionParser extends XABSLAbstractParser
     }//end while
     isTokenAndEat("}");
 
+    for(String s : currentOutgoingOptions)
+    {
+      currentOption.addAction(s);
+    }
     getXABSLContext().add(currentOption);
   }//end parseOption
 

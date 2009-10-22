@@ -108,12 +108,26 @@ public class XParser implements Parser
 
   public HashMap<String, State> getStateMap()
   {
-    return this.xabslOptionContext.getStateMap();
+    if(xabslOptionContext != null)
+    {
+      return this.xabslOptionContext.getStateMap();
+    }
+    else
+    {
+      return new HashMap<String, State>();
+    }
   }//end getStateMap
 
   public ArrayList<Transition> getStateTransitionList()
   {
-    return this.xabslOptionContext.getStateTransitionList();
+    if(xabslOptionContext != null)
+    {
+      return this.xabslOptionContext.getStateTransitionList();
+    }
+    else
+    {
+      return new ArrayList<Transition>();
+    }
   }
   
   public ArrayList<XABSLSymbol> getSymbolsList() {
@@ -123,7 +137,14 @@ public class XParser implements Parser
   /** Get a graph suited for visualizing */
   public Graph<XabslNode, XabslEdge> getOptionGraph()
   {
-    return this.xabslOptionContext.getOptionGraph();
+    if(xabslOptionContext != null)
+    {
+      return this.xabslOptionContext.getOptionGraph();
+    }
+    else
+    {
+      return null;
+    }
   }
 
   @Override

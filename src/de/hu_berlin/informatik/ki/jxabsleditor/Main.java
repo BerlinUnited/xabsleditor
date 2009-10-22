@@ -194,8 +194,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     XParser p = new XParser(this.globalXABSLContext);
     p.parse(new StringReader(text));
     optionVisualizer.setGraph(p.getOptionGraph());
-
-
+    //agentVisualizer.setContext(globalXABSLContext);
 
     // refresh autocompetion
     DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
@@ -802,9 +801,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     }//GEN-LAST:event_openFileAction
 
-  public void openFile(File selectedFile)
+  public XEditorPanel openFile(File selectedFile)
   {
-    if(selectedFile == null) return;
+    if(selectedFile == null) return null;
     
     // test if the file is allready opened
     for(int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
@@ -815,7 +814,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           selectedFile.compareTo(((XEditorPanel) c).getFile()) == 0)
       {
         tabbedPanelEditor.setSelectedComponent(c);
-        return;
+        return null;
       }//end if
     }//end for
 
@@ -834,7 +833,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     if(this.globalXABSLContext == null)
       loadXABSLContext(agentsFile.getParentFile());
 
-    createDocumentTab(selectedFile);
+    return createDocumentTab(selectedFile);
   }//end openFile
 
 
@@ -949,7 +948,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
   }
 
-  private void createDocumentTab(File file)
+  private XEditorPanel createDocumentTab(File file)
   {
     try
     {
@@ -1007,6 +1006,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       });
 
+      return editor;
+
     }
     catch(Exception e)
     {
@@ -1015,6 +1016,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
       e.printStackTrace();
     }
+
+    return null;
 
   }//end createDocumentTab
 

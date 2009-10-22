@@ -201,11 +201,18 @@ public class XABSLContext
     private String name;
     private String comment;
     private ArrayList<XABSLBasicSymbol> parameter;
+    private ArrayList<String> actions;
 
     public XABSLOption(String name) {
       this.name = name;
       this.comment = "Option " + name;
       this.parameter = new ArrayList<XABSLBasicSymbol>();
+      this.actions = new ArrayList<String>();
+    }
+
+    public boolean addAction(String action)
+    {
+      return actions.add(action);
     }
 
     public boolean addParameter(XABSLBasicSymbol e) {
@@ -226,6 +233,11 @@ public class XABSLContext
 
     public void setComment(String comment) {
       this.comment = comment;
+    }
+
+    public ArrayList<String> getActions()
+    {
+      return actions;
     }
 
   }//end class XABSLOption

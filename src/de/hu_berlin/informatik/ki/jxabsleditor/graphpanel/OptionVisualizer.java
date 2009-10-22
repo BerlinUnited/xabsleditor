@@ -8,7 +8,6 @@ package de.hu_berlin.informatik.ki.jxabsleditor.graphpanel;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslEdge;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
-import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -57,6 +56,11 @@ public class OptionVisualizer extends javax.swing.JPanel
   /** (Re-) set to a new graph and display it */
   public void setGraph(Graph<XabslNode, XabslEdge> g)
   {
+    if(g == null)
+    {
+      return;
+    }
+    
     lastX = 0.0;
     lastY = 0.0;
     nodeCounter = 0;
