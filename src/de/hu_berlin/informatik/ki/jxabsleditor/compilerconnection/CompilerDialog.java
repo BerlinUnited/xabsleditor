@@ -79,9 +79,10 @@ public class CompilerDialog extends javax.swing.JDialog
 
           Process compilerProcess;
 
-          if(configuration.containsKey(OptionsDialog.XABSL_COMPILER_COMMAND))
+          String compilerCommand = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);
+          if(compilerCommand != null && !"".equals(compilerCommand))
           {
-            String cmd = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);
+            String cmd = compilerCommand;
             cmd += " " + agentsFile.getAbsolutePath() + " -i "
               + outputFile.getAbsolutePath();
             compilerProcess = Runtime.getRuntime().exec(cmd);
