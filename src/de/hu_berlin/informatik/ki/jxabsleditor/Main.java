@@ -254,30 +254,33 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     provider.setParameterizedCompletionParams('(', ", ", ')');
 
-    for(XABSLContext.XABSLSymbol symbol: this.globalXABSLContext.getSymbolsList())
+    if(this.globalXABSLContext != null)
     {
-      if(symbol.getParameter().size() == 0)
+      for(XABSLContext.XABSLSymbol symbol: this.globalXABSLContext.getSymbolsList())
       {
-        provider.addCompletion(new XABSLSymbolSimpleCompletion(provider, symbol));
-      }else
-      {
-        provider.addCompletion(new XABSLSymbolCompletion(provider, symbol));
-      }
-      //System.out.println(symbol); // debug stuff
-    }//end for
-
-    for(XABSLContext.XABSLOption option: this.globalXABSLContext.getOptionMap().values())
-    {
-      provider.addCompletion(new XABSLOptionCompletion(provider, option));
-    }//end for
-
-    for(XABSLContext.XABSLEnum xabslEnum: this.globalXABSLContext.getEnumMap().values())
-    {
-      for(String param: xabslEnum.getElements())
-      {
-        provider.addCompletion(new XABSLEnumCompletion(provider, xabslEnum.name, param));
+        if(symbol.getParameter().size() == 0)
+        {
+          provider.addCompletion(new XABSLSymbolSimpleCompletion(provider, symbol));
+        }else
+        {
+          provider.addCompletion(new XABSLSymbolCompletion(provider, symbol));
+        }
+        //System.out.println(symbol); // debug stuff
       }//end for
-    }//end for
+
+      for(XABSLContext.XABSLOption option: this.globalXABSLContext.getOptionMap().values())
+      {
+        provider.addCompletion(new XABSLOptionCompletion(provider, option));
+      }//end for
+
+      for(XABSLContext.XABSLEnum xabslEnum: this.globalXABSLContext.getEnumMap().values())
+      {
+        for(String param: xabslEnum.getElements())
+        {
+          provider.addCompletion(new XABSLEnumCompletion(provider, xabslEnum.name, param));
+        }//end for
+      }//end for
+    }//end if
 
     // add some default macros
     provider.addCompletion(new ShorthandCompletion(provider,
@@ -796,6 +799,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       {
         return;
       }
+
+      if(!selectedFile.exists())
+      {
+        JOptionPane.showMessageDialog(this,
+          "File " + selectedFile.getAbsolutePath() + " doesn't exist.", "Error",
+          JOptionPane.ERROR_MESSAGE);
+        return;
+      }//end if
 
       openFile(selectedFile);
 
