@@ -256,7 +256,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     if(this.globalXABSLContext != null)
     {
-      for(XABSLContext.XABSLSymbol symbol: this.globalXABSLContext.getSymbolsList())
+      for(XABSLContext.XABSLSymbol symbol: this.globalXABSLContext.getSymbolMap().values())
       {
         if(symbol.getParameter().size() == 0)
         {
@@ -957,7 +957,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         new Main().setVisible(true);
       }
     });
-  }
+  }//end main
 
   private XEditorPanel createDocumentTab(File file)
   {

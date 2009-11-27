@@ -13,7 +13,7 @@ import java.util.HashMap;
  */
 public class XABSLContext
 {
-  private ArrayList<XABSLSymbol> symbolsList = new ArrayList<XABSLSymbol>();
+  private HashMap<String, XABSLSymbol> symbolMap = new HashMap<String, XABSLSymbol>();
   private HashMap<String, XABSLEnum> enumMap = new HashMap<String, XABSLEnum>();
   private HashMap<String, XABSLOption> optionMap = new HashMap<String, XABSLOption>();
 
@@ -25,12 +25,12 @@ public class XABSLContext
     return enumMap;
   }
 
-  public ArrayList<XABSLSymbol> getSymbolsList() {
-    return symbolsList;
+  public HashMap<String, XABSLSymbol> getSymbolMap() {
+    return symbolMap;
   }
 
-  public boolean add(XABSLSymbol e) {
-    return symbolsList.add(e);
+  public void add(XABSLSymbol e) {
+    symbolMap.put(e.name, e);
   }
 
   public void add(XABSLEnum e) {

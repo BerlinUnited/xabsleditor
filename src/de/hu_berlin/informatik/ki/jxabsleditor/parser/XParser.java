@@ -129,10 +129,6 @@ public class XParser implements Parser
       return new ArrayList<Transition>();
     }
   }
-  
-  public ArrayList<XABSLSymbol> getSymbolsList() {
-    return this.xabslContext.getSymbolsList();
-  }
 
   /** Get a graph suited for visualizing */
   public Graph<XabslNode, XabslEdge> getOptionGraph()
@@ -145,7 +141,7 @@ public class XParser implements Parser
     {
       return null;
     }
-  }
+  }//end getOptionGraph
 
   @Override
   public Iterator getNoticeIterator()

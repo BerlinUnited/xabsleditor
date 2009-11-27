@@ -254,8 +254,8 @@ public class XTokenMaker extends AbstractTokenMaker
         case Token.COMMENT_DOCUMENTATION:
           if(i < end - 1 && array[i] == '*' && array[i + 1] == '/')
           {
+            addToken(text, currentTokenStart, ++i, currentTokenType, newStartOffset + currentTokenStart);
             currentTokenType = Token.NULL;
-            addToken(text, currentTokenStart, ++i, Token.COMMENT_MULTILINE, newStartOffset + currentTokenStart);
           }
           i++;
           break;
