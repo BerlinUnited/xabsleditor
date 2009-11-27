@@ -28,6 +28,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import javax.swing.JLabel;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
 
@@ -47,14 +48,54 @@ public class OptionVisualizer extends javax.swing.JPanel
   private double lastY;
   private int nodeCounter;
 
+  private Thread grapLoader;
+  private JLabel lblLoading;
+
   /** Creates new form OptionVisualizer */
   public OptionVisualizer()
   {
     initComponents();
-  }
 
-  /** (Re-) set to a new graph and display it */
+    grapLoader = null;
+
+    lblLoading = new JLabel("loading graph...");
+    lblLoading.setFont(new java.awt.Font("Tahoma", 0, 24));
+    lblLoading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    lblLoading.setVisible(true);
+  }
+  
+  private class GrapLoader implements Runnable
+  {
+    Graph<XabslNode, XabslEdge> graph;
+
+    public GrapLoader(Graph<XabslNode, XabslEdge> graph)
+    {
+      this.graph = graph;
+    }
+
+    @Override
+    public void run()
+    {
+      removeAll();
+      add(lblLoading, BorderLayout.CENTER);
+      doSetGraph(graph);
+      remove(lblLoading);
+    }//end run
+  }//end GrapLoader
+
+  
   public void setGraph(Graph<XabslNode, XabslEdge> g)
+  {
+    if(this.grapLoader != null && this.grapLoader.isAlive())
+      this.grapLoader.interrupt();
+
+    this.grapLoader = new Thread(new GrapLoader(g));
+    this.grapLoader.start();
+  }//end setGraph
+
+  
+  /** (Re-) set to a new graph and display it */
+  private void doSetGraph(Graph<XabslNode, XabslEdge> g)
   {
     if(g == null)
     {
