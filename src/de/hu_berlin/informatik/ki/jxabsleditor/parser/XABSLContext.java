@@ -5,7 +5,8 @@
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -13,19 +14,19 @@ import java.util.HashMap;
  */
 public class XABSLContext
 {
-  private HashMap<String, XABSLSymbol> symbolMap = new HashMap<String, XABSLSymbol>();
-  private HashMap<String, XABSLEnum> enumMap = new HashMap<String, XABSLEnum>();
-  private HashMap<String, XABSLOption> optionMap = new HashMap<String, XABSLOption>();
+  private Map<String, XABSLSymbol> symbolMap = new TreeMap<String, XABSLSymbol>();
+  private Map<String, XABSLEnum> enumMap = new TreeMap<String, XABSLEnum>();
+  private Map<String, XABSLOption> optionMap = new TreeMap<String, XABSLOption>();
 
-  public HashMap<String, XABSLOption> getOptionMap() {
+  public Map<String, XABSLOption> getOptionMap() {
     return optionMap;
   }
 
-  public HashMap<String, XABSLEnum> getEnumMap() {
+  public Map<String, XABSLEnum> getEnumMap() {
     return enumMap;
   }
 
-  public HashMap<String, XABSLSymbol> getSymbolMap() {
+  public Map<String, XABSLSymbol> getSymbolMap() {
     return symbolMap;
   }
 

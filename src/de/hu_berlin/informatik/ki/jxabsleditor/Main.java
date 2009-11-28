@@ -15,7 +15,6 @@ import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLStateCompetion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
-import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
@@ -68,7 +67,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
   
   private OptionVisualizer optionVisualizer;
-  private AgentVisualizer agentVisualizer;
 
   private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
@@ -132,7 +130,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     this.optionPathMap = new HashMap<String, File>();
 
     optionVisualizer = new OptionVisualizer();
-    agentVisualizer = new AgentVisualizer();
 
     optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
     {
@@ -179,7 +176,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
-    panelAgent.add(agentVisualizer, BorderLayout.CENTER);
 
   }
 
@@ -194,7 +190,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     XParser p = new XParser(this.globalXABSLContext);
     p.parse(new StringReader(text));
     optionVisualizer.setGraph(p.getOptionGraph());
-    //agentVisualizer.setContext(globalXABSLContext);
 
     // refresh autocompetion
     DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
@@ -341,7 +336,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     tabbedPanelEditor = new javax.swing.JTabbedPane();
     tabbedPanelView = new javax.swing.JTabbedPane();
     panelOption = new javax.swing.JPanel();
-    panelAgent = new javax.swing.JPanel();
     panelCompiler = new javax.swing.JPanel();
     scrollPaneCompilerOutput = new javax.swing.JScrollPane();
     txtCompilerOutput = new javax.swing.JTextArea();
@@ -396,9 +390,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     panelOption.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Option", panelOption);
 
-    panelAgent.setLayout(new java.awt.BorderLayout());
-    tabbedPanelView.addTab("Agent", panelAgent);
-
     txtCompilerOutput.setColumns(20);
     txtCompilerOutput.setEditable(false);
     txtCompilerOutput.setRows(5);
@@ -408,11 +399,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     panelCompiler.setLayout(panelCompilerLayout);
     panelCompilerLayout.setHorizontalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
     );
     panelCompilerLayout.setVerticalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
     );
 
     tabbedPanelView.addTab("Compiler", null, panelCompiler, "The status and output of the compiler.");
@@ -1088,7 +1079,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSaveAs;
   private javax.swing.JMenuItem miSearch;
   private javax.swing.JMenuItem miSearchProject;
-  private javax.swing.JPanel panelAgent;
   private javax.swing.JPanel panelCompiler;
   private javax.swing.JPanel panelOption;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;

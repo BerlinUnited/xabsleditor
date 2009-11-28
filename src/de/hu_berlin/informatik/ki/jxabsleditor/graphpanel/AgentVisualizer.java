@@ -24,7 +24,7 @@ import edu.uci.ics.jung.visualization.renderers.VertexLabelAsShapeRenderer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
-import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.collections15.Transformer;
 
 /**
@@ -44,7 +44,7 @@ public class AgentVisualizer extends javax.swing.JPanel
   }
 
   private void createSubGraph(XABSLContext.XABSLOption o,
-    DirectedGraph<String, String> g, HashMap<String, XABSLContext.XABSLOption> optionMap)
+    DirectedGraph<String, String> g, Map<String, XABSLContext.XABSLOption> optionMap)
   {
     if(!g.containsVertex(o.getName()))
     {
