@@ -3,7 +3,6 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.Transition;
 import edu.uci.ics.jung.graph.Graph;
@@ -11,6 +10,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import javax.swing.text.Segment;
 import org.fife.ui.rsyntaxtextarea.Parser;
 import org.fife.ui.rsyntaxtextarea.ParserNotice;
@@ -106,7 +106,7 @@ public class XParser implements Parser
   }//end parse
   
 
-  public HashMap<String, State> getStateMap()
+  public Map<String, State> getStateMap()
   {
     if(xabslOptionContext != null)
     {

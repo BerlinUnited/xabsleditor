@@ -7,10 +7,11 @@ package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  *
@@ -19,7 +20,7 @@ import java.util.Set;
 public class XABSLOptionContext
 {
 
-  private HashMap<String, State> stateMap = new HashMap<String, State>();
+  private Map<String, State> stateMap = new TreeMap<String, State>();
   private ArrayList<Transition> stateTransitionList = new ArrayList<Transition>();
 
 
@@ -48,7 +49,7 @@ public class XABSLOptionContext
       }//end for
     }//end for
 
-    HashSet<Transition> commonDecisions = new HashSet<Transition>();
+    Set<Transition> commonDecisions = new HashSet<Transition>();
     // transitions
     for(Transition t : stateTransitionList)
     {
@@ -82,7 +83,7 @@ public class XABSLOptionContext
   }//end getOptionGraph
 
   
-  public HashMap<String, State> getStateMap() {
+  public Map<String, State> getStateMap() {
     return stateMap;
   }
 
