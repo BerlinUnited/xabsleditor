@@ -29,6 +29,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JLabel;
+import javax.swing.SwingWorker;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
 
@@ -43,12 +44,10 @@ public class OptionVisualizer extends javax.swing.JPanel
   private VisualizationViewer<XabslNode, XabslEdge> vv;
   private GraphZoomScrollPane scrollPane;
   private GraphMouseListener<XabslNode> externalMouseListener;
-
   private double lastX;
   private double lastY;
   private int nodeCounter;
-
-  private Thread grapLoader;
+  private GraphLoader graphLoader;
   private JLabel lblLoading;
 
   /** Creates new form OptionVisualizer */
@@ -56,52 +55,33 @@ public class OptionVisualizer extends javax.swing.JPanel
   {
     initComponents();
 
-    grapLoader = null;
+    graphLoader = null;
 
     lblLoading = new JLabel("loading graph...");
     lblLoading.setFont(new java.awt.Font("Tahoma", 0, 24));
     lblLoading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
     lblLoading.setVisible(true);
   }
-  
-  private class GrapLoader implements Runnable
-  {
-    Graph<XabslNode, XabslEdge> graph;
 
-    public GrapLoader(Graph<XabslNode, XabslEdge> graph)
-    {
-      this.graph = graph;
-    }
-
-    @Override
-    public void run()
-    {
-      removeAll();
-      add(lblLoading, BorderLayout.CENTER);
-      doSetGraph(graph);
-      remove(lblLoading);
-    }//end run
-  }//end GrapLoader
-
-  
   public void setGraph(Graph<XabslNode, XabslEdge> g)
   {
-    if(this.grapLoader != null && this.grapLoader.isAlive())
-      this.grapLoader.interrupt();
+    if (this.graphLoader != null && !this.graphLoader.isDone())
+    {
+      this.graphLoader.cancel(true);
+    }
 
-    this.grapLoader = new Thread(new GrapLoader(g));
-    this.grapLoader.start();
+    this.graphLoader = new GraphLoader(g);
+    this.graphLoader.execute();
   }//end setGraph
 
-  
   /** (Re-) set to a new graph and display it */
   private void doSetGraph(Graph<XabslNode, XabslEdge> g)
   {
-    if(g == null)
+    if (g == null)
     {
       return;
     }
-    
+
     lastX = 0.0;
     lastY = 0.0;
     nodeCounter = 0;
@@ -110,19 +90,18 @@ public class OptionVisualizer extends javax.swing.JPanel
     final int h = Math.max(400, this.getSize().height);
 
     KKLayout<XabslNode, XabslEdge> layout = new KKLayout<XabslNode, XabslEdge>(g);
-    //FRLayout<XabslNode,XabslEdge> layout = new FRLayout<XabslNode,XabslEdge>(g);
-    //SpringLayout2<XabslNode,XabslEdge> layout = new SpringLayout2<XabslNode, XabslEdge>(g);
-
     final double nodesPerRow = Math.sqrt(g.getVertexCount());
 
-    layout.setInitializer(new Transformer<XabslNode, Point2D>() {
+    layout.setMaxIterations(500);
+    layout.setInitializer(new Transformer<XabslNode, Point2D>()
+    {
 
       @Override
       public Point2D transform(XabslNode n)
       {
         lastX += (w / nodesPerRow);
         nodeCounter++;
-        if(nodeCounter % ((int) nodesPerRow) == 0)
+        if (nodeCounter % ((int) nodesPerRow) == 0)
         {
           lastX = 0;
           lastY += (h / nodesPerRow);
@@ -131,10 +110,10 @@ public class OptionVisualizer extends javax.swing.JPanel
       }
     });
 
-    
+
     layout.setSize(new Dimension(w, h));
 
-    if(scrollPane != null)
+    if (scrollPane != null)
     {
       remove(scrollPane);
       scrollPane = null;
@@ -152,7 +131,7 @@ public class OptionVisualizer extends javax.swing.JPanel
     mouse.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 
     // add external mouse listener
-    if(externalMouseListener != null)
+    if (externalMouseListener != null)
     {
       vv.addGraphMouseListener(externalMouseListener);
     }
@@ -167,11 +146,10 @@ public class OptionVisualizer extends javax.swing.JPanel
       @Override
       public Paint transform(XabslNode n)
       {
-        if(n.getType() == XabslNode.Type.Option)
+        if (n.getType() == XabslNode.Type.Option)
         {
           return Color.lightGray;
-        }
-        else
+        } else
         {
           return Color.white;
         }
@@ -187,11 +165,10 @@ public class OptionVisualizer extends javax.swing.JPanel
       @Override
       public Stroke transform(XabslEdge e)
       {
-        if(e.getType() == XabslEdge.Type.CommonDecision)
+        if (e.getType() == XabslEdge.Type.CommonDecision)
         {
           return vv.getRenderContext().DASHED;
-        }
-        else
+        } else
         {
           return new BasicStroke();
         }
@@ -203,11 +180,10 @@ public class OptionVisualizer extends javax.swing.JPanel
       @Override
       public Paint transform(XabslEdge e)
       {
-        if(e.getType() == XabslEdge.Type.CommonDecision || e.getType() == XabslEdge.Type.Outgoing)
+        if (e.getType() == XabslEdge.Type.CommonDecision || e.getType() == XabslEdge.Type.Outgoing)
         {
           return Color.gray;
-        }
-        else
+        } else
         {
           return Color.black;
         }
@@ -260,7 +236,7 @@ public class OptionVisualizer extends javax.swing.JPanel
 
       String lines[] = n.getName().split("_");
       int maxWidth = 1;
-      for(int i = 0; i < lines.length; i++)
+      for (int i = 0; i < lines.length; i++)
       {
         maxWidth = Math.max(maxWidth, lines[i].length());
       }
@@ -270,20 +246,19 @@ public class OptionVisualizer extends javax.swing.JPanel
 
       GeneralPath result = null;
 
-      if(n.getType() == XabslNode.Type.State)
+      if (n.getType() == XabslNode.Type.State)
       {
         result = new GeneralPath(getCircleFromSize(s));
-      }
-      else
+      } else
       {
         result = new GeneralPath(getRectangleFromSize(s));
       }
-      if(n.isTargetState())
+      if (n.isTargetState())
       {
         // add bigger circle
         result.append(getCircleFromSize(s + 5), false);
       }
-      if(n.isInitialState())
+      if (n.isInitialState())
       {
         // add two horizontal lines
         float h = s / 3.0f + 1.0f;
@@ -319,6 +294,28 @@ public class OptionVisualizer extends javax.swing.JPanel
       return circle;
     }
   }
+
+  private class GraphLoader extends SwingWorker<String, Void>
+  {
+
+    Graph<XabslNode, XabslEdge> graph;
+
+    public GraphLoader(Graph<XabslNode, XabslEdge> graph)
+    {
+      this.graph = graph;
+    }
+
+    @Override
+    protected String doInBackground() throws Exception
+    {
+      removeAll();
+      add(lblLoading, BorderLayout.CENTER);
+      doSetGraph(graph);
+      remove(lblLoading);
+
+      return "";
+    }
+  }//end GraphLoader
 
   /** This method is called from within the constructor to
    * initialize the form.

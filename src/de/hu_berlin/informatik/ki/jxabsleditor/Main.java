@@ -177,6 +177,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
 
+
   }
 
   private void refreshGraph()
