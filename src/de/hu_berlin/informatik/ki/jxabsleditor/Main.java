@@ -78,6 +78,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private XABSLContext globalXABSLContext = null;
   private ArrayList<XABSLStateCompetion> localOptionCompletions = null;
 
+  private FileDrop fileDrop = null;
+
   /** Creates new form Main */
   public Main()
   {
@@ -93,9 +95,23 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
     }
 
-
     initComponents();
 
+    this.fileDrop = new FileDrop(new FileDrop.Listener() {
+      @Override
+      public void filesDropped(File[] files) {
+        // open all the droppt files
+        for(File file: files)
+        {
+          openFile(file);
+        }
+      }
+    });
+
+    fileDrop.install(this.tabbedPanelEditor);
+    //fileDrop.setBorderHighlightingEnabled(true);
+    
+    
     // icon
     Image icon = Toolkit.getDefaultToolkit().getImage(
       this.getClass().getResource("res/XabslEditor.png"));
@@ -176,9 +192,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
-
-
-  }
+  }//end Main
 
   private void refreshGraph()
   {
