@@ -1,0 +1,9 @@
+XabslEditor 1.0
+===============
+
+This is the first release of Java version of the XabslEditor.
+
+For information about the "Extensible Agent Behavior Specification Language" 
+go to http://www.xabsl.de .
+
+XabslEditor uses the RSyntaxArea, JUNG Graph and JRuby libraries.
