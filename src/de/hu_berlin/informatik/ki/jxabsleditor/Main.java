@@ -107,7 +107,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     initComponents();
 
-    this.fileDrop = new FileDrop(new FileDrop.Listener() {
+    this.fileDrop = new FileDrop(this.tabbedPanelEditor, new FileDrop.Listener() {
       @Override
       public void filesDropped(File[] files) {
         // open all the droppt files
@@ -118,7 +118,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     });
 
-    fileDrop.install(this.tabbedPanelEditor);
+    //fileDrop.install(this.tabbedPanelEditor);
     //fileDrop.setBorderHighlightingEnabled(true);
     
     
