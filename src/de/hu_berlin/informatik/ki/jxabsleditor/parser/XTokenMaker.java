@@ -246,20 +246,29 @@ public class XTokenMaker extends AbstractTokenMaker
           }
           break;
         case Token.OPERATOR:
-          if(is(operators, c))
+        {
+          boolean operatorChar = is(operators, c);
+
+          // handle the current char
+          if(operatorChar)
           {
             currentTokenType = Token.OPERATOR;
             i++;
-          }
-          else
+          }//end if
+
+          // check for comments
+          if(!operatorChar || i == end)
           {
             currentTokenType = getOperatorState(array, currentTokenStart, i);
-            if(currentTokenType == Token.OPERATOR)
-            {
-              currentTokenType = Token.NULL;
-              addToken(text, currentTokenStart, i - 1, Token.OPERATOR, newStartOffset + currentTokenStart);
-            }//end if
-          }
+          }//end if
+
+          // handle an operator
+          if(!operatorChar && currentTokenType == Token.OPERATOR)
+          {
+            currentTokenType = Token.NULL;
+            addToken(text, currentTokenStart, i - 1, Token.OPERATOR, newStartOffset + currentTokenStart);
+          }//end if
+        }
           break;
 
         case Token.COMMENT_MULTILINE:
@@ -373,17 +382,17 @@ public class XTokenMaker extends AbstractTokenMaker
 
   private int getOperatorState(char[] array, int start, int end)
   {
-    if(end - start > 2) // Operator has the length > 3
+    if(end - start == 3) // Operator has the length >= 3
     {
       if(array[start] == '/' &&
         array[start + 1] == '*' &&
-        array[start + 1] == '*')
+        array[start + 2] == '*')
       {
         return Token.COMMENT_DOCUMENTATION;
       }
     }//end if
 
-    if(end - start > 1) // Operator has the length > 2
+    if(end - start > 1) // Operator has the length >= 2
     {
       if(array[start] == '/' && array[start + 1] == '*')
       {
