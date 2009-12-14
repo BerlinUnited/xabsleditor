@@ -249,7 +249,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         try{
           //System.out.println("parse: " + file.getName()); // debug stuff
 
-          String text = Helper.readFileToString(file);
+          String text = Tools.readFileToString(file);
           XParser p = new XParser(this.globalXABSLContext);
           p.parse(new StringReader(text));
           
@@ -851,7 +851,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     // TODO: make it better
     this.optionPathMap.clear();
-    File agentsFile = Helper.getAgentFileForOption(selectedFile);
+    File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
     // needed for function-links
     createOptionList(agentsFile.getParentFile());
@@ -989,7 +989,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
       else
       {
-        String content = Helper.readFileToString(file);
+        String content = Tools.readFileToString(file);
         editor = new XEditorPanel(content);
         editor.setFile(file);
         // create a tab

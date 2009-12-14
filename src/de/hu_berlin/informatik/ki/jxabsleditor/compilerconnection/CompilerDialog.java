@@ -15,7 +15,7 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.Helper;
+import de.hu_berlin.informatik.ki.jxabsleditor.Tools;
 import de.hu_berlin.informatik.ki.jxabsleditor.OptionsDialog;
 import java.io.BufferedReader;
 import java.io.File;
@@ -69,7 +69,7 @@ public class CompilerDialog extends javax.swing.JDialog
     {
       CompileResult result = new CompileResult();
 
-      File agentsFile = Helper.getAgentFileForOption(optionFile);
+      File agentsFile = Tools.getAgentFileForOption(optionFile);
       if(agentsFile == null)
       {
         JOptionPane.showMessageDialog(null, "Could not find agents.xabsl",
@@ -166,7 +166,7 @@ public class CompilerDialog extends javax.swing.JDialog
         }
         catch(Exception ex)
         {
-          Helper.handleException(ex);
+          Tools.handleException(ex);
         }
       }
 
@@ -177,8 +177,8 @@ public class CompilerDialog extends javax.swing.JDialog
         receiver.compilationFinished(result);
       }
       return result;
-    }
-  }
+    }//end doInBackground
+  }//end class CompiliationWorker
 
   private String[] autoSearchCommand(File agentsFile) throws Exception
   {
@@ -214,7 +214,7 @@ public class CompilerDialog extends javax.swing.JDialog
     };
 
     return cmdarray;
-  }
+  }//end autoSearchCommand
 
   /** This method is called from within the constructor to
    * initialize the form.

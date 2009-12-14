@@ -22,10 +22,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Static helper functions
- * @author thomas
+ * Collection of static tool functions.
+ * 
+ * @author Thomas Krause
+ * @author Heinrich Mellmann
  */
-public class Helper
+public class Tools
 {
   /**
    * Prints stacktrace and shows a dialog to the user.
@@ -38,7 +40,7 @@ public class Helper
     // show
     ExceptionDialog dlg = new ExceptionDialog(null, ex);
     dlg.setVisible(true);
-  }
+  }//end handleException
 
   /**
    * Returns the agent-file of an option
@@ -50,45 +52,45 @@ public class Helper
     File agent = null;
     File current = optionFile;
 
-    if(current != null)
+    if(current == null)
+      return null;
+    
+    // check if this is already the root file
+    if("agents.xabsl".equalsIgnoreCase(current.getName())
+      && current.isFile())
     {
-      // check if this is already the root file
-      if("agents.xabsl".equalsIgnoreCase(current.getName())
-        && current.isFile())
+      File optionsDir = new File(current.getParentFile().getAbsolutePath() + "/Options");
+      if(optionsDir.exists() && optionsDir.isDirectory())
       {
-        File optionsDir = new File(current.getParentFile().getAbsolutePath() + "/Options");
-        if(optionsDir.exists() && optionsDir.isDirectory())
-        {
-          return current;
-        }
-      }//end if
+        return current;
+      }
+    }//end if
 
-      // find options- or symbols-folder
+    // find options- or symbols-folder
+    current = current.getParentFile();
+    while(current != null && !current.getName().equalsIgnoreCase("Options")
+          && !current.getName().equalsIgnoreCase("Symbols"))
+    {
       current = current.getParentFile();
-      while(current != null && !current.getName().equalsIgnoreCase("Options")
-            && !current.getName().equalsIgnoreCase("Symbols"))
-      {
-        current = current.getParentFile();
-      }
-
-      if(current != null)
-      {
-        // the agents.xabsl should be in the parent folder
-        current = current.getParentFile();
-        if(current != null)
-        {
-          // check if agents.xabsl is in this folder
-          File tmpAgent = new File(current.getAbsolutePath() + "/agents.xabsl");
-          if(tmpAgent.exists() && tmpAgent.isFile())
-          {
-            agent = tmpAgent;
-          }
-        }
-      }
     }
 
+    if(current != null)
+    {
+      // the agents.xabsl should be in the parent folder
+      current = current.getParentFile();
+      if(current != null)
+      {
+        // check if agents.xabsl is in this folder
+        File tmpAgent = new File(current.getAbsolutePath() + "/agents.xabsl");
+        if(tmpAgent.exists() && tmpAgent.isFile())
+        {
+          agent = tmpAgent;
+        }
+      }
+    }//end if
+
     return agent;
-  }
+  }//end getAgentFileForOption
   
 
   public static String readFileToString(File file) throws IOException
@@ -107,6 +109,4 @@ public class Helper
     return buffer.toString();
   }//end readFileToString
 
-  
-
-}
+}//end class Tools

@@ -183,7 +183,7 @@ public class SearchInProjectDialog extends javax.swing.JDialog
       {
         try
         {
-          String content = Helper.readFileToString(f);
+          String content = Tools.readFileToString(f);
           if(content.indexOf(txtSearch.getText()) > -1)
           {
             m.addElement(f.getAbsolutePath());
@@ -191,12 +191,11 @@ public class SearchInProjectDialog extends javax.swing.JDialog
         }
         catch(IOException ex)
         {
-          Helper.handleException(ex);
+          Tools.handleException(ex);
         }
-
-      }
-    }
-  }
+      }//end for
+    }//end if
+  }//end search
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton btSearch;
