@@ -109,4 +109,38 @@ public class Tools
     return buffer.toString();
   }//end readFileToString
 
+  
+  /**
+   * Validates the name of a given file, i.e., if the file name doesn't have
+   * the proper ending, it will be appended.
+   * @param file the file which name has to be validated
+   * @param filter a file filter containing the definition of the file ending.
+   * @return a file with validated file name
+   */
+  public static File validateFileName(final File file, final javax.swing.filechooser.FileFilter filter)
+  {
+    if(file == null || filter == null || filter.accept(file))
+    {
+      return file;
+    }
+    // remove wrong file extension if any
+    String fileName = file.getName();
+    int index = fileName.lastIndexOf(".");
+    if(index > 0)
+    {
+      fileName = fileName.substring(0, index);
+    }
+
+    final String extension = filter.toString();
+
+    if(extension.matches("(\\w)*"))
+    {
+      String newFileName = fileName + "." + extension;
+      File newFile = new File(file.getParent(), newFileName);
+      return newFile;
+    }//end if
+
+    return file;
+  }//end validateFileName
+
 }//end class Tools

@@ -36,6 +36,8 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -120,6 +122,20 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     //fileDrop.install(this.tabbedPanelEditor);
     //fileDrop.setBorderHighlightingEnabled(true);
+
+    addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        // check if there are unsaved files
+        for(Component component: tabbedPanelEditor.getComponents())
+        {
+          XEditorPanel editor = ((XEditorPanel) component);
+          // TODO: try to close the tabs
+        }//end for
+
+        System.exit(0);
+      }
+    });
     
     
     // icon
@@ -141,7 +157,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
     catch(Exception ex)
     {
-      handleException(ex);
+      Tools.handleException(ex);
     }
 
     fileChooser = new JFileChooser();
@@ -391,7 +407,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     mHelp = new javax.swing.JMenu();
     miInfo = new javax.swing.JMenuItem();
 
-    setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
     setTitle("XABSL Editor");
     setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     setLocationByPlatform(true);
@@ -581,6 +597,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     mEdit.add(miSearch);
 
     miSearchProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+    miSearchProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/find.png"))); // NOI18N
     miSearchProject.setText("Search in Project");
     miSearchProject.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -602,6 +619,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     mEdit.add(miCompile);
 
     miRefreshGraph.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+    miRefreshGraph.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/reload.png"))); // NOI18N
     miRefreshGraph.setMnemonic('R');
     miRefreshGraph.setText("Refresh Graph");
     miRefreshGraph.addActionListener(new java.awt.event.ActionListener() {
@@ -660,7 +678,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         return;
       }
 
-
       int result = JOptionPane.showConfirmDialog(this, "Save changes?", "File was modified.",
         JOptionPane.YES_NO_CANCEL_OPTION);
 
@@ -673,8 +690,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.remove(editor);
         return;
       }
-
-
 
       String text = editor.getText();
       File selectedFile = editor.getFile();
@@ -924,8 +939,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
         editor.getSearchPanel().setVisible(false);
         editor.getSearchPanel().setVisible(true);
-
-      }
+      }//end if
     }//GEN-LAST:event_miSearchActionPerformed
 
     private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
@@ -998,7 +1012,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
       editor.setXABSLContext(this.globalXABSLContext);
       editor.setCompletionProvider(createCompletitionProvider());
-      
+
       tabbedPanelEditor.setSelectedComponent(editor);
 
       editor.addDocumentChangedListener(new DocumentChangedListener()
@@ -1034,7 +1048,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       });
 
       return editor;
-
     }
     catch(Exception e)
     {
@@ -1045,7 +1058,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
 
     return null;
-
   }//end createDocumentTab
 
   private File saveStringToFile(File selectedFile, String text) throws Exception
@@ -1059,7 +1071,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         return null;
       }
       selectedFile = fileChooser.getSelectedFile();
-      selectedFile = validateFileName(selectedFile, fileChooser.getFileFilter());
+      selectedFile = Tools.validateFileName(selectedFile, fileChooser.getFileFilter());
     }
 
     if(selectedFile == null)
@@ -1122,8 +1134,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       tabbedPanelView.setSelectedIndex(tabbedPanelView.getTabCount() - 1);
     }
-  }
-  // End of variables declaration
+  }//end compilationFinished
+
+  private void saveConfiguration()
+  {
+    try
+    {
+      configuration.store(new FileWriter(fConfig), "JXabslEditor configuration");
+    }
+    catch(IOException ex)
+    {
+      Tools.handleException(ex);
+    }
+  }//end saveConfiguration
 
   private class XABSLFileFilter extends javax.swing.filechooser.FileFilter
   {
@@ -1178,49 +1201,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
   }//end class DotFileFilter
 
-  private File validateFileName(final File file, final javax.swing.filechooser.FileFilter filter)
-  {
-    if(filter.accept(file))
-    {
-      return file;
-    }
-    // remove wrong file extension if any
-    String fileName = file.getName();
-    final int index = fileName.lastIndexOf(".");
-    if(index > 0)
-    {
-      fileName = fileName.substring(0, index);
-    }
-
-    final String extension = filter.toString();
-    final String newFileName = fileName + "." + extension;
-
-    final File newFile = new File(file.getParent(), newFileName);
-
-    return newFile;
-  }//end validateFileName
-
-  private void saveConfiguration()
-  {
-    try
-    {
-      configuration.store(new FileWriter(fConfig), "JXabslEditor configuration");
-    }
-    catch(IOException ex)
-    {
-      handleException(ex);
-    }
-
-  }//end saveConfiguration
-
-  public static void handleException(Exception ex)
-  {
-    // log
-    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-    // show
-    ExceptionDialog dlg = new ExceptionDialog(null, ex);
-    dlg.setVisible(true);
-  }
 
   class XABSLErrorOutputStream extends OutputStream
   {
