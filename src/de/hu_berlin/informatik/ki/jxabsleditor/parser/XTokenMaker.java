@@ -81,7 +81,11 @@ public class XTokenMaker extends AbstractTokenMaker
       }
     }//end if
 
-    super.addToken(segment, start, end, tokenType, startOffset);
+    boolean hyperlink = 
+            tokenType == Token.IDENTIFIER ||
+            tokenType == Token.FUNCTION;
+    
+    super.addToken(segment.array, start, end, tokenType, startOffset, hyperlink);
   }//end addToken
 
   /**
@@ -309,7 +313,7 @@ public class XTokenMaker extends AbstractTokenMaker
           break;
 
         case Token.SEPARATOR:
-          if(is(separators, c))
+          if(is(separators, c) || is(dotSeparators, c))
           {
             addToken(text, currentTokenStart, i, Token.SEPARATOR, newStartOffset + currentTokenStart);
           }
@@ -370,7 +374,7 @@ public class XTokenMaker extends AbstractTokenMaker
     }
     else if(is(dotSeparators, c))
     {
-      return Token.ERROR_IDENTIFIER;
+      return Token.SEPARATOR;
     }else if(c == '"')
     {
       return Token.LITERAL_STRING_DOUBLE_QUOTE;

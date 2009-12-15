@@ -17,7 +17,7 @@ package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
 /**
  *
- * @author admin
+ * @author Heinrich Mellmann
  */
 public interface DocumentChangedListener
 {

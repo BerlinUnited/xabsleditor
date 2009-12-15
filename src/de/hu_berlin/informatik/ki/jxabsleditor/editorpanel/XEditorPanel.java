@@ -86,7 +86,28 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     searchOffset = 0;
 
-    textArea = new RSyntaxTextArea();
+    textArea = new RSyntaxTextArea()
+    {
+      /**
+       * underline only when the hyperlink is activated
+       */
+      @Override
+      public boolean getUnderlineForToken(Token t) {
+        // HACK: using the color of token to identify if
+        //       it is activated, since hoveredOverLinkOffset
+        //       is private in RSyntaxTextArea
+        if(t.isHyperlink())
+        {
+          return (getHyperlinksEnabled() &&
+                  getForegroundForToken(t) == getHyperlinkForeground());
+        }//end if
+
+        return super.getUnderlineForToken(t);
+      }//end getUnderlineForToken
+      
+    };//end new RSyntaxTextArea
+
+
     if(str != null)
     {
       textArea.setText(str);
@@ -109,12 +130,15 @@ public class XEditorPanel extends javax.swing.JPanel
     // TODO: define new color scheme
     SyntaxScheme scheme = new SyntaxScheme(true);
     scheme.setStyle(Token.COMMENT_EOL, new Style(new Color(255, 128, 0), null));
+    scheme.setStyle(Token.SEPARATOR, new Style());
+    
     textArea.setSyntaxScheme(scheme);
     textArea.setWhitespaceVisible(true);
     textArea.setVisible(true);
 
-    textArea.setHyperlinksEnabled(true);
-    textArea.setHyperlinkForeground(Color.red);
+    //textArea.setHyperlinksEnabled(true);
+    //textArea.setHyperlinkForeground(Color.blue);
+    //textArea.setAutoIndentEnabled(true);
     
     // the tokenizer
     ((RSyntaxDocument) textArea.getDocument()).setSyntaxStyle(new XTokenMaker());
@@ -146,7 +170,6 @@ public class XEditorPanel extends javax.swing.JPanel
     add(scrolPane);
 
     searchPanel.setVisible(false);
-
   }//end InitTextArea
 
   /** This method is called from within the constructor to
