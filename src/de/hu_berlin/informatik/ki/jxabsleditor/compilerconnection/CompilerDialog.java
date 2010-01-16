@@ -21,6 +21,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
@@ -185,7 +188,14 @@ public class CompilerDialog extends javax.swing.JDialog
   {
     // search the installation directory
     File install = new File(System.getProperty("user.dir"));
-    
+
+    CodeSource source = CompilerDialog.class.getProtectionDomain().getCodeSource();
+    if(source != null)
+    {
+      URL url = source.getLocation();
+      install = new File(url.toURI()).getParentFile();
+    }
+
     boolean compilerDirFound = false;
     File compilerDir = null;
 
@@ -225,7 +235,8 @@ public class CompilerDialog extends javax.swing.JDialog
     if(compilerDir == null)
     {
       throw new Exception("Could not find \"xabsl-compiler\"-directory! Aborting. " +
-        "Please specify your custom path in the options.");
+        "Please specify your custom path in the options. " +
+        "Assumed installation path was \"" + (install == null ? "null" :  install.getAbsolutePath()) + "\"");
     }
 
     String[] cmdarray = new String[]
