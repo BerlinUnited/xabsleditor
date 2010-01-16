@@ -19,6 +19,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.Tools;
 import de.hu_berlin.informatik.ki.jxabsleditor.OptionsDialog;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.InputStreamReader;
 import java.util.Properties;
 import javax.swing.JOptionPane;
@@ -182,23 +183,48 @@ public class CompilerDialog extends javax.swing.JDialog
 
   private String[] autoSearchCommand(File agentsFile) throws Exception
   {
-    // find out path to Extern-directory
-    File extern = new File(agentsFile.getAbsolutePath());
-    extern = extern.getParentFile();
-    while(extern != null && extern.isDirectory() &&
-      (!extern.getName().equals("Projects") || !(new File(extern.getParentFile(), "Extern").exists()) || !(new File(extern.getParentFile(), "Documents").exists())))
+    // search the installation directory
+    File install = new File(System.getProperty("user.dir"));
+    
+    boolean compilerDirFound = false;
+    File compilerDir = null;
+
+    while(install != null && install.isDirectory() && !compilerDirFound)
     {
-      extern = extern.getParentFile();
+      File[] subdirs = install.listFiles(new FileFilter() {
+
+        @Override
+        public boolean accept(File pathname)
+        {
+          if(pathname.isDirectory() && pathname.getName().equals("xabsl-compiler"))
+          {
+            return true;
+          }
+          else
+          {
+            return false;
+          }
+        }
+        
+      });
+      
+      
+      if(subdirs.length > 0)
+      {
+        compilerDirFound = true;
+        compilerDir = subdirs[0];
+
+        break;
+      }
+      else
+      {
+        install = install.getParentFile();
+      }
     }
 
-    if(extern != null)
+    if(compilerDir == null)
     {
-      extern = new File(extern.getParentFile(), "Extern");
-    }
-
-    if(extern == null || !extern.isDirectory())
-    {
-      throw new Exception("Could not find \"Extern\"-directory! Aborting. " +
+      throw new Exception("Could not find \"xabsl-compiler\"-directory! Aborting. " +
         "Please specify your custom path in the options.");
     }
 
@@ -206,8 +232,8 @@ public class CompilerDialog extends javax.swing.JDialog
     {
       "java",
       "-jar",
-      extern.getAbsolutePath() + "/java/jruby-complete-1.2.0.jar",
-      extern.getAbsolutePath() + "/ruby/xabsl-compiler/xabsl.rb",
+      compilerDir.getAbsolutePath() + "/jruby-complete-1.2.0.jar",
+      compilerDir.getAbsolutePath() + "/xabsl.rb",
       agentsFile.getAbsolutePath(),
       "-i",
       outputFile.getAbsolutePath()
