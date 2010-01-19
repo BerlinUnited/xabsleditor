@@ -149,5 +149,4 @@ module Translator
 	DTD_INCLUDE_ENTITY = 'symbol-and-basic-behavior-files'
 	AGENT_COLLECTION_FILE = 'agents.xml'
 	TIMESTAMP_FILE = File.join(File.expand_path(File.dirname(__FILE__)), 'timestamp')
-	API_FILE = './xtc.api'
 end

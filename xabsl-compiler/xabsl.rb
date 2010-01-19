@@ -35,7 +35,7 @@ module Translator
 			cc.pc.option_definitions_temp = RootLanguageElement.new
 			
 			ac_tag = AgentCollectionTag.new
-			ac_tag.attr[ATTR_XMLNS] = "http://www.ki.informatik.hu-berlin.de/XABSL"
+			ac_tag.attr[ATTR_XMLNS] = "http://www.xabsl.de"
 			ac_tag.attr[ATTR_XMLNS_XSI] = "http://www.w3.org/2001/XMLSchema-instance"
 			ac_tag.attr[ATTR_XMLNS_XI] = "http://www.w3.org/2003/XInclude"
 			ac_tag.add_child(TitleTag.new)
@@ -316,7 +316,7 @@ module Translator
 		  option_defintions_tag = ODSTag.new
 	
 			ods_tag = ODSTag.new
-			ods_tag.attr[ATTR_XMLNS] = "http://www.ki.informatik.hu-berlin.de/XABSL"
+			ods_tag.attr[ATTR_XMLNS] = "http://www.xabsl.de"
 			ods_tag.attr[ATTR_XMLNS_XSI] = "http://www.w3.org/2001/XMLSchema-instance"
             
 			option_definitions_root = RootLanguageElement.new
@@ -376,13 +376,13 @@ module Translator
 				    if idle_run
 					    LOG.info "ultimate shortcut. none of the input files has changed."
 					    (1..rand(4)+1).each do 
-							  $stderr.print "Z"	
+							  $stdout.print "Z"	
 						    (2..rand(5)+2).each do
-								  $stderr.print "z"
+								  $stdout.print "z"
 						    end
-						    $stderr.print " "
+						    $stdout.print " "
 					    end
-					    $stderr.puts
+					    $stdout.puts
 					    all_ccs = ccs
 					    build_ccs = []
 					  else
@@ -749,8 +749,8 @@ module Translator
 					end
         end		
 			end
-			$stderr.puts "#{build_ccs.size} compiled, #{files_written} written, #{message_count[CompilerError]} error(s), #{message_count[CompilerWarning]} warning(s), elapsed time #{elapsed_time}s"
-      $stderr.puts
+			$stdout.puts "#{build_ccs.size} compiled, #{files_written} written, #{message_count[CompilerError]} error(s), #{message_count[CompilerWarning]} warning(s), elapsed time #{elapsed_time}s"
+      $stdout.puts
 		end
 	end
 
@@ -760,7 +760,7 @@ module Translator
   #profiler = Translator::Profiler.new(Translator::SymbolContext, "Translator", "SymbolContext", "from_code")
 
 
-  LOG = Logger.new(STDERR)
+  LOG = Logger.new(STDOUT)
   LOG.datetime_format = ""
   LOG.level = Logger::WARN
 
@@ -881,5 +881,7 @@ end
 
 #profiler.log
 LOG.close
+
+exit 1 if translator.errors?
 
 end

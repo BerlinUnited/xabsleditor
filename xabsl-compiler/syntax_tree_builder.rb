@@ -463,11 +463,11 @@ module Translator
 			when :symbols
 				tag = SymbolsTag.new
 				dir = "Symbols"
-				#tag.attr[ATTR_XSI_SCHEMALOCATION] = "http://www.ki.informatik.hu-berlin.de/XABSL"
+				#tag.attr[ATTR_XSI_SCHEMALOCATION] = "http://www.xabsl.de"
 			when :behaviors
 				tag = BBSTag.new
 				dir = "BasicBehaviors"
-				#tag.attr[ATTR_XSI_SCHEMALOCATION] = "http://www.ki.informatik.hu-berlin.de/XABSL"
+				#tag.attr[ATTR_XSI_SCHEMALOCATION] = "http://www.xabsl.de"
 			when nil
 				eh.error EmptyNamespaceWarning.new(cc, val[2])
 			else
@@ -478,7 +478,7 @@ module Translator
 				tag.attr[ATTR_ID] = pc.namespace_symbol
 				tag.attr[ATTR_TITLE] = val[4].to_s
   			tag.attr[ATTR_DESCRIPTION] = val[0].to_s unless val[0].nil?
-				tag.attr[ATTR_XMLNS] = 'http://www.ki.informatik.hu-berlin.de/XABSL'
+				tag.attr[ATTR_XMLNS] = 'http://www.xabsl.de'
 				tag.attr[ATTR_XMLNS_XSI] = 'http://www.w3.org/2001/XMLSchema-instance'
 
 				#inner namespace thingies
@@ -553,9 +553,9 @@ module Translator
 			pc.option_root.add_child(oTag, cc)
 
 			oTag.attr[ATTR_NAME] = pc.option_symbol
-			oTag.attr[ATTR_XMLNS] = 'http://www.ki.informatik.hu-berlin.de/XABSL'
+			oTag.attr[ATTR_XMLNS] = 'http://www.xabsl.de'
 			oTag.attr[ATTR_XMLNS_XSI] = 'http://www.w3.org/2001/XMLSchema-instance'
-			#oTag.attr[ATTR_XSI_SCHEMALOCATION] = "http://www.ki.informatik.hu-berlin.de/XABSL"
+			#oTag.attr[ATTR_XSI_SCHEMALOCATION] = "http://www.xabsl.de"
 			
 			#common decision tree/action
 			unless val[6].nil?

@@ -16,7 +16,7 @@ module Translator
 
   class XabslParser < Racc::Parser
 
-module_eval <<'..end xabsl_parser.y.rb modeval..idd2fb3098a9', 'xabsl_parser.y.rb', 564
+module_eval <<'..end xabsl_parser.y.rb modeval..ideff3eeb85f', 'xabsl_parser.y.rb', 564
 
 def initialize
 	super
@@ -57,7 +57,7 @@ def on_error(error_token_id, error_value, value_stack)
 	end
 end
 
-..end xabsl_parser.y.rb modeval..idd2fb3098a9
+..end xabsl_parser.y.rb modeval..ideff3eeb85f
 
 ##### racc 1.4.4 generates ###
 

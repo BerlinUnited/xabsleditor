@@ -1,9 +1,19 @@
-XabslEditor 1.0
-===============
+XabslEditor 1.0-rc1 (Release Candidate)
+=======================================
 
 This is the first release of Java version of the XabslEditor.
 
+The website ist hosted under https://launchpad.net/xabsleditor/ .
 For information about the "Extensible Agent Behavior Specification Language" 
 go to http://www.xabsl.de .
 
-XabslEditor uses the RSyntaxArea, JUNG Graph and JRuby libraries.
+3rd party tools and libraries
+=============================
+
+ * XABSL (http://www.xabsl.de/)
+ * RSyntaxTextArea (http://fifesoft.com/rsyntaxtextarea/)
+ * AutoComplete (http://fifesoft.com/autocomplete/)
+ * JUNG (http://jung.sourceforge.net/)
+ * JRuby (http://jruby.org/)
+
+Their licenses are located in the 3RD_PARTY_LICENSES folder.

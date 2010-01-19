@@ -34,6 +34,7 @@ import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -408,7 +409,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     miInfo = new javax.swing.JMenuItem();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-    setTitle("XABSL Editor");
+    setTitle("XabslEditor");
     setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
     setLocationByPlatform(true);
     addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -440,11 +441,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     panelCompiler.setLayout(panelCompilerLayout);
     panelCompilerLayout.setHorizontalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
     );
     panelCompilerLayout.setVerticalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
     );
 
     tabbedPanelView.addTab("Compiler", null, panelCompiler, "The status and output of the compiler.");
@@ -804,14 +805,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private void miInfoActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miInfoActionPerformed
     {//GEN-HEADEREND:event_miInfoActionPerformed
 
-      JOptionPane.showMessageDialog(this,
-        "<html>" +
-        "<h1>XabslEditor - Java edition</h1>" +
-        "<p>(c) 2009 by NaoTeam Humboldt<br>" +
-        "Humboldt-Universit&auml;t zu Berlin</p>" +
-        "</html>",
-        "XabslEditor",
-        JOptionPane.INFORMATION_MESSAGE);
+      AboutDialog dlg = new AboutDialog(this, true);
+      Point location = this.getLocation();
+      location.translate(100, 100);
+      dlg.setLocation(location);
+      dlg.setVisible(true);
 
     }//GEN-LAST:event_miInfoActionPerformed
 

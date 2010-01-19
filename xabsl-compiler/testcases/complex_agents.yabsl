@@ -1,5 +1,0 @@
-include "complex_symbols.xtc";
-include "complex_options.xtc";
-
-/** The default agent behavior */
-agent default_agent("Default", alpha);
