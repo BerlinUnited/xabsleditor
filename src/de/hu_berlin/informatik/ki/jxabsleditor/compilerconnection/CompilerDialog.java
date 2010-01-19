@@ -165,10 +165,11 @@ public class CompilerDialog extends javax.swing.JDialog
             JOptionPane.showMessageDialog(null, "Intermediate code successfully " +
               "compiled and saved.");
           }
-
+          
         }
         catch(Exception ex)
         {
+          finalThis.setVisible(false);
           Tools.handleException(ex);
         }
       }
