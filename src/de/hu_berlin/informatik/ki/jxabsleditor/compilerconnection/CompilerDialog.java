@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Properties;
@@ -243,7 +242,7 @@ public class CompilerDialog extends javax.swing.JDialog
     {
       "java",
       "-jar",
-      compilerDir.getAbsolutePath() + "/jruby-complete-1.2.0.jar",
+      compilerDir.getAbsolutePath() + "/jruby-complete-1.4.0.jar",
       compilerDir.getAbsolutePath() + "/xabsl.rb",
       agentsFile.getAbsolutePath(),
       "-i",
