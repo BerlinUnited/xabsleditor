@@ -145,7 +145,7 @@ public class CompilerDialog extends javax.swing.JDialog
 
           System.out.println(stderr);
 
-          result.messages = stderr.toString();
+          result.messages = stderr.toString() + "\n" + stdout.toString();
 
           pbCompiling.setIndeterminate(false);
           pbCompiling.setValue(pbCompiling.getMaximum());
