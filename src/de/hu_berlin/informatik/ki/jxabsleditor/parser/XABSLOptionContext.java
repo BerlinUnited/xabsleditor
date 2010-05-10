@@ -84,9 +84,12 @@ public class XABSLOptionContext
     {
       for(XabslNode nFrom : vertices)
       {
-        XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
+        if(nFrom.getType() == XabslNode.Type.State)
+        {
+          XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
 
-        optionGraph.addEdge(new XabslEdge(XabslEdge.Type.CommonDecision), nFrom, nTo);
+          optionGraph.addEdge(new XabslEdge(XabslEdge.Type.CommonDecision), nFrom, nTo);
+        }
       }//end for
     }//end for
 
