@@ -39,6 +39,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rsyntaxtextarea.parser.TaskTagParser;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.ToolTipSupplier;
 
@@ -140,10 +141,12 @@ public class XEditorPanel extends javax.swing.JPanel
     //textArea.setHyperlinkForeground(Color.blue);
     //textArea.setAutoIndentEnabled(true);
     
+    // set parser
+    textArea.setSyntaxEditingStyle(XParser.SYNTAX_STYLE_XABSL);
     // the tokenizer
     ((RSyntaxDocument) textArea.getDocument()).setSyntaxStyle(new XTokenMaker());
-    // set parser
-    //textArea.setParser(new XParser());
+    
+    textArea.addParser(new XParser());
 
     textArea.getDocument().addDocumentListener(new DocumentListener()
     {
@@ -371,7 +374,8 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public void setXABSLContext(XABSLContext xabslContext)
   {
-    //textArea.setParser(new XParser(xabslContext));
+    textArea.clearParsers();
+    textArea.addParser(new XParser(xabslContext));
   }//end setXABSLContext
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

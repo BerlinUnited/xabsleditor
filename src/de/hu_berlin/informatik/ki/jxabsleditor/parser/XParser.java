@@ -21,7 +21,6 @@ import edu.uci.ics.jung.graph.Graph;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.swing.text.Element;
 import javax.swing.text.Segment;
@@ -40,7 +39,8 @@ import org.fife.ui.rsyntaxtextarea.parser.DefaultParseResult;
 public class XParser extends AbstractParser
 {
 
-  private java.util.ArrayList noticeList = new java.util.ArrayList(1);
+  public static final String SYNTAX_STYLE_XABSL				= "text/xabsl";
+  
   private DefaultParseResult result;
   
   private XABSLContext xabslContext = null;
@@ -48,6 +48,7 @@ public class XParser extends AbstractParser
   
   private Token currentToken;
   private String currentComment;
+  private RSyntaxDocument currentDocument;
 
   private XABSLAbstractParser parser;
 
@@ -58,11 +59,14 @@ public class XParser extends AbstractParser
     {
       this.xabslContext = new XABSLContext();
     }
+
+    result = new DefaultParseResult(this);
   }
 
   public XParser()
   {
     this.xabslContext = new XABSLContext();
+    result = new DefaultParseResult(this);
   }
 
   @Override
@@ -70,6 +74,7 @@ public class XParser extends AbstractParser
   {
     Element root = doc.getDefaultRootElement();
 		int lineCount = root.getElementCount();
+    currentDocument = doc;
 
     if (style==null || SyntaxConstants.SYNTAX_STYLE_NONE.equals(style)){
 			result.clearNotices();
@@ -77,18 +82,24 @@ public class XParser extends AbstractParser
 			return result;
 		}
 
-    result.clearNotices();
-		result.setParsedLines(0, lineCount-1);
-
-
-    
-    
-    return null;
-  }
+    try
+    {
+      Segment text = new Segment();
+      doc.getText(0, root.getEndOffset(), text);
+      parse(text);
+      result.setParsedLines(0, lineCount-1);
+    }
+    catch(Exception e)
+    {
+      System.err.println(e.getMessage());
+    }
+    return result;
+  }//end parse
+  
 
   public void parse(Reader reader)
   {
-    noticeList.clear();
+    //noticeList.clear();
 
     try
     {
@@ -104,41 +115,47 @@ public class XParser extends AbstractParser
       buffer.getChars(0, charArray.length, charArray, 0);
       // create segment
       Segment text = new Segment(charArray, 0, charArray.length);
-
-      XTokenMaker tokenizer = new XTokenMaker();
-      currentToken = tokenizer.getTokenList(text, Token.NULL, 0);
-
-      try
-      {
-        if(currentToken != null && currentToken.type != Token.NULL)
-        {
-          skipSpace();
-          if(isToken("option"))
-          {
-            this.parser = new XABSLOptionParser(this);
-          }
-          else if(isToken("namespace"))
-          {
-            this.parser = new XABSLNamespaceParser(this);
-          }
-        }
-
-        this.parser.parse();
-
-        if(currentToken != null && currentToken.type != Token.NULL)
-        {
-          throw new Exception("Unexpected end of file.");
-          //System.out.println("Unexpected end of File.");
-        }
-      }
-      catch(Exception e)
-      {
-        System.err.println(e.getMessage());
-      }
+      parse(text);
     }
     catch(java.io.IOException ioe)
     {
       ioe.printStackTrace();
+    }
+  }
+      
+  public void parse(Segment text)
+  {
+    result.clearNotices();
+    
+    XTokenMaker tokenizer = new XTokenMaker();
+    currentToken = tokenizer.getTokenList(text, Token.NULL, 0);
+
+    try
+    {
+      if(currentToken != null && currentToken.type != Token.NULL)
+      {
+        skipSpace();
+        if(isToken("option"))
+        {
+          this.parser = new XABSLOptionParser(this);
+        }
+        else if(isToken("namespace"))
+        {
+          this.parser = new XABSLNamespaceParser(this);
+        }
+      }
+
+      this.parser.parse();
+
+      if(currentToken != null && currentToken.type != Token.NULL)
+      {
+        throw new Exception("Unexpected end of file.");
+        //System.out.println("Unexpected end of File.");
+      }
+    }
+    catch(Exception e)
+    {
+      System.err.println(e.getMessage());
     }
   }//end parse
   
@@ -179,12 +196,6 @@ public class XParser extends AbstractParser
       return null;
     }
   }//end getOptionGraph
-
-  //@Override
-  public Iterator getNoticeIterator()
-  {
-    return noticeList.iterator();
-  }//end getNoticeIterator
 
   public static String getNameForTokenType(int type)
   {
@@ -271,8 +282,11 @@ public class XParser extends AbstractParser
           currentToken.type == Token.COMMENT_DOCUMENTATION )
       {
         currentComment = getCommentString(currentToken.getLexeme()); // remember last coment
+      }else if(currentToken.type == Token.NULL)
+      {
+        //currentLine++;
       }
-      currentToken = currentToken.getNextToken();
+      getNextToken();
     }//end while
   }//end skipSpace
 
@@ -286,12 +300,16 @@ public class XParser extends AbstractParser
     }
     else
     {
-      noticeList.add(new DefaultParserNotice(this, "Identifier expected", getCurrentLine(), currentToken.offset, Math.max(currentToken.textCount, 2)));
+      result.addNotice(new DefaultParserNotice(this, "Identifier expected", getCurrentLine(), currentToken.offset, Math.max(currentToken.textCount, 2)));
     }
 
     return null;
   }//end parseIdentifier
 
+  private void getNextToken()
+  {
+    currentToken = currentToken.getNextToken();
+  }//end getNextToken
 
   protected void eat() throws Exception
   {
@@ -302,7 +320,7 @@ public class XParser extends AbstractParser
         throw new Exception("Unexpected end of file.");
       }
       //System.out.println(currentToken.getLexeme() +  " " + currentToken.type);
-      currentToken = currentToken.getNextToken();
+      getNextToken();
       skipSpace();
     }
     catch(Exception e)
@@ -345,7 +363,7 @@ public class XParser extends AbstractParser
     if(!result)
     {
       String message = "is " + getNameForTokenType(currentToken.type) + " but " + getNameForTokenType(type) + " expected";
-      noticeList.add(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
+      this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
       throw new Exception("Unexpected token type: " + message);
     }
 
@@ -365,7 +383,7 @@ public class XParser extends AbstractParser
     if(!result)
     {
       String message = keyWord + " expected";
-      noticeList.add(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
+      this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
       throw new Exception("Unexpected token: " + message);
     }//end if
 
@@ -375,7 +393,11 @@ public class XParser extends AbstractParser
 
   protected int getCurrentLine()
   {
-    return 0;
+    if(currentDocument == null)
+      return 0;
+
+    Element root = currentDocument.getDefaultRootElement();
+    return root.getElementIndex(currentToken.offset);
   }
 
   public abstract class XABSLAbstractParser
@@ -409,7 +431,8 @@ public class XParser extends AbstractParser
 
     protected void addNotice(DefaultParserNotice notice)
     {
-      this.parent.noticeList.add(notice);
+      this.parent.result.addNotice(notice);
+      //this.parent.noticeList.add(notice);
     }
 
     protected boolean isTokenAndEat(String keyWord) throws Exception {

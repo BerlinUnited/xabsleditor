@@ -164,7 +164,6 @@ public class XTokenMaker extends AbstractTokenMaker
         case Token.NULL:
           currentTokenStart = i;	// Starting a new token here.
           currentTokenType = decideState(c);
-          //i++;
           break;
 
         case Token.WHITESPACE:
