@@ -23,19 +23,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javax.swing.text.Element;
 import javax.swing.text.Segment;
-import org.fife.ui.rsyntaxtextarea.Parser;
-import org.fife.ui.rsyntaxtextarea.ParserNotice;
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.parser.AbstractParser;
+import org.fife.ui.rsyntaxtextarea.parser.ParseResult;
+import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
 import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rsyntaxtextarea.parser.DefaultParseResult;
 
 /**
  *
  * @author Heinrich Mellmann
  */
-public class XParser implements Parser
+public class XParser extends AbstractParser
 {
 
   private java.util.ArrayList noticeList = new java.util.ArrayList(1);
+  private DefaultParseResult result;
   
   private XABSLContext xabslContext = null;
   protected XABSLOptionContext xabslOptionContext = null;
@@ -58,9 +64,28 @@ public class XParser implements Parser
   {
     this.xabslContext = new XABSLContext();
   }
-  
 
   @Override
+  public ParseResult parse(RSyntaxDocument doc, String style)
+  {
+    Element root = doc.getDefaultRootElement();
+		int lineCount = root.getElementCount();
+
+    if (style==null || SyntaxConstants.SYNTAX_STYLE_NONE.equals(style)){
+			result.clearNotices();
+			result.setParsedLines(0, lineCount-1);
+			return result;
+		}
+
+    result.clearNotices();
+		result.setParsedLines(0, lineCount-1);
+
+
+    
+    
+    return null;
+  }
+
   public void parse(Reader reader)
   {
     noticeList.clear();
@@ -155,7 +180,7 @@ public class XParser implements Parser
     }
   }//end getOptionGraph
 
-  @Override
+  //@Override
   public Iterator getNoticeIterator()
   {
     return noticeList.iterator();
@@ -261,7 +286,7 @@ public class XParser implements Parser
     }
     else
     {
-      noticeList.add(new ParserNotice("Identifier expected", currentToken.offset, Math.max(currentToken.textCount, 2)));
+      noticeList.add(new DefaultParserNotice(this, "Identifier expected", getCurrentLine(), currentToken.offset, Math.max(currentToken.textCount, 2)));
     }
 
     return null;
@@ -320,7 +345,7 @@ public class XParser implements Parser
     if(!result)
     {
       String message = "is " + getNameForTokenType(currentToken.type) + " but " + getNameForTokenType(type) + " expected";
-      noticeList.add(new ParserNotice(message, currentToken.offset, currentToken.getLexeme().length()));
+      noticeList.add(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
       throw new Exception("Unexpected token type: " + message);
     }
 
@@ -340,7 +365,7 @@ public class XParser implements Parser
     if(!result)
     {
       String message = keyWord + " expected";
-      noticeList.add(new ParserNotice(message, currentToken.offset, currentToken.getLexeme().length()));
+      noticeList.add(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
       throw new Exception("Unexpected token: " + message);
     }//end if
 
@@ -348,6 +373,10 @@ public class XParser implements Parser
     return result;
   }//end isTokenAndEat
 
+  protected int getCurrentLine()
+  {
+    return 0;
+  }
 
   public abstract class XABSLAbstractParser
   {
@@ -378,7 +407,7 @@ public class XParser implements Parser
       return this.parent.currentToken;
     }
 
-    protected void addNotice(ParserNotice notice)
+    protected void addNotice(DefaultParserNotice notice)
     {
       this.parent.noticeList.add(notice);
     }
@@ -407,6 +436,10 @@ public class XParser implements Parser
       return this.parent.parseIdentifier();
     }
 
+    protected int getCurrentLine()
+    {
+      return this.parent.getCurrentLine();
+    }
   }//end class AbstractParser
 
   

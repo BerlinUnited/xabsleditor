@@ -20,7 +20,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLOption;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser.XABSLAbstractParser;
 import java.util.HashSet;
 import java.util.Set;
-import org.fife.ui.rsyntaxtextarea.ParserNotice;
+import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
 import org.fife.ui.rsyntaxtextarea.Token;
 
 /**
@@ -236,9 +236,9 @@ public class XABSLOptionParser extends XABSLAbstractParser
     }
     else
     {
-      addNotice(new ParserNotice(
+      addNotice(new DefaultParserNotice( this.parent,
         "Either \"stay\" or \"goto\" needed in decision",
-        getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
+        getCurrentLine(), getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
 
     }
   }//end parseSingleDecision
@@ -476,15 +476,15 @@ public class XABSLOptionParser extends XABSLAbstractParser
 
     if(parenthesisCount < 0)
     {
-      addNotice(new ParserNotice(
+      addNotice(new DefaultParserNotice(this.parent,
         "More right paranthesis than left ones (" + Math.abs(parenthesisCount) + ")",
-        getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
+        getCurrentLine(), getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
     }
     else if(parenthesisCount > 0)
     {
-      addNotice(new ParserNotice(
+      addNotice(new DefaultParserNotice(this.parent,
         "More left paranthesis than right ones (" + Math.abs(parenthesisCount) + ")",
-        getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
+        getCurrentLine(), getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
     }
     isTokenAndEat(";");
   }//end parseAssignment
@@ -502,7 +502,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
   {
     if(this.parent.xabslOptionContext.getStateMap().containsKey(name))
     {
-      addNotice(new ParserNotice("State " + name + " already defined.", offset, name.length()));
+      addNotice(new DefaultParserNotice(this.parent, "State " + name + " already defined.", getCurrentLine(), offset, name.length()));
       throw new Exception("State " + name + " already defined.");
     }//end if
 

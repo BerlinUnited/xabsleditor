@@ -143,7 +143,7 @@ public class XEditorPanel extends javax.swing.JPanel
     // the tokenizer
     ((RSyntaxDocument) textArea.getDocument()).setSyntaxStyle(new XTokenMaker());
     // set parser
-    textArea.setParser(new XParser());
+    //textArea.setParser(new XParser());
 
     textArea.getDocument().addDocumentListener(new DocumentListener()
     {
@@ -371,7 +371,7 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public void setXABSLContext(XABSLContext xabslContext)
   {
-    textArea.setParser(new XParser(xabslContext));
+    //textArea.setParser(new XParser(xabslContext));
   }//end setXABSLContext
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
