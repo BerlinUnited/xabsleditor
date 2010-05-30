@@ -19,18 +19,24 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XTokenMaker;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CCompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -39,7 +45,6 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
-import org.fife.ui.rsyntaxtextarea.parser.TaskTagParser;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.ToolTipSupplier;
 
@@ -51,6 +56,8 @@ public class XEditorPanel extends javax.swing.JPanel
 {
 
   private RSyntaxTextArea textArea;
+  private RTextScrollPane scrolPane;
+
   private File file;
   private boolean changed;
   private int searchOffset;
@@ -169,7 +176,7 @@ public class XEditorPanel extends javax.swing.JPanel
       }
     });
 
-    RTextScrollPane scrolPane = new RTextScrollPane(textArea, true);
+    this.scrolPane = new RTextScrollPane(textArea, true);
     add(scrolPane);
 
     searchPanel.setVisible(false);
@@ -232,9 +239,46 @@ public class XEditorPanel extends javax.swing.JPanel
     this.file = file;
   }//end setFile
 
+
+  /*
+   *  Attempt to center the line containing the caret at the center of the
+   *  scroll pane.
+   *
+   *  @param component the text component in the sroll pane
+   */
+  public static void centerLineInScrollPane(JTextComponent component) {
+    Container container = SwingUtilities.getAncestorOfClass(JViewport.class, component);
+
+    if (container == null) {
+      return;
+    }
+
+    try {
+      Rectangle r = component.modelToView(component.getCaretPosition());
+      JViewport viewport = (JViewport) container;
+      int extentHeight = viewport.getExtentSize().height;
+      int viewHeight = viewport.getViewSize().height;
+
+      int y = Math.max(0, r.y - (extentHeight / 2));
+      y = Math.min(y, viewHeight - extentHeight);
+
+      viewport.setViewPosition(new Point(0, y));
+    } catch (BadLocationException ble) {
+    }
+  }//end centerLineInScrollPane
+
   public void setCarretPosition(int pos)
   {
     this.textArea.setCaretPosition(pos);
+
+    try{
+      centerLineInScrollPane(this.textArea);
+    }catch(Exception e)
+    {
+      // TODO:
+      // could not scroll to the right position
+    }
+
     this.textArea.revalidate();
   }
 
@@ -313,7 +357,8 @@ public class XEditorPanel extends javax.swing.JPanel
         if(found > -1)
         {
           textArea.grabFocus();
-          textArea.setCaretPosition(searchOffset + found);
+          //textArea.setCaretPosition(searchOffset + found);
+          setCarretPosition(searchOffset + found);
           textArea.moveCaretPosition(searchOffset + found + s.length());
 
           //Highlighter.HighlightPainter p = new ChangeableHighlightPainter(Color.BLUE, true, 0.5f);

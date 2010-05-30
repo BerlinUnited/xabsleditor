@@ -42,15 +42,21 @@ public class XABSLContext
   }
 
   public void add(XABSLSymbol e) {
-    symbolMap.put(e.name, e);
+    // TODO: symbols cannot be overwritten...
+    if(e != null && !symbolMap.containsKey(e.name))
+      symbolMap.put(e.name, e);
   }
 
   public void add(XABSLEnum e) {
-    enumMap.put(e.name, e);
+    // TODO: symbols cannot be overwritten...
+    if(e != null && !enumMap.containsKey(e.name))
+      enumMap.put(e.name, e);
   }
 
   public void add(XABSLOption e) {
-    optionMap.put(e.name, e);
+    // TODO: symbols cannot be overwritten...
+    if(e != null && !optionMap.containsKey(e.name))
+      optionMap.put(e.name, e);
   }
 
 
