@@ -16,6 +16,7 @@
 package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
 
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XTokenMaker;
 import java.awt.Color;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -222,8 +224,6 @@ public class XEditorPanel extends javax.swing.JPanel
     if(changed == this.changed)
     {
       return;
-
-
     }
     this.changed = changed;
     fireDocumentChangedEvent();
@@ -415,7 +415,18 @@ public class XEditorPanel extends javax.swing.JPanel
     if(this.completionProvider == null) createCompletionProvider();
     this.completionProvider.setXabslLocalCompletionProvider(completionProvider);
   }//end setLocalCompletionProvider
-  
+
+  // HACK: make it local...
+  public Map<String, XABSLOptionContext.State> getStateMap()
+  {
+    try{
+      return ((XParser)textArea.getParser(0)).getStateMap();
+    }catch(Exception e)
+    {
+      //
+    }
+    return null;
+  }//end getStateMap
 
   public void setXABSLContext(XABSLContext xabslContext)
   {

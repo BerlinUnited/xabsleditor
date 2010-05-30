@@ -1055,6 +1055,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             }
           }//end if
 
+          if(file == null)
+          {
+            XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
+            State state = editor.getStateMap().get(element);
+            if(state != null)
+            {
+              editor.setCarretPosition(state.offset);
+            }
+          }//end if
+
           if(file != null)
           {
             XEditorPanel editor = openFile(file);
