@@ -42,6 +42,11 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
   protected String createSummary() {
     StringBuffer sb = new StringBuffer();
     
+//    if(symbol.getDeclarationSource() != null)
+//    {
+//      sb.append(symbol.getDeclarationSource().fileName);
+//    }
+
     sb.append("<font color=\"#0000FF\">")
       .append(symbol.getType())
       .append(" ")

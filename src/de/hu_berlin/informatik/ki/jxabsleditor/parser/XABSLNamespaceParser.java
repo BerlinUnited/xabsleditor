@@ -107,6 +107,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
           currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.internal);
         }
 
+        currentSymbol.setDeclarationSource(getCurrentDeclarationSource());
         currentSymbol.setName(parseIdentifier());
         isTokenAndEat(";");
 
@@ -134,6 +135,15 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
 
   }//end parseSymbolsEntry
 
+  private XABSLContext.DeclarationSource getCurrentDeclarationSource()
+  {
+    if(getCurrentFileName() != null)
+    {
+      return new XABSLContext.DeclarationSource(getCurrentFileName(), getCurrentToken().offset);
+    }//end if
+
+    return null;
+  }//end getCurrentDeclarationSource
 
   private void parseEnumDeclaration() throws Exception
   {
@@ -151,7 +161,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
   }//end parseEnumDeclaration
 
 
-    private void parseSymbolDeclaration() throws Exception
+  private void parseSymbolDeclaration() throws Exception
   {
     if(isToken("output"))
     {
@@ -169,6 +179,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
       isTokenAndEat("internal");
     }
 
+    currentSymbol.setDeclarationSource(getCurrentDeclarationSource());
     currentSymbol.setName(parseIdentifier());
 
     if(isToken("["))

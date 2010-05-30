@@ -49,6 +49,7 @@ public class XParser extends AbstractParser
   private Token currentToken;
   private String currentComment;
   private RSyntaxDocument currentDocument;
+  private String currentFileName = null;
 
   private XABSLAbstractParser parser;
 
@@ -95,7 +96,12 @@ public class XParser extends AbstractParser
     }
     return result;
   }//end parse
-  
+
+  public void parse(Reader reader, String fileName)
+  {
+    this.currentFileName = fileName;
+    parse(reader);
+  }//end parse
 
   public void parse(Reader reader)
   {
@@ -398,7 +404,12 @@ public class XParser extends AbstractParser
 
     Element root = currentDocument.getDefaultRootElement();
     return root.getElementIndex(currentToken.offset);
-  }
+  }//end getCurrentLine
+
+  protected String getCurrentFileName()
+  {
+    return currentFileName;
+  }//end getCurrentFileName
 
   public abstract class XABSLAbstractParser
   {
@@ -459,9 +470,12 @@ public class XParser extends AbstractParser
       return this.parent.parseIdentifier();
     }
 
-    protected int getCurrentLine()
-    {
+    protected int getCurrentLine(){
       return this.parent.getCurrentLine();
+    }
+
+    protected String getCurrentFileName(){
+      return this.parent.getCurrentFileName();
     }
   }//end class AbstractParser
 
