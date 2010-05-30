@@ -27,6 +27,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleComp
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
+import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
@@ -268,7 +269,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
           String text = Tools.readFileToString(file);
           XParser p = new XParser(this.globalXABSLContext);
-          p.parse(new StringReader(text));
+          p.parse(new StringReader(text), file.getAbsolutePath());
           
         }catch(Exception e)
         {
@@ -849,12 +850,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     for(int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
     {
       Component c = tabbedPanelEditor.getComponentAt(i);
-      if( c != null &&
-          ((XEditorPanel) c).getFile() != null &&
-          selectedFile.compareTo(((XEditorPanel) c).getFile()) == 0)
+      if(c instanceof XEditorPanel)
       {
-        tabbedPanelEditor.setSelectedComponent(c);
-        return null;
+        XEditorPanel editor = (XEditorPanel) c;
+        if( c != null &&
+            editor.getFile() != null &&
+            selectedFile.compareTo(editor.getFile()) == 0)
+        {
+          tabbedPanelEditor.setSelectedComponent(c);
+          return editor;
+        }//end if
       }//end if
     }//end for
 
@@ -1033,15 +1038,41 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         @Override
         public void hyperlinkUpdate(HyperlinkEvent e)
         {
-          String option = e.getDescription();
-          option = option.replace("no protocol: ", "");
-          File file = optionPathMap.get(option);
+          String element = e.getDescription();
+          element = element.replace("no protocol: ", "");
+          
+          File file = optionPathMap.get(element);
+          int position = 0;
+
+          // try to open symbol
+          if(file == null)
+          {
+            XABSLSymbol symbol = globalXABSLContext.getSymbolMap().get(element);
+            if(symbol != null && symbol.getDeclarationSource() != null)
+            {
+              file = new File(symbol.getDeclarationSource().fileName);
+              position = symbol.getDeclarationSource().offset;
+            }
+          }//end if
+
+          if(file == null)
+          {
+            XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
+            State state = editor.getStateMap().get(element);
+            if(state != null)
+            {
+              editor.setCarretPosition(state.offset);
+            }
+          }//end if
 
           if(file != null)
           {
-            openFile(file);
-          }
-        //System.out.println(option);
+            XEditorPanel editor = openFile(file);
+            if(editor != null)
+              editor.setCarretPosition(position);
+          }//end if
+          
+          //System.out.println(option);
         }
       });
 

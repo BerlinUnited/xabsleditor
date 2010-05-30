@@ -42,22 +42,41 @@ public class XABSLContext
   }
 
   public void add(XABSLSymbol e) {
-    symbolMap.put(e.name, e);
+    // TODO: symbols cannot be overwritten...
+    if(e != null && !symbolMap.containsKey(e.name))
+      symbolMap.put(e.name, e);
   }
 
   public void add(XABSLEnum e) {
-    enumMap.put(e.name, e);
+    // TODO: symbols cannot be overwritten...
+    if(e != null && !enumMap.containsKey(e.name))
+      enumMap.put(e.name, e);
   }
 
   public void add(XABSLOption e) {
-    optionMap.put(e.name, e);
+    // TODO: symbols cannot be overwritten...
+    if(e != null && !optionMap.containsKey(e.name))
+      optionMap.put(e.name, e);
   }
+
+
+  public static class DeclarationSource
+  {
+    public final String fileName;
+    public final int offset;
+
+    public DeclarationSource(String fileName, int offset) {
+      this.fileName = fileName;
+      this.offset = offset;
+    }
+  }//end class DeclarationSource
 
   
   public static class XABSLEnum
   {
     public final String name;
     private ArrayList<String> elements;
+    private DeclarationSource declarationSource;
 
     public XABSLEnum(String name) {
       this.name = name;
@@ -71,8 +90,15 @@ public class XABSLContext
     public ArrayList<String> getElements() {
       return elements;
     }
-  }//end class XABSLEnum
 
+    public DeclarationSource getDeclarationSource() {
+      return declarationSource;
+    }
+
+    public void setDeclarationSource(DeclarationSource declarationSource) {
+      this.declarationSource = declarationSource;
+    }
+  }//end class XABSLEnum
 
 
   public static class XABSLBasicSymbol
@@ -164,6 +190,7 @@ public class XABSLContext
   {
     private SecondaryType secondaryType;
     private ArrayList<XABSLBasicSymbol> parameter;
+    private DeclarationSource declarationSource;
 
     public enum SecondaryType
     {
@@ -198,6 +225,14 @@ public class XABSLContext
 
     public boolean addParameter(XABSLBasicSymbol e) {
       return parameter.add(e);
+    }
+
+    public DeclarationSource getDeclarationSource() {
+      return declarationSource;
+    }
+
+    public void setDeclarationSource(DeclarationSource declarationSource) {
+      this.declarationSource = declarationSource;
     }
 
     @Override

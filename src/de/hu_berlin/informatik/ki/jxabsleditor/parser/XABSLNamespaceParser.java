@@ -19,7 +19,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLBasicSym
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLEnum;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser.XABSLAbstractParser;
-import org.fife.ui.rsyntaxtextarea.ParserNotice;
+import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
 import org.fife.ui.rsyntaxtextarea.Token;
 
 /**
@@ -107,6 +107,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
           currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.internal);
         }
 
+        currentSymbol.setDeclarationSource(getCurrentDeclarationSource());
         currentSymbol.setName(parseIdentifier());
         isTokenAndEat(";");
 
@@ -128,12 +129,21 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
     else
     {
       eat();
-      addNotice(new ParserNotice("A symbol declaration or enum definition expected.",
-              getCurrentToken().offset, getCurrentToken().getLexeme().length()));
+      addNotice(new DefaultParserNotice(this.parent, "A symbol declaration or enum definition expected.",
+              getCurrentLine(), getCurrentToken().offset, getCurrentToken().getLexeme().length()));
     }
 
   }//end parseSymbolsEntry
 
+  private XABSLContext.DeclarationSource getCurrentDeclarationSource()
+  {
+    if(getCurrentFileName() != null)
+    {
+      return new XABSLContext.DeclarationSource(getCurrentFileName(), getCurrentToken().offset);
+    }//end if
+
+    return null;
+  }//end getCurrentDeclarationSource
 
   private void parseEnumDeclaration() throws Exception
   {
@@ -151,7 +161,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
   }//end parseEnumDeclaration
 
 
-    private void parseSymbolDeclaration() throws Exception
+  private void parseSymbolDeclaration() throws Exception
   {
     if(isToken("output"))
     {
@@ -169,6 +179,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
       isTokenAndEat("internal");
     }
 
+    currentSymbol.setDeclarationSource(getCurrentDeclarationSource());
     currentSymbol.setName(parseIdentifier());
 
     if(isToken("["))
