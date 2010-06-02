@@ -20,7 +20,10 @@ import de.hu_berlin.informatik.ki.jxabsleditor.OptionsDialog;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.Properties;
@@ -100,31 +103,42 @@ public class CompilerDialog extends javax.swing.JDialog
             String[] cmdarray = autoSearchCommand(agentsFile);
             compilerProcess = Runtime.getRuntime().exec(cmdarray);
           }
-          compilerProcess.waitFor();
 
+
+          DebugProcessOutpuObserver debugProcessOutpuObserver = new DebugProcessOutpuObserver(compilerProcess);
+          // read the compiler output during the compilation
+          new Thread(debugProcessOutpuObserver).start();
+          
+          // wait until compiler finishes
+          compilerProcess.waitFor();
+          debugProcessOutpuObserver.stop();
+
+          BufferedReader rIn = new BufferedReader(new InputStreamReader(compilerProcess.getInputStream()));
+          BufferedReader rErr = new BufferedReader(new InputStreamReader(compilerProcess.getErrorStream()));
+          
+          // parse the compiler output for errors
           if(compilerProcess.exitValue() != 0)
           {
             result.errors = true;
-          }
+          }//end if
 
-          BufferedReader rIn = new BufferedReader(
-            new InputStreamReader(compilerProcess.getInputStream()));
-
-          StringBuilder stdout = new StringBuilder();
-          String line = null;
-          while((line = rIn.readLine()) != null)
-          {
-            stdout.append(line);
-            stdout.append("\n");
-          }
-
-          BufferedReader rErr = new BufferedReader(new InputStreamReader(compilerProcess.getErrorStream()));
-          StringBuilder stderr = new StringBuilder();
-          line = null;
-          while((line = rErr.readLine()) != null)
+          String errStr = debugProcessOutpuObserver.getStderr();
+          String outStr = debugProcessOutpuObserver.getStdout();
+          
+          String[] errorMsgLines = errStr.split("\n");
+          for(String line: errorMsgLines)
           {
             if(line.startsWith("ERROR "))
             {
+              // parse the error
+              String[] splitted = line.split("((( )+|\t)+)|:");
+              if(splitted.length == 4)
+              {
+                String fileName = splitted[2];
+                String lineNumeber = splitted[3];
+                // TODO: do something with it
+                System.out.println(fileName + " - " + lineNumeber);
+              }
               result.errors = true;
             }
             else if(line.startsWith("WARNING "))
@@ -138,15 +152,13 @@ public class CompilerDialog extends javax.swing.JDialog
             {
               result.errors = true;
             }
+          }//end for
 
-            stderr.append(line);
-            stderr.append("\n");
-          }
+          System.err.println(outStr);
+          System.err.println(errStr);
 
-          System.out.println(stderr);
-
-          result.messages = stderr.toString() + "\n" + stdout.toString();
-
+          result.messages =  errStr + "\n" + outStr;
+                  
           pbCompiling.setIndeterminate(false);
           pbCompiling.setValue(pbCompiling.getMaximum());
 
@@ -253,6 +265,76 @@ public class CompilerDialog extends javax.swing.JDialog
     return cmdarray;
   }//end autoSearchCommand
 
+
+
+  private class DebugProcessOutpuObserver implements Runnable
+  {
+    private Process compilerProcess;
+    private boolean running;
+
+    private StringBuilder stdout = new StringBuilder();
+    private StringBuilder stderr = new StringBuilder();
+    
+    public DebugProcessOutpuObserver(Process compilerProcess)
+    {
+      this.compilerProcess = compilerProcess;
+      this.running = true;
+    }
+    
+    @Override
+    public void run()
+    {
+      InputStream inputStream = compilerProcess.getInputStream();
+      InputStream errorStream = compilerProcess.getErrorStream();
+
+      try
+      {
+        while (compilerProcess != null && this.running)
+        {
+          //readStream(inputStream, System.out);
+          //readStream(errorStream, System.err);
+          readStream(inputStream, stdout);
+          readStream(errorStream, stderr);
+        }//end while
+      }
+      catch(Exception ex)
+      {
+        Tools.handleException(ex);
+      }
+    }//end run
+
+    // TODO: make it better
+    // redirect streams
+    private void readStream(InputStream is, OutputStream os) throws IOException
+    {
+      while(is.available() > 0)
+      {
+        os.write(is.read());
+      }//end while
+    }//end readStream
+
+    private void readStream(InputStream is, StringBuilder os) throws IOException
+    {
+      while(is.available() > 0)
+      {
+        os.append((char)is.read());
+      }//end while
+    }//end readStream
+
+    public void stop()
+    {
+      this.running = false;
+    }//end stop
+
+    public String getStderr() {
+      return stderr.toString();
+    }
+
+    public String getStdout() {
+      return stdout.toString();
+    }
+
+  }//end class DebugProcessOutpuObserver
   /** This method is called from within the constructor to
    * initialize the form.
    * WARNING: Do NOT modify this code. The content of this method is
