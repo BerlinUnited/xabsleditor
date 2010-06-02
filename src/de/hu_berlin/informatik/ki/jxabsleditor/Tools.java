@@ -60,7 +60,7 @@ public class Tools
       && current.isFile())
     {
       File optionsDir = new File(current.getParentFile().getAbsolutePath() + "/Options");
-      if(optionsDir.exists() && optionsDir.isDirectory())
+      //if(optionsDir.exists() && optionsDir.isDirectory())
       {
         return current;
       }

@@ -871,12 +871,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     this.optionPathMap.clear();
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
-    // needed for function-links
-    createOptionList(agentsFile.getParentFile());
+    if(agentsFile != null)
+    {
+      // needed for function-links
+      createOptionList(agentsFile.getParentFile());
 
-    // needed by autocomletition
-    if(this.globalXABSLContext == null)
-      loadXABSLContext(agentsFile.getParentFile());
+      // needed by autocomletition
+      if(this.globalXABSLContext == null)
+        loadXABSLContext(agentsFile.getParentFile());
+    }//end if
 
     return createDocumentTab(selectedFile);
   }//end openFile

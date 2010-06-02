@@ -358,6 +358,9 @@ public class XTokenMaker extends AbstractTokenMaker
     else if(Character.isJavaIdentifierStart(c))
     {
       return Token.IDENTIFIER;
+    }else if(c == '_')
+    {
+      return Token.IDENTIFIER;
     }
     else if(Character.isDigit(c))
     {
