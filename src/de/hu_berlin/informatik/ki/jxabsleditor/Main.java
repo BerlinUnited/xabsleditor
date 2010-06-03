@@ -439,6 +439,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     tabbedPanelEditor = new javax.swing.JTabbedPane();
     tabbedPanelView = new javax.swing.JTabbedPane();
     panelOption = new javax.swing.JPanel();
+    panelAgent = new javax.swing.JPanel();
     panelCompiler = new javax.swing.JPanel();
     scrollPaneCompilerOutput = new javax.swing.JScrollPane();
     txtCompilerOutput = new javax.swing.JTextArea();
@@ -494,6 +495,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     panelOption.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Option", panelOption);
+
+    javax.swing.GroupLayout panelAgentLayout = new javax.swing.GroupLayout(panelAgent);
+    panelAgent.setLayout(panelAgentLayout);
+    panelAgentLayout.setHorizontalGroup(
+      panelAgentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 352, Short.MAX_VALUE)
+    );
+    panelAgentLayout.setVerticalGroup(
+      panelAgentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 384, Short.MAX_VALUE)
+    );
+
+    tabbedPanelView.addTab("Agent", panelAgent);
 
     txtCompilerOutput.setColumns(20);
     txtCompilerOutput.setEditable(false);
@@ -1265,6 +1279,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSaveAs;
   private javax.swing.JMenuItem miSearch;
   private javax.swing.JMenuItem miSearchProject;
+  private javax.swing.JPanel panelAgent;
   private javax.swing.JPanel panelCompiler;
   private javax.swing.JPanel panelOption;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;
