@@ -25,6 +25,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLStateCompetion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
+import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
@@ -87,6 +88,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
   private OptionVisualizer optionVisualizer;
+  private AgentVisualizer agentVisualizer;
   private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
@@ -233,6 +235,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
+
+    agentVisualizer = new AgentVisualizer();
+    panelAgent.add(agentVisualizer, BorderLayout.CENTER);
+
   }//end Main
 
   private void refreshGraph()
@@ -243,6 +249,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
 
     XEditorPanel selectedEditorPanel = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
+    agentVisualizer.setContext(selectedEditorPanel.getXABSLContext());
+
     String text = selectedEditorPanel.getText();
 
     // Option
@@ -496,17 +504,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     panelOption.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Option", panelOption);
 
-    javax.swing.GroupLayout panelAgentLayout = new javax.swing.GroupLayout(panelAgent);
-    panelAgent.setLayout(panelAgentLayout);
-    panelAgentLayout.setHorizontalGroup(
-      panelAgentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 352, Short.MAX_VALUE)
-    );
-    panelAgentLayout.setVerticalGroup(
-      panelAgentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 384, Short.MAX_VALUE)
-    );
-
+    panelAgent.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Agent", panelAgent);
 
     txtCompilerOutput.setColumns(20);

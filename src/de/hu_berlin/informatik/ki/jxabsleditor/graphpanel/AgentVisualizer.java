@@ -78,6 +78,11 @@ public class AgentVisualizer extends javax.swing.JPanel
   /** (Re-) set to a new context and display it */
   public void setContext(XABSLContext context)
   {
+    if(context == null)
+    {
+      return;
+    }
+    
     // build graph
     DirectedGraph<String, String> g =
       new DirectedSparseGraph<String, String>();
