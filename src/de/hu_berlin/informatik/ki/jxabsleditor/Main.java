@@ -46,9 +46,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -86,8 +87,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
-  private XABSLContext globalXABSLContext = null;
-  private ArrayList<XABSLStateCompetion> localOptionCompletions = null;
+  /** Map from an agent file to the XABSLContext */
+  private Map<File, XABSLContext> globalContext = new TreeMap<File, XABSLContext>();
+  /** the corresponding agent file for each opened file */
+  private Map<File,File> file2Agent = new HashMap<File, File>();
 
   private FileDrop fileDrop = null;
 
@@ -185,9 +188,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         {
           String option = v.getName();
           File file = null;
-          if(globalXABSLContext != null)
+          if(editor.getXABSLContext() != null)
           {
-            file = globalXABSLContext.getOptionPathMap().get(option);
+            file = editor.getXABSLContext().getOptionPathMap().get(option);
           }
 
           if(file != null)
@@ -230,11 +233,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   {
     if(tabbedPanelEditor.getSelectedComponent() == null)
       return;
-    
-    String text = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).getText();
+
+    XEditorPanel selectedEditorPanel = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
+    String text = selectedEditorPanel.getText();
 
     // Option
-    XParser p = new XParser(this.globalXABSLContext);
+    XParser p = new XParser(selectedEditorPanel.getXABSLContext());
     p.parse(new StringReader(text));
     optionVisualizer.setGraph(p.getOptionGraph());
 
@@ -251,11 +255,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             .setLocalCompletionProvider(completionProvider);
   }//end refreshGraph
 
-  private void loadXABSLContext(File folder)
+  private void loadXABSLContext(File folder, File agentsFile)
   {
-    if(globalXABSLContext == null)
+    if(globalContext.get(agentsFile) == null)
     {
-      globalXABSLContext = new XABSLContext();
+      globalContext.put(agentsFile, new XABSLContext());
     }
 
     File[] fileList = folder.listFiles();
@@ -263,18 +267,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       if(file.isDirectory())
       {
-        loadXABSLContext(file);
+        loadXABSLContext(file, agentsFile);
       }
       else if(file.getName().toLowerCase().endsWith(".xabsl"))
       {
         String name = file.getName().toLowerCase().replace(".xabsl", "");
-        globalXABSLContext.getOptionPathMap().put(name, file);
+        globalContext.get(agentsFile).getOptionPathMap().put(name, file);
 
         // parse XABSL file
         try{
           //System.out.println("parse: " + file.getName()); // debug stuff
 
-          XParser p = new XParser(this.globalXABSLContext);
+          XParser p = new XParser(globalContext.get(agentsFile));
           p.parse(new FileReader(file), file.getAbsolutePath());
           
         }catch(Exception e)
@@ -286,7 +290,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   }//end loadSymbolsTable
 
 
-  private DefaultCompletionProvider createCompletitionProvider()
+  private DefaultCompletionProvider createCompletitionProvider(XABSLContext context)
   {
     DefaultCompletionProvider provider = new DefaultCompletionProvider()
     {
@@ -298,9 +302,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     provider.setParameterizedCompletionParams('(', ", ", ')');
 
-    if(this.globalXABSLContext != null)
+    if(context != null)
     {
-      for(XABSLContext.XABSLSymbol symbol: this.globalXABSLContext.getSymbolMap().values())
+      for(XABSLContext.XABSLSymbol symbol: context.getSymbolMap().values())
       {
         if(symbol.getParameter().size() == 0)
         {
@@ -312,12 +316,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         //System.out.println(symbol); // debug stuff
       }//end for
 
-      for(XABSLContext.XABSLOption option: this.globalXABSLContext.getOptionMap().values())
+      for(XABSLContext.XABSLOption option: context.getOptionMap().values())
       {
         provider.addCompletion(new XABSLOptionCompletion(provider, option));
       }//end for
 
-      for(XABSLContext.XABSLEnum xabslEnum: this.globalXABSLContext.getEnumMap().values())
+      for(XABSLContext.XABSLEnum xabslEnum: context.getEnumMap().values())
       {
         for(String param: xabslEnum.getElements())
         {
@@ -675,7 +679,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
     // create new tab
-    createDocumentTab(null);
+    createDocumentTab(null, null);
 }//GEN-LAST:event_newFileAction
 
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
@@ -854,7 +858,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   public XEditorPanel openFile(File selectedFile)
   {
     if(selectedFile == null) return null;
-    
+
+
     // test if the file is allready opened
     for(int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
     {
@@ -878,11 +883,20 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
-    // reload the complete global project context
-    globalXABSLContext = null;
-    loadXABSLContext(agentsFile.getParentFile());
+    if(agentsFile != null)
+    {
+      // reload the complete global project context
+      globalContext.put(agentsFile, null);
+      file2Agent.put(selectedFile, agentsFile);
+      
+      loadXABSLContext(agentsFile.getParentFile(), agentsFile);
 
-    return createDocumentTab(selectedFile);
+      return createDocumentTab(selectedFile, agentsFile);
+    }
+    else
+    {
+      return null;
+    }
   }//end openFile
 
 
@@ -1003,7 +1017,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
   }//end main
 
-  private XEditorPanel createDocumentTab(File file)
+  private XEditorPanel createDocumentTab(File file, File agentsFile)
   {
     try
     {
@@ -1024,8 +1038,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
-      editor.setXABSLContext(this.globalXABSLContext);
-      editor.setCompletionProvider(createCompletitionProvider());
+      editor.setXABSLContext(globalContext.get(agentsFile));
+      editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
 
       tabbedPanelEditor.setSelectedComponent(editor);
 
@@ -1044,6 +1058,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       });
 
+      final XEditorPanel editorFinal = editor;
       editor.addHyperlinkListener(new HyperlinkListener()
       {
         @Override
@@ -1054,9 +1069,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
 
           File file = null;
-          if(globalXABSLContext != null)
+          if(editorFinal.getXABSLContext() != null)
           {
-            file = globalXABSLContext.getOptionPathMap().get(element);
+            file = editorFinal.getXABSLContext().getOptionPathMap().get(element);
           }
           int position = 0;
 
@@ -1065,7 +1080,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
           if(file == null)
           {
-            XABSLSymbol symbol = globalXABSLContext.getSymbolMap().get(element);
+            XABSLSymbol symbol =  editorFinal.getXABSLContext().getSymbolMap().get(element);
             if(symbol != null && symbol.getDeclarationSource() != null)
             {
               file = new File(symbol.getDeclarationSource().fileName);
@@ -1146,9 +1161,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   public Map<String, File> getOptionPathMap()
   {
-    if(globalXABSLContext != null)
+    XEditorPanel selectedEditorPanel = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
+    if(selectedEditorPanel.getXABSLContext() != null)
     {
-      return globalXABSLContext.getOptionPathMap();
+      return selectedEditorPanel.getXABSLContext().getOptionPathMap();
     }
     else
     {
