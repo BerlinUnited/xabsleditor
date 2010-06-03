@@ -263,7 +263,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
       else if(file.getName().toLowerCase().endsWith(".xabsl"))
       {
-        // parse symbols file
+        String name = file.getName().toLowerCase().replace(".xabsl", "");
+        optionPathMap.put(name, file);
+
+        // parse XABSL file
         try{
           //System.out.println("parse: " + file.getName()); // debug stuff
 
@@ -273,7 +276,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           
         }catch(Exception e)
         {
-          System.err.println("Couldn't read the symbols file " + file.getAbsolutePath());
+          System.err.println("Couldn't read the XABSL file " + file.getAbsolutePath());
         }
       }
     }//end for
@@ -330,24 +333,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     return provider;
   }//end createCompletitionProvider
 
-  private void createOptionList(File folder)
-  {
-    File[] fileList = folder.listFiles();
-    for(File file : fileList)
-    {
-      if(file.isDirectory())
-      {
-        createOptionList(file);
-      }
-      else if(file.getName().toLowerCase().endsWith(".xabsl"))
-      {
-        String name = file.getName().toLowerCase().replace(".xabsl", "");
-        optionPathMap.put(name, file);
-        //System.out.println(name + " : " + file.getAbsolutePath());
-      }
-    }//end for
-  }//end createOptionList
-
   private void loadConfiguration()
   {
     if(configuration.containsKey("lastOpenedFolder"))
@@ -391,7 +376,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     mbMain = new javax.swing.JMenuBar();
     mFile = new javax.swing.JMenu();
     miNew = new javax.swing.JMenuItem();
-    miOpen = new javax.swing.JMenuItem();
+    miOpenProject = new javax.swing.JMenuItem();
+    miOpenFile = new javax.swing.JMenuItem();
     miClose = new javax.swing.JMenuItem();
     jSeparator1 = new javax.swing.JSeparator();
     miSave = new javax.swing.JMenuItem();
@@ -406,6 +392,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     miRefreshGraph = new javax.swing.JMenuItem();
     jSeparator3 = new javax.swing.JSeparator();
     miOption = new javax.swing.JMenuItem();
+    mProject = new javax.swing.JMenu();
+    jMenuItem1 = new javax.swing.JMenuItem();
     mHelp = new javax.swing.JMenu();
     miInfo = new javax.swing.JMenuItem();
 
@@ -442,11 +430,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     panelCompiler.setLayout(panelCompilerLayout);
     panelCompilerLayout.setHorizontalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
     );
     panelCompilerLayout.setVerticalGroup(
       panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
     );
 
     tabbedPanelView.addTab("Compiler", null, panelCompiler, "The status and output of the compiler.");
@@ -525,16 +513,25 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
     mFile.add(miNew);
 
-    miOpen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-    miOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
-    miOpen.setMnemonic('O');
-    miOpen.setText("Open");
-    miOpen.addActionListener(new java.awt.event.ActionListener() {
+    miOpenProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+    miOpenProject.setText("Open Project");
+    miOpenProject.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        miOpenProjectActionPerformed(evt);
+      }
+    });
+    mFile.add(miOpenProject);
+
+    miOpenFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+    miOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
+    miOpenFile.setMnemonic('O');
+    miOpenFile.setText("Open File");
+    miOpenFile.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         openFileAction(evt);
       }
     });
-    mFile.add(miOpen);
+    mFile.add(miOpenFile);
 
     miClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
     miClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileclose16.png"))); // NOI18N
@@ -642,6 +639,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     mEdit.add(miOption);
 
     mbMain.add(mEdit);
+
+    mProject.setMnemonic('p');
+    mProject.setText("Project");
+
+    jMenuItem1.setFont(jMenuItem1.getFont().deriveFont((jMenuItem1.getFont().getStyle() | java.awt.Font.ITALIC)));
+    jMenuItem1.setText("empty");
+    mProject.add(jMenuItem1);
+
+    mbMain.add(mProject);
 
     mHelp.setMnemonic('H');
     mHelp.setText("Help");
@@ -871,9 +877,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     this.optionPathMap.clear();
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
-    // needed for function-links
-    createOptionList(agentsFile.getParentFile());
-
     // needed by autocomletition
     if(this.globalXABSLContext == null)
       loadXABSLContext(agentsFile.getParentFile());
@@ -976,6 +979,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       searchInProjectDialog.setVisible(true);
 
     }//GEN-LAST:event_miSearchProjectActionPerformed
+
+    private void miOpenProjectActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOpenProjectActionPerformed
+    {//GEN-HEADEREND:event_miOpenProjectActionPerformed
+
+      JOptionPane.showMessageDialog(null, "Not implemented yet.");
+
+    }//GEN-LAST:event_miOpenProjectActionPerformed
 
   /**
    * @param args the command line arguments
@@ -1124,6 +1134,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JButton btNew;
   private javax.swing.JButton btOpen;
   private javax.swing.JButton btSave;
+  private javax.swing.JMenuItem jMenuItem1;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
   private javax.swing.JSeparator jSeparator3;
@@ -1132,12 +1143,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenu mEdit;
   private javax.swing.JMenu mFile;
   private javax.swing.JMenu mHelp;
+  private javax.swing.JMenu mProject;
   private javax.swing.JMenuBar mbMain;
   private javax.swing.JMenuItem miClose;
   private javax.swing.JMenuItem miCompile;
   private javax.swing.JMenuItem miInfo;
   private javax.swing.JMenuItem miNew;
-  private javax.swing.JMenuItem miOpen;
+  private javax.swing.JMenuItem miOpenFile;
+  private javax.swing.JMenuItem miOpenProject;
   private javax.swing.JMenuItem miOption;
   private javax.swing.JMenuItem miQuit;
   private javax.swing.JMenuItem miRefreshGraph;
