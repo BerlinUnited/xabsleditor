@@ -270,9 +270,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         try{
           //System.out.println("parse: " + file.getName()); // debug stuff
 
-          String text = Tools.readFileToString(file);
           XParser p = new XParser(this.globalXABSLContext);
-          p.parse(new StringReader(text), file.getAbsolutePath());
+          p.parse(new FileReader(file), file.getAbsolutePath());
           
         }catch(Exception e)
         {
@@ -878,7 +877,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
     // needed by autocomletition
-    if(this.globalXABSLContext == null)
+    //if(this.globalXABSLContext == null)
       loadXABSLContext(agentsFile.getParentFile());
 
     return createDocumentTab(selectedFile);
