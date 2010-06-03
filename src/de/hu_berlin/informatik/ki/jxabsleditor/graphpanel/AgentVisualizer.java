@@ -28,6 +28,7 @@ import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Forest;
+import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
@@ -37,6 +38,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.Map;
+import javax.swing.JLabel;
+import javax.swing.SwingWorker;
 import org.apache.commons.collections15.Transformer;
 
 /**
@@ -48,11 +51,21 @@ public class AgentVisualizer extends javax.swing.JPanel
 
   private VisualizationViewer<String, String> vv;
   private GraphZoomScrollPane scrollPane;
+  private JLabel lblLoading;
+  GraphLoader graphLoader;
 
   /** Creates new form AgentVisualizer */
   public AgentVisualizer()
   {
     initComponents();
+
+    graphLoader = null;
+
+    lblLoading = new JLabel("loading graph...");
+    lblLoading.setFont(new java.awt.Font("Tahoma", 0, 24));
+    lblLoading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    lblLoading.setVisible(true);
+    
   }
 
   private void createSubGraph(XABSLContext.XABSLOption o,
@@ -90,6 +103,18 @@ public class AgentVisualizer extends javax.swing.JPanel
       return;
     }
     
+    if (this.graphLoader != null && !this.graphLoader.isDone())
+    {
+      this.graphLoader.cancel(true);
+    }
+
+    this.graphLoader = new GraphLoader(context);
+    this.graphLoader.execute();
+
+  }
+
+  private void doSetGraph(XABSLContext context)
+  {
     // build graph
     DirectedGraph<String, String> g =
       new DirectedSparseGraph<String, String>();
@@ -106,7 +131,7 @@ public class AgentVisualizer extends javax.swing.JPanel
       public Double transform(String i)
       {
         return new Double(1.0);
-      }      
+      }
     };
     MinimumSpanningForest2<String,String> prim
       = new MinimumSpanningForest2<String, String>(g,
@@ -116,7 +141,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     Forest<String,String> graphAsForest = prim.getForest();
 
     TreeLayout<String,String> treeLayout = new TreeLayout<String, String>(graphAsForest);
-    
+
     // display graph
     StaticLayout<String,String> layout = new StaticLayout<String, String>(g, treeLayout);
     layout.initialize();
@@ -162,9 +187,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     add(scrollPane, BorderLayout.CENTER);
 
     validate();
-
   }
-
   /** This method is called from within the constructor to
    * initialize the form.
    * WARNING: Do NOT modify this code. The content of this method is
@@ -178,4 +201,27 @@ public class AgentVisualizer extends javax.swing.JPanel
   }// </editor-fold>//GEN-END:initComponents
   // Variables declaration - do not modify//GEN-BEGIN:variables
   // End of variables declaration//GEN-END:variables
+
+  private class GraphLoader extends SwingWorker<String, Void>
+  {
+
+    XABSLContext context;
+
+    public GraphLoader(XABSLContext context)
+    {
+      this.context = context;
+    }
+
+    @Override
+    protected String doInBackground() throws Exception
+    {
+      removeAll();
+      add(lblLoading, BorderLayout.CENTER);
+      doSetGraph(context);
+      remove(lblLoading);
+
+      return "";
+    }
+  }//end GraphLoader
+
 }
