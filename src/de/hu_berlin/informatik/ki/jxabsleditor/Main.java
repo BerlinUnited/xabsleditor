@@ -38,6 +38,8 @@ import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -88,7 +90,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
   /** Map from an file to it's agent file (means "project") */
-  private Map<File,File> file2Agent = new HashMap<File, File>();
+  private Map<File, File> file2Agent = new HashMap<File, File>();
   private FileDrop fileDrop = null;
 
   /** Creates new form Main */
@@ -266,20 +268,33 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     // get all opened agents
     TreeSet<File> foundAgents = new TreeSet<File>();
-    for(int i=0; i < tabbedPanelEditor.getTabCount(); i++)
+    for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
     {
       XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getComponentAt(i);
       File agentFile = file2Agent.get(p.getFile());
-      if(agentFile != null && !foundAgents.contains(agentFile))
+      if (agentFile != null && !foundAgents.contains(agentFile))
       {
 
         JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
         XABSLContext context = p.getXABSLContext();
 
-        for(String option : context.getOptionPathMap().keySet())
+        final Map<String, File> optionPathMap = context.getOptionPathMap();
+
+        for (final String option : optionPathMap.keySet())
         {
           JMenuItem miOptionOpener = new JMenuItem(option);
           miAgent.add(miOptionOpener);
+
+          miOptionOpener.addActionListener(new ActionListener()
+          {
+
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+              File f = optionPathMap.get(option);
+              openFile(f);
+            }
+          });
         }
         mProject.add(miAgent);
 
@@ -422,7 +437,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     mbMain = new javax.swing.JMenuBar();
     mFile = new javax.swing.JMenu();
     miNew = new javax.swing.JMenuItem();
-    miOpenProject = new javax.swing.JMenuItem();
     miOpenFile = new javax.swing.JMenuItem();
     miClose = new javax.swing.JMenuItem();
     jSeparator1 = new javax.swing.JSeparator();
@@ -558,15 +572,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     });
     mFile.add(miNew);
-
-    miOpenProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-    miOpenProject.setText("Open Project");
-    miOpenProject.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miOpenProjectActionPerformed(evt);
-      }
-    });
-    mFile.add(miOpenProject);
 
     miOpenFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
     miOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
@@ -1033,13 +1038,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     }//GEN-LAST:event_miSearchProjectActionPerformed
 
-    private void miOpenProjectActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOpenProjectActionPerformed
-    {//GEN-HEADEREND:event_miOpenProjectActionPerformed
-
-      JOptionPane.showMessageDialog(null, "Not implemented yet.");
-
-    }//GEN-LAST:event_miOpenProjectActionPerformed
-
   /**
    * @param args the command line arguments
    */
@@ -1082,12 +1080,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
       tabbedPanelEditor.setSelectedComponent(editor);
 
-      
+
       // update the other openend editors
-      for(int i=0; i < tabbedPanelEditor.getTabCount(); i++)
+      for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
       {
         XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getTabComponentAt(i);
-        if(p != editor && p != null)
+        if (p != editor && p != null)
         {
           p.setXABSLContext(context);
         }
@@ -1246,7 +1244,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miInfo;
   private javax.swing.JMenuItem miNew;
   private javax.swing.JMenuItem miOpenFile;
-  private javax.swing.JMenuItem miOpenProject;
   private javax.swing.JMenuItem miOption;
   private javax.swing.JMenuItem miQuit;
   private javax.swing.JMenuItem miRefreshGraph;
