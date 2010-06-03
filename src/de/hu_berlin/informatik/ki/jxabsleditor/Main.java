@@ -249,10 +249,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private void loadXABSLContext(File folder)
   {
-    if(this.globalXABSLContext == null)
-    {
-      this.globalXABSLContext = new XABSLContext();
-    }
+    this.globalXABSLContext = new XABSLContext();
 
     File[] fileList = folder.listFiles();
     for(File file : fileList)
