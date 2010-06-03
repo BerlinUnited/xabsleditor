@@ -46,10 +46,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -85,9 +83,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
   /** Map from an agent file to the XABSLContext */
-  private Map<File, XABSLContext> globalContext = new TreeMap<File, XABSLContext>();
-  /** the corresponding agent file for each opened file */
-  private Map<File, File> file2Agent = new HashMap<File, File>();
   private FileDrop fileDrop = null;
 
   /** Creates new form Main */
@@ -258,11 +253,23 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     ((XEditorPanel) tabbedPanelEditor.getSelectedComponent()).setLocalCompletionProvider(completionProvider);
   }//end refreshGraph
 
-  private void loadXABSLContext(File folder, File agentsFile)
+  /** Reconstruct the Projects menu entry */
+  private void updateProjectMenu()
   {
-    if (globalContext.get(agentsFile) == null)
+    mProject.removeAll();
+    
+    // get all opened agents
+    for(int i=0; i < tabbedPanelEditor.getTabCount(); i++)
     {
-      globalContext.put(agentsFile, new XABSLContext());
+      // TODO find all openend agents and display them
+    }
+  }
+
+  private XABSLContext loadXABSLContext(File folder, XABSLContext context)
+  {
+    if (context == null)
+    {
+      context = new XABSLContext();
     }
 
     File[] fileList = folder.listFiles();
@@ -270,19 +277,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       if (file.isDirectory())
       {
-        loadXABSLContext(file, agentsFile);
+        loadXABSLContext(file, context);
       }
       else if (file.getName().toLowerCase().endsWith(".xabsl"))
       {
         String name = file.getName().toLowerCase().replace(".xabsl", "");
-        globalContext.get(agentsFile).getOptionPathMap().put(name, file);
+        context.getOptionPathMap().put(name, file);
 
         // parse XABSL file
         try
         {
           //System.out.println("parse: " + file.getName()); // debug stuff
 
-          XParser p = new XParser(globalContext.get(agentsFile));
+          XParser p = new XParser(context);
           p.parse(new FileReader(file), file.getAbsolutePath());
 
         }
@@ -292,6 +299,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       }
     }//end for
+
+    return context;
   }//end loadSymbolsTable
 
   private DefaultCompletionProvider createCompletitionProvider(XABSLContext context)
@@ -895,13 +904,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     if (agentsFile != null)
     {
-      // reload the complete global project context
-      globalContext.put(agentsFile, null);
-      file2Agent.put(selectedFile, agentsFile);
+      
+      XABSLContext newContext = loadXABSLContext(agentsFile.getParentFile(), null);
 
-      loadXABSLContext(agentsFile.getParentFile(), agentsFile);
-
-      return createDocumentTab(selectedFile, agentsFile);
+      return createDocumentTab(selectedFile, newContext);
     }
     else
     {
@@ -1027,7 +1033,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
   }//end main
 
-  private XEditorPanel createDocumentTab(File file, File agentsFile)
+  private XEditorPanel createDocumentTab(File file, XABSLContext context)
   {
     try
     {
@@ -1048,7 +1054,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
-      editor.setXABSLContext(globalContext.get(agentsFile));
+      editor.setXABSLContext(context);
       editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
 
       tabbedPanelEditor.setSelectedComponent(editor);
