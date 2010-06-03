@@ -35,6 +35,7 @@ import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
@@ -46,11 +47,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -82,7 +87,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
-  /** Map from an agent file to the XABSLContext */
+  /** Map from an file to it's agent file (means "project") */
+  private Map<File,File> file2Agent = new HashMap<File, File>();
   private FileDrop fileDrop = null;
 
   /** Creates new form Main */
@@ -257,11 +263,28 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private void updateProjectMenu()
   {
     mProject.removeAll();
-    
+
     // get all opened agents
+    TreeSet<File> foundAgents = new TreeSet<File>();
     for(int i=0; i < tabbedPanelEditor.getTabCount(); i++)
     {
-      // TODO find all openend agents and display them
+      XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getComponentAt(i);
+      File agentFile = file2Agent.get(p.getFile());
+      if(agentFile != null && !foundAgents.contains(agentFile))
+      {
+
+        JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
+        XABSLContext context = p.getXABSLContext();
+
+        for(String option : context.getOptionPathMap().keySet())
+        {
+          JMenuItem miOptionOpener = new JMenuItem(option);
+          miAgent.add(miOptionOpener);
+        }
+        mProject.add(miAgent);
+
+        foundAgents.add(agentFile);
+      }
     }
   }
 
@@ -904,7 +927,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     if (agentsFile != null)
     {
-      
+      file2Agent.put(selectedFile, agentsFile);
       XABSLContext newContext = loadXABSLContext(agentsFile.getParentFile(), null);
 
       return createDocumentTab(selectedFile, newContext);
@@ -1058,6 +1081,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
 
       tabbedPanelEditor.setSelectedComponent(editor);
+
+      
+      // update the other openend editors
+      for(int i=0; i < tabbedPanelEditor.getTabCount(); i++)
+      {
+        XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getTabComponentAt(i);
+        if(p != editor && p != null)
+        {
+          p.setXABSLContext(context);
+        }
+      }
+
+      updateProjectMenu();
 
       editor.addDocumentChangedListener(new DocumentChangedListener()
       {
