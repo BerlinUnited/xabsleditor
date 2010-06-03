@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,9 +86,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
-  private HashMap<String, File> optionPathMap;
-  
-  
   private XABSLContext globalXABSLContext = null;
   private ArrayList<XABSLStateCompetion> localOptionCompletions = null;
 
@@ -171,8 +168,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     loadConfiguration();
 
-    this.optionPathMap = new HashMap<String, File>();
-
     optionVisualizer = new OptionVisualizer();
 
     optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
@@ -189,11 +184,20 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         else if(v.getType() == XabslNode.Type.Option)
         {
           String option = v.getName();
-          File file = optionPathMap.get(option);
+          File file = null;
+          if(globalXABSLContext != null)
+          {
+            file = globalXABSLContext.getOptionPathMap().get(option);
+          }
 
           if(file != null)
           {
             openFile(file);
+          }
+          else
+          {
+            JOptionPane.showMessageDialog(null, "Could not find the file for option "
+              + option, "Option not found", JOptionPane.WARNING_MESSAGE);
           }
         }
       }
@@ -249,7 +253,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private void loadXABSLContext(File folder)
   {
-    this.globalXABSLContext = new XABSLContext();
+    if(globalXABSLContext == null)
+    {
+      globalXABSLContext = new XABSLContext();
+    }
 
     File[] fileList = folder.listFiles();
     for(File file : fileList)
@@ -261,7 +268,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       else if(file.getName().toLowerCase().endsWith(".xabsl"))
       {
         String name = file.getName().toLowerCase().replace(".xabsl", "");
-        optionPathMap.put(name, file);
+        globalXABSLContext.getOptionPathMap().put(name, file);
 
         // parse XABSL file
         try{
@@ -869,13 +876,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       fileChooser.getCurrentDirectory().getAbsolutePath());
     saveConfiguration();
 
-    // TODO: make it better
-    this.optionPathMap.clear();
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
-    // needed by autocomletition
-    //if(this.globalXABSLContext == null)
-      loadXABSLContext(agentsFile.getParentFile());
+    // reload the complete global project context
+    globalXABSLContext = null;
+    loadXABSLContext(agentsFile.getParentFile());
 
     return createDocumentTab(selectedFile);
   }//end openFile
@@ -1046,11 +1051,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         {
           String element = e.getDescription();
           element = element.replace("no protocol: ", "");
-          
-          File file = optionPathMap.get(element);
+
+
+          File file = null;
+          if(globalXABSLContext != null)
+          {
+            file = globalXABSLContext.getOptionPathMap().get(element);
+          }
           int position = 0;
 
           // try to open symbol
+          boolean symbolWasFound = false;
+
           if(file == null)
           {
             XABSLSymbol symbol = globalXABSLContext.getSymbolMap().get(element);
@@ -1058,6 +1070,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             {
               file = new File(symbol.getDeclarationSource().fileName);
               position = symbol.getDeclarationSource().offset;
+              symbolWasFound = true;
             }
           }//end if
 
@@ -1068,6 +1081,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             if(state != null)
             {
               editor.setCarretPosition(state.offset);
+              symbolWasFound = true;
             }
           }//end if
 
@@ -1075,8 +1089,17 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           {
             XEditorPanel editor = openFile(file);
             if(editor != null)
+            {
               editor.setCarretPosition(position);
-          }//end if
+            }
+          }
+
+          if(file == null && !symbolWasFound)
+          {
+            JOptionPane.showMessageDialog(null, "Could not find the file for option, symbol or state",
+              "Not found", JOptionPane.WARNING_MESSAGE);
+          }
+          //end if
           
           //System.out.println(option);
         }
@@ -1121,9 +1144,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     return selectedFile;
   }//end saveStringToFile
 
-  public HashMap<String, File> getOptionPathMap()
+  public Map<String, File> getOptionPathMap()
   {
-    return optionPathMap;
+    if(globalXABSLContext != null)
+    {
+      return globalXABSLContext.getOptionPathMap();
+    }
+    else
+    {
+      return null;
+    }
   }
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton btCompile;

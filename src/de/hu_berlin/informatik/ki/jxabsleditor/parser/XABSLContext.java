@@ -15,6 +15,7 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.parser;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,6 +29,7 @@ public class XABSLContext
   private Map<String, XABSLSymbol> symbolMap = new TreeMap<String, XABSLSymbol>();
   private Map<String, XABSLEnum> enumMap = new TreeMap<String, XABSLEnum>();
   private Map<String, XABSLOption> optionMap = new TreeMap<String, XABSLOption>();
+  private Map<String, File> optionPathMap = new TreeMap<String, File>();
 
   public Map<String, XABSLOption> getOptionMap() {
     return optionMap;
@@ -41,6 +43,11 @@ public class XABSLContext
     return symbolMap;
   }
 
+  public Map<String, File> getOptionPathMap()
+  {
+    return optionPathMap;
+  }
+  
   public void add(XABSLSymbol e) {
     // TODO: symbols cannot be overwritten...
     if(e != null && !symbolMap.containsKey(e.name))
