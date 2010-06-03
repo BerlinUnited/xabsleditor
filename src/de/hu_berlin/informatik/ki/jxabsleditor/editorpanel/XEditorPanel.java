@@ -61,6 +61,7 @@ public class XEditorPanel extends javax.swing.JPanel
   private RTextScrollPane scrolPane;
 
   private File file;
+  private XABSLContext context;
   private boolean changed;
   private int searchOffset;
   private String lastSearch;
@@ -430,9 +431,15 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public void setXABSLContext(XABSLContext xabslContext)
   {
+    this.context = xabslContext;
     textArea.clearParsers();
     textArea.addParser(new XParser(xabslContext));
   }//end setXABSLContext
+
+  public XABSLContext getXABSLContext()
+  {
+    return context;
+  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.SearchPanel searchPanel;
