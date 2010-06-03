@@ -19,8 +19,15 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslEdge;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.algorithms.layout.DAGLayout;
+import edu.uci.ics.jung.algorithms.layout.KKLayout;
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
+import edu.uci.ics.jung.algorithms.layout.TreeLayout;
+import edu.uci.ics.jung.algorithms.shortestpath.MinimumSpanningForest2;
+import edu.uci.ics.jung.graph.DelegateForest;
+import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
@@ -91,10 +98,28 @@ public class AgentVisualizer extends javax.swing.JPanel
       createSubGraph(o, g, context.getOptionMap());
     }
 
+    // calculate the minimum spanning tree in order to be able to use the TreeLayout
+    Transformer<String,Double> weightTransformer = new Transformer<String, Double>()
+    {
+
+      @Override
+      public Double transform(String i)
+      {
+        return new Double(1.0);
+      }      
+    };
+    MinimumSpanningForest2<String,String> prim
+      = new MinimumSpanningForest2<String, String>(g,
+        new DelegateForest<String, String>(), DelegateTree.<String,String>getFactory(),
+        weightTransformer);
+
+    Forest<String,String> graphAsForest = prim.getForest();
+
+    TreeLayout<String,String> treeLayout = new TreeLayout<String, String>(graphAsForest);
+    
     // display graph
-    DAGLayout<String, String> layout = new DAGLayout<String, String>(g);
+    StaticLayout<String,String> layout = new StaticLayout<String, String>(g, treeLayout);
     layout.initialize();
-    layout.done();
 
     if(scrollPane != null)
     {
