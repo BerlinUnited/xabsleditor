@@ -52,6 +52,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -279,11 +280,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         XABSLContext context = p.getXABSLContext();
 
         final Map<String, File> optionPathMap = context.getOptionPathMap();
+        Map<String,JMenu> menuSubs = new TreeMap<String, JMenu>();
 
         for (final String option : optionPathMap.keySet())
         {
+          String subCategory = option.substring(0,1).toUpperCase();
+          if(menuSubs.get(subCategory) == null)
+          {
+            menuSubs.put(subCategory, new JMenu(subCategory));
+          }
+
           JMenuItem miOptionOpener = new JMenuItem(option);
-          miAgent.add(miOptionOpener);
+          menuSubs.get(subCategory).add(miOptionOpener);
 
           miOptionOpener.addActionListener(new ActionListener()
           {
@@ -296,6 +304,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             }
           });
         }
+
+        for(String s : menuSubs.keySet())
+        {
+          miAgent.add(menuSubs.get(s));
+        }
+
         mProject.add(miAgent);
 
         foundAgents.add(agentFile);
