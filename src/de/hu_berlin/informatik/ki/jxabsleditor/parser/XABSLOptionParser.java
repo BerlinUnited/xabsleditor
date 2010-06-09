@@ -67,6 +67,10 @@ public class XABSLOptionParser extends XABSLAbstractParser
     }//end while
     isTokenAndEat("}");
 
+    
+    // expect end of file
+    isEOF();
+
     for(String s : currentOutgoingOptions)
     {
       currentOption.addAction(s);

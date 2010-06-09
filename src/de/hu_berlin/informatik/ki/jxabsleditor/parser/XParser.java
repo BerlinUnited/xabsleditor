@@ -335,6 +335,15 @@ public class XParser extends AbstractParser
     }
   }//end eat
 
+  protected void isEOF() throws Exception
+  {
+    if(currentToken != null)
+    {
+      this.result.addNotice(new DefaultParserNotice(this, "End of file expected.", getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
+      throw new Exception("End of file expected.");
+    }//end if
+  }//end isEOF
+
   protected boolean isToken(int type) throws Exception
   {
     if(currentToken == null)
@@ -464,6 +473,10 @@ public class XParser extends AbstractParser
 
     protected void eat() throws Exception {
       this.parent.eat();
+    }
+
+    protected void isEOF() throws Exception {
+      parent.isEOF();
     }
 
     protected String parseIdentifier() throws Exception {
