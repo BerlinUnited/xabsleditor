@@ -324,6 +324,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       context = new XABSLContext();
     }
 
+    final String XABSL_FILE_ENDING = ".xabsl";
+
     File[] fileList = folder.listFiles();
     for (File file : fileList)
     {
@@ -331,16 +333,17 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       {
         loadXABSLContext(file, context);
       }
-      else if (file.getName().toLowerCase().endsWith(".xabsl"))
+      else if (file.getName().toLowerCase().endsWith(XABSL_FILE_ENDING))
       {
-        String name = file.getName().toLowerCase().replace(".xabsl", "");
+        // remove the file ending
+        int dotIndex = file.getName().length() - XABSL_FILE_ENDING.length();
+        String name = file.getName().substring(0, dotIndex);
         context.getOptionPathMap().put(name, file);
 
         // parse XABSL file
         try
         {
           //System.out.println("parse: " + file.getName()); // debug stuff
-
           XParser p = new XParser(context);
           p.parse(new FileReader(file), file.getAbsolutePath());
 
