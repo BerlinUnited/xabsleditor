@@ -43,53 +43,34 @@ public class Tools
   }//end handleException
 
   /**
+   * TODO: currently its a kind of a hack ... make it better
    * Returns the agent-file of an option
    * @param optionFile
    * @return The agents.xml or null if not found.
    */
   public static File getAgentFileForOption(File optionFile)
   {
-    File agent = null;
     File current = optionFile;
 
     if(current == null)
       return null;
-    
-    // check if this is already the root file
-    if("agents.xabsl".equalsIgnoreCase(current.getName())
-      && current.isFile())
-    {
-      File optionsDir = new File(current.getParentFile().getAbsolutePath() + "/Options");
-      //if(optionsDir.exists() && optionsDir.isDirectory())
-      {
-        return current;
-      }
-    }//end if
 
-    // find options- or symbols-folder
-    current = current.getParentFile();
-    while(current != null && !current.getName().equalsIgnoreCase("Options")
-          && !current.getName().equalsIgnoreCase("Symbols"))
-    {
+    // get parent directory
+    if(current.isFile())
       current = current.getParentFile();
-    }
 
-    if(current != null)
+    while(current != null)
     {
-      // the agents.xabsl should be in the parent folder
-      current = current.getParentFile();
-      if(current != null)
+      // check if agents.xabsl is in this folder
+      File agentFile = new File(current.getAbsolutePath() + "/agents.xabsl");
+      if(agentFile.exists() && agentFile.isFile())
       {
-        // check if agents.xabsl is in this folder
-        File tmpAgent = new File(current.getAbsolutePath() + "/agents.xabsl");
-        if(tmpAgent.exists() && tmpAgent.isFile())
-        {
-          agent = tmpAgent;
-        }
+        return agentFile;
       }
-    }//end if
+      current = current.getParentFile();
+    }//end while
 
-    return agent;
+    return null;
   }//end getAgentFileForOption
   
 

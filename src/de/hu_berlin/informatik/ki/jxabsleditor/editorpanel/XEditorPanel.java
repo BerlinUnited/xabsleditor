@@ -281,7 +281,18 @@ public class XEditorPanel extends javax.swing.JPanel
     }
 
     this.textArea.revalidate();
-  }
+  }//end setCarretPosition
+
+  public void jumpToLine(int line)
+  {
+    try{
+      int startOffs = textArea.getLineStartOffset(line);
+      setCarretPosition(startOffs);
+    }catch(BadLocationException ex)
+    {
+      // couldn't jump...
+    }
+  }//end jumpToLine
 
   public void loadFromFile(File file)
   {
