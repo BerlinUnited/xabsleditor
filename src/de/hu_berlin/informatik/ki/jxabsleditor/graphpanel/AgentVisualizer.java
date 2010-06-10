@@ -193,7 +193,7 @@ public class AgentVisualizer extends javax.swing.JPanel
         @Override
         public String transform(XabslNode n)
         {
-          return n.getName();
+          return "<html><center>" + n.getName().replaceAll("_", "_<br>") + "</center></html>";
         }
       });
     vv.getRenderContext().setVertexFillPaintTransformer(new Transformer<XabslNode, Paint>()
