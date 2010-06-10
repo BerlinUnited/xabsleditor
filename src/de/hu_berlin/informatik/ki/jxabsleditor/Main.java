@@ -181,7 +181,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     optionVisualizer = new OptionVisualizer();
 
-    optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
+    GraphMouseListener<XabslNode> mouseListener = new GraphMouseListener<XabslNode>()
     {
 
       @Override
@@ -222,7 +222,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       public void graphReleased(XabslNode v, MouseEvent me)
       {
       }
-    });
+    };
+
+    optionVisualizer.setGraphMouseListener(mouseListener);
 
     tabbedPanelEditor.addChangeListener(new ChangeListener()
     {
@@ -236,7 +238,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
 
-    agentVisualizer = new AgentVisualizer();
+    agentVisualizer = new AgentVisualizer();    
+    agentVisualizer.setGraphMouseListener(mouseListener);
     panelAgent.add(agentVisualizer, BorderLayout.CENTER);
 
   }//end Main

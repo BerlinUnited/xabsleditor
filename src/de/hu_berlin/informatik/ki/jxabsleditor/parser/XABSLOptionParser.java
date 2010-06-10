@@ -46,6 +46,8 @@ public class XABSLOptionParser extends XABSLAbstractParser
   @Override
   public void parse() throws Exception
   {
+    currentOutgoingOptions = new HashSet<String>();
+    
     isTokenAndEat("option");
     currentOption = new XABSLOption(parseIdentifier());
     currentOption.setComment(getCurrentComment());
@@ -143,7 +145,6 @@ public class XABSLOptionParser extends XABSLAbstractParser
   {
     currentStateInitial = false;
     currentStateTarget = false;
-    currentOutgoingOptions = new HashSet<String>();
 
     eatInitialOrTarget();
     // we can have initial *and* target state
