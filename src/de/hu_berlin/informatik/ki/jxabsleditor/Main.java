@@ -252,7 +252,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
 
     XEditorPanel selectedEditorPanel = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
-    agentVisualizer.setContext(selectedEditorPanel.getXABSLContext());
 
     String text = selectedEditorPanel.getText();
 
@@ -260,6 +259,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     XParser p = new XParser(selectedEditorPanel.getXABSLContext());
     p.parse(new StringReader(text));
     optionVisualizer.setGraph(p.getOptionGraph());
+
+    String optionName = tabbedPanelEditor.getTitleAt(tabbedPanelEditor.getSelectedIndex());
+    optionName = optionName.replaceAll(".xabsl", "");
+    agentVisualizer.setContext(selectedEditorPanel.getXABSLContext(), optionName);
 
     // refresh autocompetion
     DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();

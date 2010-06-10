@@ -36,6 +36,11 @@ import edu.uci.ics.jung.visualization.renderers.VertexLabelAsShapeRenderer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -69,10 +74,11 @@ public class AgentVisualizer extends javax.swing.JPanel
     
   }
 
-  private void createAgentGraph(XABSLContext context,
-    DirectedGraph<XabslNode,XabslEdge> g, Map<String, XABSLContext.XABSLOption> optionMap)
+  private XabslNode createAgentGraph(XABSLContext context,
+    DirectedGraph<XabslNode,XabslEdge> g, String selectedNodeName)
   {
 
+    XabslNode result = null;
     // add vertices
     Map<String, XabslNode> nodeByName = new HashMap<String, XabslNode>();
 
@@ -83,6 +89,11 @@ public class AgentVisualizer extends javax.swing.JPanel
         XabslNode n = new XabslNode();
         n.setName(option.getName());
         n.setType(XabslNode.Type.Option);
+
+        if(n.getName().equals(selectedNodeName))
+        {
+          result = n;
+        }
 
         g.addVertex(n);
         nodeByName.put(n.getName(), n);
@@ -104,10 +115,11 @@ public class AgentVisualizer extends javax.swing.JPanel
 
       }
     }
+    return result;
   }
 
   /** (Re-) set to a new context and display it */
-  public void setContext(XABSLContext context)
+  public void setContext(XABSLContext context, String selectedNodeName)
   {
     if(context == null)
     {
@@ -119,17 +131,18 @@ public class AgentVisualizer extends javax.swing.JPanel
       this.graphLoader.cancel(true);
     }
 
-    this.graphLoader = new GraphLoader(context);
+    this.graphLoader = new GraphLoader(context, selectedNodeName);
     this.graphLoader.execute();
 
   }
 
-  private void doSetGraph(XABSLContext context)
+  private void doSetGraph(XABSLContext context, final String selectedNodeName)
   {
     // build graph
-    final DirectedGraph<XabslNode, XabslEdge> g =
+    final DirectedGraph<XabslNode, XabslEdge> graph =
       new DirectedSparseGraph<XabslNode, XabslEdge>();
-    createAgentGraph(context, g, null);
+    final XabslNode selectedNode = createAgentGraph(context, graph, selectedNodeName);
+
 
     // calculate the minimum spanning tree in order to be able to use the TreeLayout
     Transformer<XabslEdge,Double> weightTransformer = new Transformer<XabslEdge, Double>()
@@ -138,21 +151,21 @@ public class AgentVisualizer extends javax.swing.JPanel
       @Override
       public Double transform(XabslEdge i)
       {
-        XabslNode source = g.getSource(i);
-        if(g.getInEdges(source).size() == 0)
+        XabslNode source = graph.getSource(i);
+        if(graph.getInEdges(source).size() == 0)
         {
-          return new Double(1.0);
+          return new Double(10.0);
         }
-        XabslNode dest = g.getDest(i);
-        if(g.getOutEdges(dest).size() == 0)
+        XabslNode dest = graph.getDest(i);
+        if(graph.getOutEdges(dest).size() == 0)
         {
-          return new Double(1.0);
+          return new Double(10.0);
         }
-        return new Double(10.0);
+        return new Double(1.0);
       }
     };
     MinimumSpanningForest2<XabslNode,XabslEdge> prim
-      = new MinimumSpanningForest2<XabslNode,XabslEdge>(g,
+      = new MinimumSpanningForest2<XabslNode,XabslEdge>(graph,
         new DelegateForest<XabslNode,XabslEdge>(), DelegateTree.<XabslNode,XabslEdge>getFactory(),
         weightTransformer);
 
@@ -161,7 +174,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     TreeLayout<XabslNode,XabslEdge> treeLayout = new TreeLayout<XabslNode,XabslEdge>(graphAsForest);
 
     // display graph
-    StaticLayout<XabslNode,XabslEdge> layout = new StaticLayout<XabslNode,XabslEdge>(g, treeLayout);
+    StaticLayout<XabslNode,XabslEdge> layout = new StaticLayout<XabslNode,XabslEdge>(graph, treeLayout);
     //DAGLayout<XabslNode,XabslEdge> layout = new DAGLayout<XabslNode, XabslEdge>(g);
     layout.initialize();
 
@@ -184,8 +197,7 @@ public class AgentVisualizer extends javax.swing.JPanel
       vv.addGraphMouseListener(externalMouseListener);
     }
 
-    vv.getRenderContext().setVertexShapeTransformer(
-      new VertexLabelAsShapeRenderer<XabslNode,XabslEdge>(vv.getRenderContext()));
+    vv.getRenderContext().setVertexShapeTransformer(new VertexTransformer(graph));
     vv.getRenderContext().setVertexLabelTransformer(
       new Transformer<XabslNode, String>()
       {
@@ -202,12 +214,51 @@ public class AgentVisualizer extends javax.swing.JPanel
       @Override
       public Paint transform(XabslNode n)
       {
+        if(n == selectedNode)
+        {
+          return Color.green;
+        }
+        if(selectedNode != null && graph.getSuccessors(selectedNode).contains(n))
+        {
+          return Color.red;
+        }
+        if(selectedNode != null && graph.getPredecessors(selectedNode).contains(n))
+        {
+          return Color.orange;
+        }
+        if(graph.getOutEdges(n).size() == 0)
+        {
+          return Color.lightGray;
+        }
         return Color.white;
       }
     });
 
     // label is placed in the center of the node
     vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+
+    vv.getRenderContext().setEdgeDrawPaintTransformer(new Transformer<XabslEdge, Paint>()
+    {
+
+      @Override
+      public Paint transform(XabslEdge e)
+      {
+        if(selectedNode != null
+          && graph.getSource(e) == selectedNode )
+        {
+          return Color.red;
+        }
+        else if(selectedNode != null
+          && graph.getDest(e) == selectedNode)
+        {
+          return Color.ORANGE;
+        }
+        else
+        {
+          return Color.black;
+        }
+      }
+    });
 
     // add to a zoomable container
     scrollPane = new GraphZoomScrollPane(vv);
@@ -229,13 +280,79 @@ public class AgentVisualizer extends javax.swing.JPanel
   // Variables declaration - do not modify//GEN-BEGIN:variables
   // End of variables declaration//GEN-END:variables
 
+
+  private static class VertexTransformer
+    implements Transformer<XabslNode, Shape>
+  {
+
+    private DirectedGraph<XabslNode,XabslEdge> graph;
+    
+    public VertexTransformer(DirectedGraph<XabslNode,XabslEdge> graph)
+    {
+      this.graph = graph;
+    }
+
+    @Override
+    public Shape transform(XabslNode n)
+    {
+
+      String lines[] = n.getName().split("_");
+      int maxWidth = 1;
+      for (int i = 0; i < lines.length; i++)
+      {
+        maxWidth = Math.max(maxWidth, lines[i].length());
+      }
+      int maxHeight = lines.length;
+
+      float s = (float) Math.max(20 * maxHeight, 11 * maxWidth);
+
+      GeneralPath result = null;
+
+      if (graph.getInEdges(n).size() == 0)
+      {
+        result = new GeneralPath(getCircleFromSize(s));
+      } else
+      {
+        result = new GeneralPath(getRectangleFromSize(s));
+      }
+
+      result.closePath();
+
+      return result;
+    }
+
+    private Shape getCircleFromSize(float s)
+    {
+      float width = s;
+      float height = width;
+      float h_offset = -(width / 2);
+      float v_offset = -(height / 2);
+
+      Shape circle = new Ellipse2D.Float(h_offset, v_offset, width, height);
+      return circle;
+    }
+
+    private Shape getRectangleFromSize(float s)
+    {
+      float width = s;
+      float height = width;
+      float h_offset = -(width / 2);
+      float v_offset = -(height / 2);
+
+      Shape circle = new Rectangle2D.Float(h_offset, v_offset, width, height);
+      return circle;
+    }
+  }
+
   private class GraphLoader extends SwingWorker<String, Void>
   {
 
-    XABSLContext context;
+    private XABSLContext context;
+    private String selectedNode;
 
-    public GraphLoader(XABSLContext context)
+    public GraphLoader(XABSLContext context, String selectedNode)
     {
+      this.selectedNode = selectedNode;
       this.context = context;
     }
 
@@ -244,7 +361,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     {
       removeAll();
       add(lblLoading, BorderLayout.CENTER);
-      doSetGraph(context);
+      doSetGraph(context, selectedNode);
       remove(lblLoading);
 
       return "";
