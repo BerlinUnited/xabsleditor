@@ -39,6 +39,13 @@ public class SuperDAGLayout<N,E> extends AbstractLayout<N, E>
    */
   protected int distY = DEFAULT_DISTY;
 
+  public SuperDAGLayout(Graph<N, E> graph, int distX, int distY)
+  {
+    super(graph);
+    this.distX = distX;
+    this.distY = distY;
+  }
+
   public SuperDAGLayout(Graph<N, E> graph)
   {
     super(graph);

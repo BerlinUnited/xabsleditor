@@ -33,14 +33,20 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import org.apache.commons.collections15.Transformer;
 
@@ -58,7 +64,10 @@ public class AgentVisualizer extends javax.swing.JPanel
   private XabslNode selectedNode;
   private GraphLoader graphLoader;
   private Layout<XabslNode, XabslEdge> layout;
-
+  private XABSLContext lastContext;
+  private String lastSelectedNodeName;
+  private String lastSelectedAgentName;
+ 
   /** Creates new form AgentVisualizer */
   public AgentVisualizer()
   {
@@ -74,16 +83,31 @@ public class AgentVisualizer extends javax.swing.JPanel
   }
 
   private XabslNode createAgentGraph(XABSLContext context,
-    DirectedGraph<XabslNode, XabslEdge> g, String selectedNodeName)
+    DirectedGraph<XabslNode, XabslEdge> g, String selectedNodeName, String selectedAgentName)
   {
 
     XabslNode result = null;
-    // add vertices
+
+    // collect the current root options
+    List<String> rootOptions = new LinkedList<String>();
+    if(selectedAgentName != null && context.getAgentMap().containsKey(selectedAgentName))
+    {
+      rootOptions.add(context.getAgentMap().get(selectedAgentName));
+    }
+    else
+    {
+      // just add all nodes
+      rootOptions.addAll(context.getOptionMap().keySet());
+    }
+
+    // add initial vertices
     Map<String, XabslNode> nodeByName = new HashMap<String, XabslNode>();
 
-    for (XABSLContext.XABSLOption option : context.getOptionMap().values())
+    for (String optionName : rootOptions)
     {
-      if (!nodeByName.containsKey(option.getName()))
+      XABSLContext.XABSLOption option = context.getOptionMap().get(optionName);
+
+      if (option != null && !nodeByName.containsKey(option.getName()))
       {
         XabslNode n = new XabslNode();
         n.setName(option.getName());
@@ -98,20 +122,48 @@ public class AgentVisualizer extends javax.swing.JPanel
         nodeByName.put(n.getName(), n);
       }
     }
-    for (XABSLContext.XABSLOption option : context.getOptionMap().values())
-    {
-      XabslNode n1 = nodeByName.get(option.getName());
 
+    // add edges and connected (and not yet added) vertices
+
+    List<XabslNode> optionQueue = new LinkedList<XabslNode>();
+    optionQueue.addAll(g.getVertices());
+    while(optionQueue.size() > 0)
+    {
+      // pop
+      XabslNode n1 = optionQueue.remove(0);
+
+      // get the corresponding option
+      XABSLContext.XABSLOption option = context.getOptionMap().get(n1.getName());
+
+      // go through all actions
       for (String action : option.getActions())
       {
         XabslNode n2 = nodeByName.get(action);
+        if(n2 == null)
+        {
+          // not included yet, add it
+          XABSLContext.XABSLOption actionAsOption = context.getOptionMap().get(action);
+          n2 = new XabslNode();
+          n2.setName(actionAsOption.getName());
+          n2.setType(XabslNode.Type.Option);
+          if (n2.getName().equals(selectedNodeName))
+          {
+            result = n2;
+          }
+
+          // remember this as already visited/added
+          nodeByName.put(action, n2);
+          
+          // add to queue
+          optionQueue.add(n2);
+
+        }
 
         if (n1 != null && n2 != null)
         {
           XabslEdge e = new XabslEdge(XabslEdge.Type.Outgoing);
           g.addEdge(e, n1, n2);
         }
-
       }
     }
     return result;
@@ -120,6 +172,9 @@ public class AgentVisualizer extends javax.swing.JPanel
   /** (Re-) set to a new context and display it */
   public void setContext(XABSLContext context, String selectedNodeName)
   {
+    lastContext = context;
+    lastSelectedNodeName = selectedNodeName;
+
     if (context == null)
     {
       return;
@@ -130,19 +185,34 @@ public class AgentVisualizer extends javax.swing.JPanel
       this.graphLoader.cancel(true);
     }
 
-    this.graphLoader = new GraphLoader(context, selectedNodeName);
+    String agent = (String) cbAgentSelector.getSelectedItem();
+    if("(all)".equals(agent))
+    {
+      agent = null;
+    }
+
+    this.graphLoader = new GraphLoader(context, selectedNodeName, agent);
     this.graphLoader.execute();
 
   }
 
-  private void doSetGraph(final XABSLContext context, final String selectedNodeName)
+  private void doSetGraph(final XABSLContext context, final String selectedNodeName,
+    String selectedAgentName)
   {
+    
     // build graph
     final DirectedGraph<XabslNode, XabslEdge> graph =
       new DirectedSparseGraph<XabslNode, XabslEdge>();
-    selectedNode = createAgentGraph(context, graph, selectedNodeName);
+    selectedNode = createAgentGraph(context, graph, selectedNodeName, selectedAgentName);
 
-    layout = new SuperDAGLayout<XabslNode, XabslEdge>(graph);
+    if(selectedAgentName == null)
+    {
+      layout = new SuperDAGLayout<XabslNode, XabslEdge>(graph);
+    }
+    else
+    {
+      layout = new SuperDAGLayout<XabslNode, XabslEdge>(graph, 80, 120);
+    }
 
     layout.initialize();
 
@@ -251,6 +321,11 @@ public class AgentVisualizer extends javax.swing.JPanel
     }
 
     cbAgentSelector.setModel(model);
+    
+    if(lastSelectedAgentName != null)
+    {
+      model.setSelectedItem(lastSelectedAgentName);
+    }
   }
 
   private void fitGraphinPanel()
@@ -286,26 +361,48 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     panelGraph = new javax.swing.JPanel();
     cbAgentSelector = new javax.swing.JComboBox();
+    btFilter = new javax.swing.JButton();
 
     panelGraph.setLayout(new java.awt.BorderLayout());
+
+    btFilter.setText("Filter");
+    btFilter.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        btFilterActionPerformed(evt);
+      }
+    });
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(cbAgentSelector, 0, 400, Short.MAX_VALUE)
-      .addComponent(panelGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+      .addComponent(panelGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+        .addComponent(cbAgentSelector, 0, 315, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addComponent(btFilter))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
-        .addComponent(cbAgentSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(cbAgentSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(btFilter))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(panelGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+        .addComponent(panelGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
     );
   }// </editor-fold>//GEN-END:initComponents
 
+  private void btFilterActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_btFilterActionPerformed
+  {//GEN-HEADEREND:event_btFilterActionPerformed
+
+    lastSelectedAgentName = (String) cbAgentSelector.getSelectedItem();
+    setContext(lastContext, lastSelectedNodeName);
+
+  }//GEN-LAST:event_btFilterActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton btFilter;
   private javax.swing.JComboBox cbAgentSelector;
   private javax.swing.JPanel panelGraph;
   // End of variables declaration//GEN-END:variables
@@ -378,11 +475,13 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     private XABSLContext context;
     private String selectedNode;
+    private String selectedAgentName;
 
-    public GraphLoader(XABSLContext context, String selectedNode)
+    public GraphLoader(XABSLContext context, String selectedNode, String selectedAgentName)
     {
       this.selectedNode = selectedNode;
       this.context = context;
+      this.selectedAgentName = selectedAgentName;
     }
 
     @Override
@@ -390,7 +489,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     {
       panelGraph.removeAll();
       panelGraph.add(lblLoading, BorderLayout.CENTER);
-      doSetGraph(context, selectedNode);
+      doSetGraph(context, selectedNode, selectedAgentName);
       panelGraph.remove(lblLoading);
 
       return "";
