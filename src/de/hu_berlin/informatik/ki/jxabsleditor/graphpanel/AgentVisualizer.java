@@ -27,15 +27,12 @@ import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
-import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbsoluteCrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.transform.MutableTransformer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
@@ -270,7 +267,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     add(scrollPane, BorderLayout.CENTER);
 
     validate();
-
+    
     fitGraphinPanel();
   }
 
@@ -286,7 +283,7 @@ public class AgentVisualizer extends javax.swing.JPanel
     double scaleH = panelH / (graphH);
     AbsoluteCrossoverScalingControl scaler = new AbsoluteCrossoverScalingControl();
 
-    if(scaleW < scaleH)
+    if (scaleW < scaleH)
     {
       scaler.scale(vv, (float) scaleW, new Point2D.Double(0, 0));
     }
@@ -310,7 +307,6 @@ public class AgentVisualizer extends javax.swing.JPanel
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   // End of variables declaration//GEN-END:variables
-
   private static class VertexTransformer
     implements Transformer<XabslNode, Shape>
   {

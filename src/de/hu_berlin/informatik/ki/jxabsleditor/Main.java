@@ -1098,6 +1098,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       if (file == null)
       {
         editor = new XEditorPanel();
+        editor.setXABSLContext(context);
+        editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
+
         int tabCount = tabbedPanelEditor.getTabCount();
         tabbedPanelEditor.addTab("New " + tabCount, editor);
       }
@@ -1106,15 +1109,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         String content = Tools.readFileToString(file);
         editor = new XEditorPanel(content);
         editor.setFile(file);
+        editor.setXABSLContext(context);
+        editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
+
         // create a tab
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
-      editor.setXABSLContext(context);
-      editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
-
       tabbedPanelEditor.setSelectedComponent(editor);
-
 
       // update the other openend editors
       for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
