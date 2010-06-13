@@ -39,6 +39,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.SwingWorker;
 import org.apache.commons.collections15.Transformer;
@@ -231,11 +232,25 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     // add to a zoomable container
     scrollPane = new GraphZoomScrollPane(vv);
-    add(scrollPane, BorderLayout.CENTER);
+    panelGraph.add(scrollPane, BorderLayout.CENTER);
 
     validate();
     
     fitGraphinPanel();
+    recreateAgentSelector(context);
+  }
+
+  private void recreateAgentSelector(XABSLContext context)
+  {
+    DefaultComboBoxModel model = new DefaultComboBoxModel();
+
+    model.addElement("(all)");
+    for(String agent : context.getAgentMap().keySet())
+    {
+      model.addElement(agent);
+    }
+
+    cbAgentSelector.setModel(model);
   }
 
   private void fitGraphinPanel()
@@ -269,10 +284,30 @@ public class AgentVisualizer extends javax.swing.JPanel
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    setLayout(new java.awt.BorderLayout());
+    panelGraph = new javax.swing.JPanel();
+    cbAgentSelector = new javax.swing.JComboBox();
+
+    panelGraph.setLayout(new java.awt.BorderLayout());
+
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+    this.setLayout(layout);
+    layout.setHorizontalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addComponent(cbAgentSelector, 0, 400, Short.MAX_VALUE)
+      .addComponent(panelGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+    );
+    layout.setVerticalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(layout.createSequentialGroup()
+        .addComponent(cbAgentSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(panelGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+    );
   }// </editor-fold>//GEN-END:initComponents
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JComboBox cbAgentSelector;
+  private javax.swing.JPanel panelGraph;
   // End of variables declaration//GEN-END:variables
   private static class VertexTransformer
     implements Transformer<XabslNode, Shape>
@@ -353,10 +388,10 @@ public class AgentVisualizer extends javax.swing.JPanel
     @Override
     protected String doInBackground() throws Exception
     {
-      removeAll();
-      add(lblLoading, BorderLayout.CENTER);
+      panelGraph.removeAll();
+      panelGraph.add(lblLoading, BorderLayout.CENTER);
       doSetGraph(context, selectedNode);
-      remove(lblLoading);
+      panelGraph.remove(lblLoading);
 
       return "";
     }
