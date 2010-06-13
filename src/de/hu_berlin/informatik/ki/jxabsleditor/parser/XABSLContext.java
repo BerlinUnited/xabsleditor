@@ -30,6 +30,7 @@ public class XABSLContext
   private Map<String, XABSLEnum> enumMap = new TreeMap<String, XABSLEnum>();
   private Map<String, XABSLOption> optionMap = new TreeMap<String, XABSLOption>();
   private Map<String, File> optionPathMap = new TreeMap<String, File>();
+  private Map<String, String> agentMap = new TreeMap<String, String>();
 
   public Map<String, XABSLOption> getOptionMap() {
     return optionMap;
@@ -47,7 +48,12 @@ public class XABSLContext
   {
     return optionPathMap;
   }
-  
+
+  public Map<String, String> getAgentMap()
+  {
+    return agentMap;
+  }
+
   public void add(XABSLSymbol e) {
     // TODO: symbols cannot be overwritten...
     if(e != null && !symbolMap.containsKey(e.name))
@@ -66,6 +72,10 @@ public class XABSLContext
       optionMap.put(e.name, e);
   }
 
+  public void addAgent(String agentName, String optionName)
+  {
+    agentMap.put(agentName, optionName);
+  }
 
   public static class DeclarationSource
   {

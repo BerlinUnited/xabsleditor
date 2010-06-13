@@ -25,11 +25,11 @@ public class SuperDAGLayout<N,E> extends AbstractLayout<N, E>
   /**
    * The default horizontal vertex spacing.  Initialized to 50.
    */
-  public final static int DEFAULT_DISTX = 100;
+  public final static int DEFAULT_DISTX = 80;
   /**
    * The default vertical vertex spacing.  Initialized to 50.
    */
-  public final static int DEFAULT_DISTY = 200;
+  public final static int DEFAULT_DISTY = 250;
   /**
    * The horizontal vertex spacing.  Defaults to {@code DEFAULT_XDIST}.
    */
@@ -38,6 +38,13 @@ public class SuperDAGLayout<N,E> extends AbstractLayout<N, E>
    * The vertical vertex spacing.  Defaults to {@code DEFAULT_YDIST}.
    */
   protected int distY = DEFAULT_DISTY;
+
+  public SuperDAGLayout(Graph<N, E> graph, int distX, int distY)
+  {
+    super(graph);
+    this.distX = distX;
+    this.distY = distY;
+  }
 
   public SuperDAGLayout(Graph<N, E> graph)
   {

@@ -149,6 +149,10 @@ public class XParser extends AbstractParser
         {
           this.parser = new XABSLNamespaceParser(this);
         }
+        else if(isToken("include"))
+        {
+          this.parser = new XABSLAgentParser(this);
+        }
       }
 
       this.parser.parse();
