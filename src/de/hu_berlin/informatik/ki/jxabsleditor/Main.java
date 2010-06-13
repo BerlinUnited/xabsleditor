@@ -25,6 +25,7 @@ import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLStateCompetion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
+import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
@@ -87,6 +88,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
   private OptionVisualizer optionVisualizer;
+  private AgentVisualizer agentVisualizer;
   private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
@@ -179,7 +181,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     optionVisualizer = new OptionVisualizer();
 
-    optionVisualizer.setGraphMouseListener(new GraphMouseListener<XabslNode>()
+    GraphMouseListener<XabslNode> mouseListener = new GraphMouseListener<XabslNode>()
     {
 
       @Override
@@ -220,7 +222,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       public void graphReleased(XabslNode v, MouseEvent me)
       {
       }
-    });
+    };
+
+    optionVisualizer.setGraphMouseListener(mouseListener);
 
     tabbedPanelEditor.addChangeListener(new ChangeListener()
     {
@@ -233,6 +237,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
+
+    agentVisualizer = new AgentVisualizer();    
+    agentVisualizer.setGraphMouseListener(mouseListener);
+    panelAgent.add(agentVisualizer, BorderLayout.CENTER);
+
   }//end Main
 
   private void refreshGraph()
@@ -243,12 +252,17 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
 
     XEditorPanel selectedEditorPanel = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
+
     String text = selectedEditorPanel.getText();
 
     // Option
     XParser p = new XParser(selectedEditorPanel.getXABSLContext());
     p.parse(new StringReader(text));
     optionVisualizer.setGraph(p.getOptionGraph());
+
+    String optionName = tabbedPanelEditor.getTitleAt(tabbedPanelEditor.getSelectedIndex());
+    optionName = optionName.replaceAll(".xabsl", "");
+    agentVisualizer.setContext(selectedEditorPanel.getXABSLContext(), optionName);
 
     // refresh autocompetion
     DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
@@ -442,6 +456,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     tabbedPanelEditor = new javax.swing.JTabbedPane();
     tabbedPanelView = new javax.swing.JTabbedPane();
     panelOption = new javax.swing.JPanel();
+    panelAgent = new javax.swing.JPanel();
     panelCompiler = new javax.swing.JPanel();
     scrollPaneCompilerOutput = new javax.swing.JScrollPane();
     txtCompilerOutput = new javax.swing.JTextArea();
@@ -497,6 +512,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     panelOption.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Option", panelOption);
+
+    panelAgent.setLayout(new java.awt.BorderLayout());
+    tabbedPanelView.addTab("Agent", panelAgent);
 
     txtCompilerOutput.setColumns(20);
     txtCompilerOutput.setEditable(false);
@@ -1080,6 +1098,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       if (file == null)
       {
         editor = new XEditorPanel();
+        editor.setXABSLContext(context);
+        editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
+
         int tabCount = tabbedPanelEditor.getTabCount();
         tabbedPanelEditor.addTab("New " + tabCount, editor);
       }
@@ -1088,15 +1109,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         String content = Tools.readFileToString(file);
         editor = new XEditorPanel(content);
         editor.setFile(file);
+        editor.setXABSLContext(context);
+        editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
+
         // create a tab
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
-      editor.setXABSLContext(context);
-      editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
-
       tabbedPanelEditor.setSelectedComponent(editor);
-
 
       // update the other openend editors
       for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
@@ -1268,6 +1288,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSaveAs;
   private javax.swing.JMenuItem miSearch;
   private javax.swing.JMenuItem miSearchProject;
+  private javax.swing.JPanel panelAgent;
   private javax.swing.JPanel panelCompiler;
   private javax.swing.JPanel panelOption;
   private javax.swing.JScrollPane scrollPaneCompilerOutput;
