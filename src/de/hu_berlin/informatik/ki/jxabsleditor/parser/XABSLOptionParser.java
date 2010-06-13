@@ -39,6 +39,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
     // PARSE OPTION
   private String currentStateName;
   private Set<String> currentOutgoingOptions;
+  private Set<String> allOutgoingOptions;
   private boolean currentStateInitial;
   private boolean currentStateTarget;
   private XABSLOption currentOption;
@@ -47,7 +48,8 @@ public class XABSLOptionParser extends XABSLAbstractParser
   public void parse() throws Exception
   {
     currentOutgoingOptions = new HashSet<String>();
-    
+    allOutgoingOptions = new HashSet<String>();
+
     isTokenAndEat("option");
     currentOption = new XABSLOption(parseIdentifier());
     currentOption.setComment(getCurrentComment());
@@ -66,6 +68,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
     while(!isToken("}"))
     {
       parseState();
+      allOutgoingOptions.addAll(currentOutgoingOptions);
     }//end while
     isTokenAndEat("}");
 
@@ -73,7 +76,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
     // expect end of file
     isEOF();
 
-    for(String s : currentOutgoingOptions)
+    for(String s : allOutgoingOptions)
     {
       currentOption.addAction(s);
     }
@@ -145,6 +148,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
   {
     currentStateInitial = false;
     currentStateTarget = false;
+    currentOutgoingOptions = new HashSet<String>();
 
     eatInitialOrTarget();
     // we can have initial *and* target state
