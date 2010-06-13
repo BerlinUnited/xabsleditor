@@ -18,6 +18,7 @@ package de.hu_berlin.informatik.ki.jxabsleditor.graphpanel;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslEdge;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.algorithms.shortestpath.MinimumSpanningForest2;
@@ -60,8 +61,9 @@ public class AgentVisualizer extends javax.swing.JPanel
   private JLabel lblLoading;
   private XabslNode selectedNode;
   private GraphLoader graphLoader;
-  private StaticLayout<XabslNode, XabslEdge> layout;
-  private TreeLayout<XabslNode, XabslEdge> treeLayout;
+  //private StaticLayout<XabslNode, XabslEdge> layout;
+  private Layout<XabslNode, XabslEdge> layout;
+  //private TreeLayout<XabslNode, XabslEdge> treeLayout;
 
   /** Creates new form AgentVisualizer */
   public AgentVisualizer()
@@ -139,7 +141,7 @@ public class AgentVisualizer extends javax.swing.JPanel
 
   }
 
-  private void doSetGraph(XABSLContext context, final String selectedNodeName)
+  private void doSetGraph(final XABSLContext context, final String selectedNodeName)
   {
     // build graph
     final DirectedGraph<XabslNode, XabslEdge> graph =
@@ -154,16 +156,16 @@ public class AgentVisualizer extends javax.swing.JPanel
       @Override
       public Double transform(XabslEdge i)
       {
-        XabslNode source = graph.getSource(i);
-        if (graph.getInEdges(source).size() == 0)
-        {
-          return new Double(10.0);
-        }
-        XabslNode dest = graph.getDest(i);
-        if (graph.getOutEdges(dest).size() == 0)
-        {
-          return new Double(10.0);
-        }
+//        XabslNode source = graph.getSource(i);
+//        if (graph.getInEdges(source).size() == 0)
+//        {
+//          return new Double(10.0);
+//        }
+//        XabslNode dest = graph.getDest(i);
+//        if (graph.getOutEdges(dest).size() == 0)
+//        {
+//          return new Double(10.0);
+//        }
         return new Double(1.0);
       }
     };
@@ -173,11 +175,12 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     Forest<XabslNode, XabslEdge> graphAsForest = prim.getForest();
 
-    treeLayout =
-      new TreeLayout<XabslNode, XabslEdge>(graphAsForest, 200, 200);
-
+    //treeLayout =
+    //  new TreeLayout<XabslNode, XabslEdge>(graphAsForest, 200, 200);
+    //
     // display graph
-    layout = new StaticLayout<XabslNode, XabslEdge>(graph, treeLayout);
+    //layout = new StaticLayout<XabslNode, XabslEdge>(graph, treeLayout);
+    layout = new SuperDAGLayout<XabslNode, XabslEdge>(graph);
 
     layout.initialize();
 
@@ -274,10 +277,10 @@ public class AgentVisualizer extends javax.swing.JPanel
   private void fitGraphinPanel()
   {
     double panelW = scrollPane.getWidth();
-    double graphW = treeLayout.getSize().getWidth();
+    double graphW = layout.getSize().getWidth();
 
     double panelH = scrollPane.getHeight();
-    double graphH = treeLayout.getSize().getHeight();
+    double graphH = layout.getSize().getHeight();
 
     double scaleW = panelW / (graphW);
     double scaleH = panelH / (graphH);
