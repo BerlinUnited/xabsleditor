@@ -15,6 +15,8 @@
  */
 package de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author thomas
@@ -24,4 +26,81 @@ public class CompileResult
   public String messages;
   public boolean warnings;
   public boolean errors;
-}
+
+
+
+  
+  private ArrayList<CompilerNotice> noticeList;
+
+  public CompileResult()
+  {
+    noticeList = new ArrayList<CompilerNotice>();
+  }
+
+
+  public void addNotice(CompilerNotice notice)
+  {
+    this.noticeList.add(notice);
+  }
+
+  public CompilerNotice getNotice(int line)
+  {
+    for(CompilerNotice notice: this.noticeList)
+    {
+      if(notice.lineOffset == line)
+        return notice;
+    }//end for
+    return null;
+  }//end getNotice
+
+  @Override
+  public String toString()
+  {
+    StringBuilder sb = new StringBuilder();
+    for(CompilerNotice notice: this.noticeList)
+    {
+      sb.append(notice).append('\n');
+    }
+    return sb.toString();
+  }//end toString
+
+
+  public static class CompilerNotice
+  {
+    public enum Level
+    {
+      INFO,
+      WARNING,
+      ERROR
+    }
+
+    public final Level level;
+    public final String message;
+    public final String fileName;
+    public final int lineNumber;
+    public final int lineOffset;
+
+    public CompilerNotice(int lineOffset, Level level, String message, String fileName, int lineNumber) {
+      this.lineOffset = lineOffset;
+      this.level = level;
+      this.message = message;
+      this.fileName = fileName;
+      this.lineNumber = lineNumber;
+    }
+
+    @Override
+    public String toString()
+    {
+      StringBuilder sb = new StringBuilder();
+      sb.append(this.level.name())
+        .append(' ')
+        .append(this.fileName)
+        .append(':')
+        .append(this.lineNumber)
+        .append('\n')
+        .append(this.message);
+
+      return sb.toString();
+    }//end toString
+  }//end class CompilerNotice
+}//end class CompileResult

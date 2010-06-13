@@ -290,7 +290,7 @@ public class XEditorPanel extends javax.swing.JPanel
       setCarretPosition(startOffs);
     }catch(BadLocationException ex)
     {
-      // couldn't jump...
+      System.err.println("Couldn't jump to the line " + ex.offsetRequested());
     }
   }//end jumpToLine
 

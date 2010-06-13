@@ -126,18 +126,28 @@ public class CompilerDialog extends javax.swing.JDialog
           String outStr = debugProcessOutpuObserver.getStdout();
           
           String[] errorMsgLines = errStr.split("\n");
+          int lineOffset = 0;
           for(String line: errorMsgLines)
           {
             if(line.startsWith("ERROR "))
             {
               // parse the error
-              String[] splitted = line.split("((( )+|\t)+)|:");
+              String[] splitted = line.split("((\\s)+)|((\\s)*):((\\s)*)");
               if(splitted.length == 4)
               {
                 String fileName = splitted[2];
-                String lineNumeber = splitted[3];
+                int lineNumber = 0;
+                try{
+                  lineNumber = Integer.parseInt(splitted[3],10);
+                }catch(NumberFormatException ex)
+                {
+                  // its not a number ?
+                  System.err.println("Couldnt parse the line number of the error message: '" + splitted[3] + "'");
+                }
                 // TODO: do something with it
-                System.out.println(fileName + " - " + lineNumeber);
+                //System.out.println(fileName + " - " + lineNumeber);
+                result.addNotice(new CompileResult.CompilerNotice(lineOffset,
+                        CompileResult.CompilerNotice.Level.ERROR, fileName, fileName, lineNumber-1));
               }
               result.errors = true;
             }
@@ -152,6 +162,7 @@ public class CompilerDialog extends javax.swing.JDialog
             {
               result.errors = true;
             }
+            lineOffset++;
           }//end for
 
           System.err.println(outStr);

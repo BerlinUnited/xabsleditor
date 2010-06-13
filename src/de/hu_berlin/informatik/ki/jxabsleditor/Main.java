@@ -18,6 +18,8 @@ package de.hu_berlin.informatik.ki.jxabsleditor;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilationFinishedReceiver;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
 import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
+import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
+import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLEnumCompletion;
 import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLOptionCompletion;
@@ -36,11 +38,11 @@ import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Image;
-import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -70,6 +72,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.text.BadLocationException;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
 
@@ -77,7 +80,7 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
  *
  * @author Heinrich Mellmann
  */
-public class Main extends javax.swing.JFrame implements CompilationFinishedReceiver
+public class Main extends javax.swing.JFrame implements CompilationFinishedReceiver, JumpListener
 {
 
   private JFileChooser fileChooser = new JFileChooser();
@@ -112,6 +115,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
 
     initComponents();
+
+    this.compilerOutputPanel.addJumpListener(this);
 
     this.fileDrop = new FileDrop(this.tabbedPanelEditor, new FileDrop.Listener()
     {
@@ -457,9 +462,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     tabbedPanelView = new javax.swing.JTabbedPane();
     panelOption = new javax.swing.JPanel();
     panelAgent = new javax.swing.JPanel();
-    panelCompiler = new javax.swing.JPanel();
-    scrollPaneCompilerOutput = new javax.swing.JScrollPane();
-    txtCompilerOutput = new javax.swing.JTextArea();
+    compilerOutputPanel = new de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel();
     toolbarMain = new javax.swing.JToolBar();
     btNew = new javax.swing.JButton();
     btOpen = new javax.swing.JButton();
@@ -515,24 +518,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     panelAgent.setLayout(new java.awt.BorderLayout());
     tabbedPanelView.addTab("Agent", panelAgent);
-
-    txtCompilerOutput.setColumns(20);
-    txtCompilerOutput.setEditable(false);
-    txtCompilerOutput.setRows(5);
-    scrollPaneCompilerOutput.setViewportView(txtCompilerOutput);
-
-    javax.swing.GroupLayout panelCompilerLayout = new javax.swing.GroupLayout(panelCompiler);
-    panelCompiler.setLayout(panelCompilerLayout);
-    panelCompilerLayout.setHorizontalGroup(
-      panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
-    );
-    panelCompilerLayout.setVerticalGroup(
-      panelCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(scrollPaneCompilerOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-    );
-
-    tabbedPanelView.addTab("Compiler", null, panelCompiler, "The status and output of the compiler.");
+    tabbedPanelView.addTab("Compiler", compilerOutputPanel);
 
     tabbedPanelView.setSelectedComponent(panelOption);
 
@@ -1222,6 +1208,26 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     return null;
   }//end createDocumentTab
 
+  @Override
+  public void jumpTo(JumpTarget target)
+  {
+    if(target.getFileName() == null) return;
+
+    final String XABSL_FILE_ENDING = ".xabsl";
+    int dotIndex = target.getFileName().length() - XABSL_FILE_ENDING.length();
+    String name = target.getFileName().substring(0, dotIndex);
+
+    XEditorPanel editor = openFile(getOptionPathMap().get(name));
+    if(editor != null)
+    {
+      editor.jumpToLine(target.getLineNumber());
+    }
+    else
+    {
+      System.err.println("Couldn't jump to taget " + target);
+    }
+  }//end jumpTo
+
   private File saveStringToFile(File selectedFile, String text) throws Exception
   {
     if (selectedFile == null)
@@ -1265,6 +1271,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JButton btNew;
   private javax.swing.JButton btOpen;
   private javax.swing.JButton btSave;
+  private de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel compilerOutputPanel;
   private javax.swing.JMenuItem jMenuItem1;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
@@ -1289,20 +1296,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private javax.swing.JMenuItem miSearch;
   private javax.swing.JMenuItem miSearchProject;
   private javax.swing.JPanel panelAgent;
-  private javax.swing.JPanel panelCompiler;
   private javax.swing.JPanel panelOption;
-  private javax.swing.JScrollPane scrollPaneCompilerOutput;
   private javax.swing.JToolBar.Separator seperator1;
   private javax.swing.JTabbedPane tabbedPanelEditor;
   private javax.swing.JTabbedPane tabbedPanelView;
   private javax.swing.JToolBar toolbarMain;
-  private javax.swing.JTextArea txtCompilerOutput;
   // End of variables declaration//GEN-END:variables
 
   @Override
   public void compilationFinished(CompileResult result)
   {
-    txtCompilerOutput.setText(result.messages);
+    //txtCompilerOutput.setText(result.messages);
+    compilerOutputPanel.setCompilerResult(result);
     if (result.errors || result.warnings)
     {
       tabbedPanelView.setSelectedIndex(tabbedPanelView.getTabCount() - 1);

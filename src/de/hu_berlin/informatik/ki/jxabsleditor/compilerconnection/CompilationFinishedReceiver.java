@@ -22,4 +22,4 @@ package de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection;
 public interface CompilationFinishedReceiver
 {
   public void compilationFinished(CompileResult result);
-}
+}//end CompilationFinishedReceiver
