@@ -19,20 +19,15 @@ import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslEdge;
 import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.StaticLayout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
-import edu.uci.ics.jung.algorithms.shortestpath.MinimumSpanningForest2;
-import edu.uci.ics.jung.graph.DelegateForest;
-import edu.uci.ics.jung.graph.DelegateTree;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbsoluteCrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -61,9 +56,7 @@ public class AgentVisualizer extends javax.swing.JPanel
   private JLabel lblLoading;
   private XabslNode selectedNode;
   private GraphLoader graphLoader;
-  //private StaticLayout<XabslNode, XabslEdge> layout;
   private Layout<XabslNode, XabslEdge> layout;
-  //private TreeLayout<XabslNode, XabslEdge> treeLayout;
 
   /** Creates new form AgentVisualizer */
   public AgentVisualizer()
@@ -148,38 +141,6 @@ public class AgentVisualizer extends javax.swing.JPanel
       new DirectedSparseGraph<XabslNode, XabslEdge>();
     selectedNode = createAgentGraph(context, graph, selectedNodeName);
 
-
-    // calculate the minimum spanning tree in order to be able to use the TreeLayout
-    Transformer<XabslEdge, Double> weightTransformer = new Transformer<XabslEdge, Double>()
-    {
-
-      @Override
-      public Double transform(XabslEdge i)
-      {
-//        XabslNode source = graph.getSource(i);
-//        if (graph.getInEdges(source).size() == 0)
-//        {
-//          return new Double(10.0);
-//        }
-//        XabslNode dest = graph.getDest(i);
-//        if (graph.getOutEdges(dest).size() == 0)
-//        {
-//          return new Double(10.0);
-//        }
-        return new Double(1.0);
-      }
-    };
-    MinimumSpanningForest2<XabslNode, XabslEdge> prim = new MinimumSpanningForest2<XabslNode, XabslEdge>(graph,
-      new DelegateForest<XabslNode, XabslEdge>(), DelegateTree.<XabslNode, XabslEdge>getFactory(),
-      weightTransformer);
-
-    Forest<XabslNode, XabslEdge> graphAsForest = prim.getForest();
-
-    //treeLayout =
-    //  new TreeLayout<XabslNode, XabslEdge>(graphAsForest, 200, 200);
-    //
-    // display graph
-    //layout = new StaticLayout<XabslNode, XabslEdge>(graph, treeLayout);
     layout = new SuperDAGLayout<XabslNode, XabslEdge>(graph);
 
     layout.initialize();
@@ -242,6 +203,9 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     // label is placed in the center of the node
     vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+
+    vv.getRenderContext().setEdgeShapeTransformer(
+      new EdgeShape.QuadCurve<XabslNode, XabslEdge>());
     vv.getRenderContext().setEdgeDrawPaintTransformer(new Transformer<XabslEdge, Paint>()
     {
 
