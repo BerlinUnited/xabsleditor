@@ -27,19 +27,22 @@ import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.AbsoluteCrossoverScalingControl;
+import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.renderers.VertexLabelAsShapeRenderer;
+import edu.uci.ics.jung.visualization.transform.MutableTransformer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,10 +58,13 @@ public class AgentVisualizer extends javax.swing.JPanel
 {
 
   private GraphMouseListener<XabslNode> externalMouseListener;
-  private VisualizationViewer<XabslNode,XabslEdge> vv;
+  private VisualizationViewer<XabslNode, XabslEdge> vv;
   private GraphZoomScrollPane scrollPane;
   private JLabel lblLoading;
-  GraphLoader graphLoader;
+  private XabslNode selectedNode;
+  private GraphLoader graphLoader;
+  private StaticLayout<XabslNode, XabslEdge> layout;
+  private TreeLayout<XabslNode, XabslEdge> treeLayout;
 
   /** Creates new form AgentVisualizer */
   public AgentVisualizer()
@@ -71,26 +77,26 @@ public class AgentVisualizer extends javax.swing.JPanel
     lblLoading.setFont(new java.awt.Font("Tahoma", 0, 24));
     lblLoading.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
     lblLoading.setVisible(true);
-    
+
   }
 
   private XabslNode createAgentGraph(XABSLContext context,
-    DirectedGraph<XabslNode,XabslEdge> g, String selectedNodeName)
+    DirectedGraph<XabslNode, XabslEdge> g, String selectedNodeName)
   {
 
     XabslNode result = null;
     // add vertices
     Map<String, XabslNode> nodeByName = new HashMap<String, XabslNode>();
 
-    for(XABSLContext.XABSLOption option : context.getOptionMap().values())
+    for (XABSLContext.XABSLOption option : context.getOptionMap().values())
     {
-      if(!nodeByName.containsKey(option.getName()))
+      if (!nodeByName.containsKey(option.getName()))
       {
         XabslNode n = new XabslNode();
         n.setName(option.getName());
         n.setType(XabslNode.Type.Option);
 
-        if(n.getName().equals(selectedNodeName))
+        if (n.getName().equals(selectedNodeName))
         {
           result = n;
         }
@@ -99,15 +105,15 @@ public class AgentVisualizer extends javax.swing.JPanel
         nodeByName.put(n.getName(), n);
       }
     }
-    for(XABSLContext.XABSLOption option : context.getOptionMap().values())
+    for (XABSLContext.XABSLOption option : context.getOptionMap().values())
     {
       XabslNode n1 = nodeByName.get(option.getName());
 
-      for(String action : option.getActions())
+      for (String action : option.getActions())
       {
         XabslNode n2 = nodeByName.get(action);
 
-        if(n1 != null && n2 != null)
+        if (n1 != null && n2 != null)
         {
           XabslEdge e = new XabslEdge(XabslEdge.Type.Outgoing);
           g.addEdge(e, n1, n2);
@@ -121,11 +127,11 @@ public class AgentVisualizer extends javax.swing.JPanel
   /** (Re-) set to a new context and display it */
   public void setContext(XABSLContext context, String selectedNodeName)
   {
-    if(context == null)
+    if (context == null)
     {
       return;
     }
-    
+
     if (this.graphLoader != null && !this.graphLoader.isDone())
     {
       this.graphLoader.cancel(true);
@@ -141,54 +147,54 @@ public class AgentVisualizer extends javax.swing.JPanel
     // build graph
     final DirectedGraph<XabslNode, XabslEdge> graph =
       new DirectedSparseGraph<XabslNode, XabslEdge>();
-    final XabslNode selectedNode = createAgentGraph(context, graph, selectedNodeName);
+    selectedNode = createAgentGraph(context, graph, selectedNodeName);
 
 
     // calculate the minimum spanning tree in order to be able to use the TreeLayout
-    Transformer<XabslEdge,Double> weightTransformer = new Transformer<XabslEdge, Double>()
+    Transformer<XabslEdge, Double> weightTransformer = new Transformer<XabslEdge, Double>()
     {
 
       @Override
       public Double transform(XabslEdge i)
       {
         XabslNode source = graph.getSource(i);
-        if(graph.getInEdges(source).size() == 0)
+        if (graph.getInEdges(source).size() == 0)
         {
           return new Double(10.0);
         }
         XabslNode dest = graph.getDest(i);
-        if(graph.getOutEdges(dest).size() == 0)
+        if (graph.getOutEdges(dest).size() == 0)
         {
           return new Double(10.0);
         }
         return new Double(1.0);
       }
     };
-    MinimumSpanningForest2<XabslNode,XabslEdge> prim
-      = new MinimumSpanningForest2<XabslNode,XabslEdge>(graph,
-        new DelegateForest<XabslNode,XabslEdge>(), DelegateTree.<XabslNode,XabslEdge>getFactory(),
-        weightTransformer);
+    MinimumSpanningForest2<XabslNode, XabslEdge> prim = new MinimumSpanningForest2<XabslNode, XabslEdge>(graph,
+      new DelegateForest<XabslNode, XabslEdge>(), DelegateTree.<XabslNode, XabslEdge>getFactory(),
+      weightTransformer);
 
-    Forest<XabslNode,XabslEdge> graphAsForest = prim.getForest();
+    Forest<XabslNode, XabslEdge> graphAsForest = prim.getForest();
 
-    TreeLayout<XabslNode,XabslEdge> treeLayout = new TreeLayout<XabslNode,XabslEdge>(graphAsForest);
+    treeLayout =
+      new TreeLayout<XabslNode, XabslEdge>(graphAsForest, 200, 200);
 
     // display graph
-    StaticLayout<XabslNode,XabslEdge> layout = new StaticLayout<XabslNode,XabslEdge>(graph, treeLayout);
-    //DAGLayout<XabslNode,XabslEdge> layout = new DAGLayout<XabslNode, XabslEdge>(g);
+    layout = new StaticLayout<XabslNode, XabslEdge>(graph, treeLayout);
+
     layout.initialize();
 
-    if(scrollPane != null)
+    if (scrollPane != null)
     {
       remove(scrollPane);
       scrollPane = null;
     }
 
-    vv = new VisualizationViewer<XabslNode,XabslEdge>(layout);
+    vv = new VisualizationViewer<XabslNode, XabslEdge>(layout);
     DefaultModalGraphMouse<XabslNode, XabslEdge> mouse =
       new DefaultModalGraphMouse<XabslNode, XabslEdge>();
     vv.setGraphMouse(mouse);
-    
+
     // enable selecting the nodes
     mouse.setMode(ModalGraphMouse.Mode.TRANSFORMING);
     // add external mouse listener
@@ -214,19 +220,19 @@ public class AgentVisualizer extends javax.swing.JPanel
       @Override
       public Paint transform(XabslNode n)
       {
-        if(n == selectedNode)
+        if (n == selectedNode)
         {
           return Color.green;
         }
-        if(selectedNode != null && graph.getSuccessors(selectedNode).contains(n))
+        if (selectedNode != null && graph.getSuccessors(selectedNode).contains(n))
         {
           return Color.red;
         }
-        if(selectedNode != null && graph.getPredecessors(selectedNode).contains(n))
+        if (selectedNode != null && graph.getPredecessors(selectedNode).contains(n))
         {
           return Color.orange;
         }
-        if(graph.getOutEdges(n).size() == 0)
+        if (graph.getOutEdges(n).size() == 0)
         {
           return Color.lightGray;
         }
@@ -236,19 +242,18 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     // label is placed in the center of the node
     vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
-
     vv.getRenderContext().setEdgeDrawPaintTransformer(new Transformer<XabslEdge, Paint>()
     {
 
       @Override
       public Paint transform(XabslEdge e)
       {
-        if(selectedNode != null
-          && graph.getSource(e) == selectedNode )
+        if (selectedNode != null
+          && graph.getSource(e) == selectedNode)
         {
           return Color.red;
         }
-        else if(selectedNode != null
+        else if (selectedNode != null
           && graph.getDest(e) == selectedNode)
         {
           return Color.ORANGE;
@@ -265,7 +270,32 @@ public class AgentVisualizer extends javax.swing.JPanel
     add(scrollPane, BorderLayout.CENTER);
 
     validate();
+
+    fitGraphinPanel();
   }
+
+  private void fitGraphinPanel()
+  {
+    double panelW = scrollPane.getWidth();
+    double graphW = treeLayout.getSize().getWidth();
+
+    double panelH = scrollPane.getHeight();
+    double graphH = treeLayout.getSize().getHeight();
+
+    double scaleW = panelW / (graphW);
+    double scaleH = panelH / (graphH);
+    AbsoluteCrossoverScalingControl scaler = new AbsoluteCrossoverScalingControl();
+
+    if(scaleW < scaleH)
+    {
+      scaler.scale(vv, (float) scaleW, new Point2D.Double(0, 0));
+    }
+    else
+    {
+      scaler.scale(vv, (float) scaleH, new Point2D.Double(0, 0));
+    }
+  }
+
   /** This method is called from within the constructor to
    * initialize the form.
    * WARNING: Do NOT modify this code. The content of this method is
@@ -277,17 +307,17 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     setLayout(new java.awt.BorderLayout());
   }// </editor-fold>//GEN-END:initComponents
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   // End of variables declaration//GEN-END:variables
-
 
   private static class VertexTransformer
     implements Transformer<XabslNode, Shape>
   {
 
-    private DirectedGraph<XabslNode,XabslEdge> graph;
-    
-    public VertexTransformer(DirectedGraph<XabslNode,XabslEdge> graph)
+    private DirectedGraph<XabslNode, XabslEdge> graph;
+
+    public VertexTransformer(DirectedGraph<XabslNode, XabslEdge> graph)
     {
       this.graph = graph;
     }
@@ -311,7 +341,8 @@ public class AgentVisualizer extends javax.swing.JPanel
       if (graph.getInEdges(n).size() == 0)
       {
         result = new GeneralPath(getCircleFromSize(s));
-      } else
+      }
+      else
       {
         result = new GeneralPath(getRectangleFromSize(s));
       }
@@ -368,10 +399,9 @@ public class AgentVisualizer extends javax.swing.JPanel
     }
   }//end GraphLoader
 
-   /** Add a listener for mouse events (clicking on a node) */
+  /** Add a listener for mouse events (clicking on a node) */
   public void setGraphMouseListener(GraphMouseListener<XabslNode> listener)
   {
     externalMouseListener = listener;
   }
-
 }
