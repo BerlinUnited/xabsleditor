@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingWorker;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ChainedTransformer;
+import org.freehep.util.export.ExportDialog;
 
 /**
  *
@@ -159,7 +160,8 @@ public class OptionVisualizer extends javax.swing.JPanel
         if (n.getType() == XabslNode.Type.Option)
         {
           return Color.lightGray;
-        } else
+        }
+        else
         {
           return Color.white;
         }
@@ -178,7 +180,8 @@ public class OptionVisualizer extends javax.swing.JPanel
         if (e.getType() == XabslEdge.Type.CommonDecision)
         {
           return vv.getRenderContext().DASHED;
-        } else
+        }
+        else
         {
           return new BasicStroke();
         }
@@ -193,7 +196,8 @@ public class OptionVisualizer extends javax.swing.JPanel
         if (e.getType() == XabslEdge.Type.CommonDecision || e.getType() == XabslEdge.Type.Outgoing)
         {
           return Color.gray;
-        } else
+        }
+        else
         {
           return Color.black;
         }
@@ -221,8 +225,9 @@ public class OptionVisualizer extends javax.swing.JPanel
 
     // add to a zoomable container
     scrollPane = new GraphZoomScrollPane(vv);
+    scrollPane.setComponentPopupMenu(pmMain);
+    vv.setComponentPopupMenu(pmMain);
     add(scrollPane, BorderLayout.CENTER);
-
     validate();
   }
 
@@ -259,7 +264,8 @@ public class OptionVisualizer extends javax.swing.JPanel
       if (n.getType() == XabslNode.Type.State)
       {
         result = new GeneralPath(getCircleFromSize(s));
-      } else
+      }
+      else
       {
         result = new GeneralPath(getRectangleFromSize(s));
       }
@@ -336,8 +342,30 @@ public class OptionVisualizer extends javax.swing.JPanel
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    pmMain = new javax.swing.JPopupMenu();
+    miExport = new javax.swing.JMenuItem();
+
+    miExport.setText("Export...");
+    miExport.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        miExportActionPerformed(evt);
+      }
+    });
+    pmMain.add(miExport);
+
+    setComponentPopupMenu(pmMain);
     setLayout(new java.awt.BorderLayout());
   }// </editor-fold>//GEN-END:initComponents
+
+  private void miExportActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miExportActionPerformed
+  {//GEN-HEADEREND:event_miExportActionPerformed
+
+    ExportDialog export = new ExportDialog();
+    export.showExportDialog(this, "Export view as ...", vv, "export");
+
+  }//GEN-LAST:event_miExportActionPerformed
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JMenuItem miExport;
+  private javax.swing.JPopupMenu pmMain;
   // End of variables declaration//GEN-END:variables
 }
