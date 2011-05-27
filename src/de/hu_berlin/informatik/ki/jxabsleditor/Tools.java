@@ -18,6 +18,7 @@ package de.hu_berlin.informatik.ki.jxabsleditor;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,6 +90,31 @@ public class Tools
     reader.close();
     return buffer.toString();
   }//end readFileToString
+
+  /**
+   * Reads a resource file as string.
+   */
+  public static String getResourceAsString(String name)
+  {
+    InputStream stream = (new Object()).getClass().getResourceAsStream(name);
+    StringBuilder builder = new StringBuilder();
+
+    if(stream != null)
+    {
+      try{
+        while (stream.available() > 0)
+        {
+          builder.append((char)stream.read());
+        }
+      }catch(IOException e)
+      {
+        handleException(e);
+      }
+      return builder.toString();
+    }//end if
+
+    return null;
+  }//end getResourceAsString
 
   
   /**

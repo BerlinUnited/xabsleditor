@@ -101,6 +101,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private Map<File, File> file2Agent = new HashMap<File, File>();
   private FileDrop fileDrop = null;
   
+  private HelpDialog helpDialog = null;
+
   /** Creates new form Main */
   public Main(String file)
   {
@@ -581,6 +583,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mProject = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         mHelp = new javax.swing.JMenu();
+        miHelp = new javax.swing.JMenuItem();
         miInfo = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -814,6 +817,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
         mHelp.setMnemonic('H');
         mHelp.setText("Help");
+
+        miHelp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        miHelp.setText("Help");
+        miHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miHelpActionPerformed(evt);
+            }
+        });
+        mHelp.add(miHelp);
 
         miInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/info16.png"))); // NOI18N
         miInfo.setMnemonic('I');
@@ -1150,6 +1162,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     }//GEN-LAST:event_miSearchProjectActionPerformed
 
+    private void miHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miHelpActionPerformed
+    if(this.helpDialog == null)
+        this.helpDialog = new HelpDialog(this, false);
+
+    this.helpDialog.setVisible(true);
+}//GEN-LAST:event_miHelpActionPerformed
+
 
   /**
    * @param args the command line arguments
@@ -1378,6 +1397,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JMenuBar mbMain;
     private javax.swing.JMenuItem miClose;
     private javax.swing.JMenuItem miCompile;
+    private javax.swing.JMenuItem miHelp;
     private javax.swing.JMenuItem miInfo;
     private javax.swing.JMenuItem miNew;
     private javax.swing.JMenuItem miOpenFile;
