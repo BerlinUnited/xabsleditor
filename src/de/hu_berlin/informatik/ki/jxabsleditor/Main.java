@@ -42,7 +42,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -72,7 +71,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.text.BadLocationException;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
 
@@ -85,23 +83,28 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private JFileChooser fileChooser = new JFileChooser();
   private SearchInProjectDialog searchInProjectDialog;
+  
   private Properties configuration = new Properties();
   private File fConfig;
   private FileFilter dotFilter = new DotFileFilter();
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
+
   private OptionVisualizer optionVisualizer;
   private AgentVisualizer agentVisualizer;
+
   private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
+
   /** Map from an file to it's agent file (means "project") */
   private Map<File, File> file2Agent = new HashMap<File, File>();
   private FileDrop fileDrop = null;
-
+  
   /** Creates new form Main */
-  public Main()
+  public Main(String file)
   {
+    
     // no bold fonts please
     UIManager.put("swing.boldMetal", Boolean.FALSE);
     try
@@ -145,7 +148,22 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         for (Component component : tabbedPanelEditor.getComponents())
         {
           XEditorPanel editor = ((XEditorPanel) component);
-          // TODO: try to close the tabs
+          String tabName = tabbedPanelEditor.getTitleAt(tabbedPanelEditor.indexOfComponent(component));
+          
+          if(editor.isChanged())
+          {
+            tabbedPanelEditor.setSelectedComponent(component);
+            
+            int result = JOptionPane.showConfirmDialog(tabbedPanelEditor.getParent(),
+              "The file " + tabName + " is modified. Close anyway?",
+              "File Not Saved", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            // TODO: try to close the tabs
+            if(result != JOptionPane.YES_OPTION)
+            {
+              return;
+            }
+          }
         }//end for
 
         System.exit(0);
@@ -334,7 +352,80 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         foundAgents.add(agentFile);
       }
     }
-  }
+  }//end updateProjectMenu
+
+
+  private void addFilesToMenu(JMenu miParent, File folder, final XABSLContext context)
+  {
+    if(miParent == null || folder == null || context == null)
+        return;
+
+    final String XABSL_FILE_ENDING = ".xabsl";
+
+    File[] fileList = folder.listFiles();
+    for (final File file : fileList)
+    {
+      if (file.isDirectory())
+      {
+        JMenu miChild = new JMenu(file.getName());
+        addFilesToMenu(miChild, file, context);
+
+        if(miChild.getMenuComponentCount() > 0)
+          miParent.add(miChild);
+      }
+      else if (file.getName().toLowerCase().endsWith(XABSL_FILE_ENDING))
+      {
+        // remove the file ending
+        int dotIndex = file.getName().length() - XABSL_FILE_ENDING.length();
+        final String name = file.getName().substring(0, dotIndex);
+
+        if(!context.getOptionPathMap().containsKey(name))
+          continue;
+
+        // create new item
+        JMenuItem miOptionOpener = new JMenuItem(name);
+        miOptionOpener.addActionListener(new ActionListener()
+        {
+          @Override
+          public void actionPerformed(ActionEvent e)
+          {
+            File f = context.getOptionPathMap().get(name);
+            openFile(f);
+          }
+        });
+        miParent.add(miOptionOpener);
+      }
+    }//end for
+  }//end addFilesToMenu
+
+
+  /** Reconstruct the Projects menu entry */
+  private void updateProjectDirectoryMenu()
+  {
+    mProject.removeAll();
+
+    // get all opened agents
+    TreeSet<File> foundAgents = new TreeSet<File>();
+    for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
+    {
+      XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getComponentAt(i);
+      File agentFile = file2Agent.get(p.getFile());
+      if (agentFile != null && !foundAgents.contains(agentFile))
+      {
+
+        JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
+        XABSLContext context = p.getXABSLContext();
+
+        addFilesToMenu(miAgent, agentFile.getParentFile(), context);
+
+        mProject.add(miAgent);
+
+        foundAgents.add(agentFile);
+      }
+    }//end for
+  }//end updateProjectMenu
+
+
 
   private XABSLContext loadXABSLContext(File folder, XABSLContext context)
   {
@@ -375,7 +466,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }//end for
 
     return context;
-  }//end loadSymbolsTable
+  }//end loadXABSLContext
 
   private DefaultCompletionProvider createCompletitionProvider(XABSLContext context)
   {
@@ -454,292 +545,292 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
    * always regenerated by the Form Editor.
    */
   @SuppressWarnings("unchecked")
-  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-  private void initComponents() {
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
 
-    jSplitPane = new javax.swing.JSplitPane();
-    tabbedPanelEditor = new javax.swing.JTabbedPane();
-    tabbedPanelView = new javax.swing.JTabbedPane();
-    panelOption = new javax.swing.JPanel();
-    panelAgent = new javax.swing.JPanel();
-    compilerOutputPanel = new de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel();
-    toolbarMain = new javax.swing.JToolBar();
-    btNew = new javax.swing.JButton();
-    btOpen = new javax.swing.JButton();
-    btSave = new javax.swing.JButton();
-    seperator1 = new javax.swing.JToolBar.Separator();
-    btCompile = new javax.swing.JButton();
-    mbMain = new javax.swing.JMenuBar();
-    mFile = new javax.swing.JMenu();
-    miNew = new javax.swing.JMenuItem();
-    miOpenFile = new javax.swing.JMenuItem();
-    miClose = new javax.swing.JMenuItem();
-    jSeparator1 = new javax.swing.JSeparator();
-    miSave = new javax.swing.JMenuItem();
-    miSaveAs = new javax.swing.JMenuItem();
-    jSeparator2 = new javax.swing.JSeparator();
-    miQuit = new javax.swing.JMenuItem();
-    mEdit = new javax.swing.JMenu();
-    miSearch = new javax.swing.JMenuItem();
-    miSearchProject = new javax.swing.JMenuItem();
-    jSeparator4 = new javax.swing.JSeparator();
-    miCompile = new javax.swing.JMenuItem();
-    miRefreshGraph = new javax.swing.JMenuItem();
-    jSeparator3 = new javax.swing.JSeparator();
-    miOption = new javax.swing.JMenuItem();
-    mProject = new javax.swing.JMenu();
-    jMenuItem1 = new javax.swing.JMenuItem();
-    mHelp = new javax.swing.JMenu();
-    miInfo = new javax.swing.JMenuItem();
+        jSplitPane = new javax.swing.JSplitPane();
+        tabbedPanelEditor = new javax.swing.JTabbedPane();
+        tabbedPanelView = new javax.swing.JTabbedPane();
+        panelOption = new javax.swing.JPanel();
+        panelAgent = new javax.swing.JPanel();
+        compilerOutputPanel = new de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel();
+        toolbarMain = new javax.swing.JToolBar();
+        btNew = new javax.swing.JButton();
+        btOpen = new javax.swing.JButton();
+        btSave = new javax.swing.JButton();
+        seperator1 = new javax.swing.JToolBar.Separator();
+        btCompile = new javax.swing.JButton();
+        mbMain = new javax.swing.JMenuBar();
+        mFile = new javax.swing.JMenu();
+        miNew = new javax.swing.JMenuItem();
+        miOpenFile = new javax.swing.JMenuItem();
+        miClose = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JSeparator();
+        miSave = new javax.swing.JMenuItem();
+        miSaveAs = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JSeparator();
+        miQuit = new javax.swing.JMenuItem();
+        mEdit = new javax.swing.JMenu();
+        miSearch = new javax.swing.JMenuItem();
+        miSearchProject = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JSeparator();
+        miCompile = new javax.swing.JMenuItem();
+        miRefreshGraph = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JSeparator();
+        miOption = new javax.swing.JMenuItem();
+        mProject = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        mHelp = new javax.swing.JMenu();
+        miInfo = new javax.swing.JMenuItem();
 
-    setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-    setTitle("XabslEditor");
-    setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    setLocationByPlatform(true);
-    addComponentListener(new java.awt.event.ComponentAdapter() {
-      public void componentResized(java.awt.event.ComponentEvent evt) {
-        formComponentResized(evt);
-      }
-    });
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("XabslEditor");
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setLocationByPlatform(true);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                formComponentResized(evt);
+            }
+        });
 
-    jSplitPane.setDividerLocation(450);
-    jSplitPane.setPreferredSize(new java.awt.Dimension(750, 600));
-    jSplitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-      public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        jSplitPanePropertyChange(evt);
-      }
-    });
+        jSplitPane.setDividerLocation(450);
+        jSplitPane.setPreferredSize(new java.awt.Dimension(750, 600));
+        jSplitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jSplitPanePropertyChange(evt);
+            }
+        });
 
-    tabbedPanelEditor.setAutoscrolls(true);
-    jSplitPane.setLeftComponent(tabbedPanelEditor);
+        tabbedPanelEditor.setAutoscrolls(true);
+        jSplitPane.setLeftComponent(tabbedPanelEditor);
 
-    panelOption.setLayout(new java.awt.BorderLayout());
-    tabbedPanelView.addTab("Option", panelOption);
+        panelOption.setLayout(new java.awt.BorderLayout());
+        tabbedPanelView.addTab("Option", panelOption);
 
-    panelAgent.setLayout(new java.awt.BorderLayout());
-    tabbedPanelView.addTab("Agent", panelAgent);
-    tabbedPanelView.addTab("Compiler", compilerOutputPanel);
+        panelAgent.setLayout(new java.awt.BorderLayout());
+        tabbedPanelView.addTab("Agent", panelAgent);
+        tabbedPanelView.addTab("Compiler", compilerOutputPanel);
 
-    tabbedPanelView.setSelectedComponent(panelOption);
+        tabbedPanelView.setSelectedComponent(panelOption);
 
-    jSplitPane.setRightComponent(tabbedPanelView);
+        jSplitPane.setRightComponent(tabbedPanelView);
 
-    getContentPane().add(jSplitPane, java.awt.BorderLayout.CENTER);
+        getContentPane().add(jSplitPane, java.awt.BorderLayout.CENTER);
 
-    toolbarMain.setFloatable(false);
-    toolbarMain.setRollover(true);
+        toolbarMain.setFloatable(false);
+        toolbarMain.setRollover(true);
 
-    btNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew22.png"))); // NOI18N
-    btNew.setToolTipText("New file");
-    btNew.setFocusable(false);
-    btNew.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    btNew.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    btNew.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        newFileAction(evt);
-      }
-    });
-    toolbarMain.add(btNew);
+        btNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew22.png"))); // NOI18N
+        btNew.setToolTipText("New file");
+        btNew.setFocusable(false);
+        btNew.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btNew.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newFileAction(evt);
+            }
+        });
+        toolbarMain.add(btNew);
 
-    btOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen22.png"))); // NOI18N
-    btOpen.setToolTipText("Open File");
-    btOpen.setFocusable(false);
-    btOpen.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    btOpen.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    btOpen.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        openFileAction(evt);
-      }
-    });
-    toolbarMain.add(btOpen);
+        btOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen22.png"))); // NOI18N
+        btOpen.setToolTipText("Open File");
+        btOpen.setFocusable(false);
+        btOpen.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btOpen.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btOpen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFileAction(evt);
+            }
+        });
+        toolbarMain.add(btOpen);
 
-    btSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave22.png"))); // NOI18N
-    btSave.setToolTipText("Save File");
-    btSave.setFocusable(false);
-    btSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    btSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    btSave.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        saveFileAction(evt);
-      }
-    });
-    toolbarMain.add(btSave);
-    toolbarMain.add(seperator1);
+        btSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave22.png"))); // NOI18N
+        btSave.setToolTipText("Save File");
+        btSave.setFocusable(false);
+        btSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btSave.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileAction(evt);
+            }
+        });
+        toolbarMain.add(btSave);
+        toolbarMain.add(seperator1);
 
-    btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile22.png"))); // NOI18N
-    btCompile.setToolTipText("Compile Behavior");
-    btCompile.setFocusable(false);
-    btCompile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    btCompile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    btCompile.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        compileAction(evt);
-      }
-    });
-    toolbarMain.add(btCompile);
+        btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile22.png"))); // NOI18N
+        btCompile.setToolTipText("Compile Behavior");
+        btCompile.setFocusable(false);
+        btCompile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btCompile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btCompile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compileAction(evt);
+            }
+        });
+        toolbarMain.add(btCompile);
 
-    getContentPane().add(toolbarMain, java.awt.BorderLayout.PAGE_START);
+        getContentPane().add(toolbarMain, java.awt.BorderLayout.PAGE_START);
 
-    mFile.setMnemonic('F');
-    mFile.setText("File");
+        mFile.setMnemonic('F');
+        mFile.setText("File");
 
-    miNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-    miNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew16.png"))); // NOI18N
-    miNew.setMnemonic('N');
-    miNew.setText("New");
-    miNew.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        newFileAction(evt);
-      }
-    });
-    mFile.add(miNew);
+        miNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        miNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew16.png"))); // NOI18N
+        miNew.setMnemonic('N');
+        miNew.setText("New");
+        miNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newFileAction(evt);
+            }
+        });
+        mFile.add(miNew);
 
-    miOpenFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-    miOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
-    miOpenFile.setMnemonic('O');
-    miOpenFile.setText("Open File");
-    miOpenFile.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        openFileAction(evt);
-      }
-    });
-    mFile.add(miOpenFile);
+        miOpenFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        miOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
+        miOpenFile.setMnemonic('O');
+        miOpenFile.setText("Open File");
+        miOpenFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFileAction(evt);
+            }
+        });
+        mFile.add(miOpenFile);
 
-    miClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
-    miClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileclose16.png"))); // NOI18N
-    miClose.setMnemonic('C');
-    miClose.setText("Close");
-    miClose.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miCloseActionPerformed(evt);
-      }
-    });
-    mFile.add(miClose);
-    mFile.add(jSeparator1);
+        miClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
+        miClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileclose16.png"))); // NOI18N
+        miClose.setMnemonic('C');
+        miClose.setText("Close");
+        miClose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCloseActionPerformed(evt);
+            }
+        });
+        mFile.add(miClose);
+        mFile.add(jSeparator1);
 
-    miSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-    miSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave16.png"))); // NOI18N
-    miSave.setMnemonic('S');
-    miSave.setText("Save");
-    miSave.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        saveFileAction(evt);
-      }
-    });
-    mFile.add(miSave);
+        miSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        miSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave16.png"))); // NOI18N
+        miSave.setMnemonic('S');
+        miSave.setText("Save");
+        miSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileAction(evt);
+            }
+        });
+        mFile.add(miSave);
 
-    miSaveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-    miSaveAs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesaveas16.png"))); // NOI18N
-    miSaveAs.setMnemonic('a');
-    miSaveAs.setText("Save As...");
-    miSaveAs.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miSaveAsActionPerformed(evt);
-      }
-    });
-    mFile.add(miSaveAs);
-    mFile.add(jSeparator2);
+        miSaveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        miSaveAs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesaveas16.png"))); // NOI18N
+        miSaveAs.setMnemonic('a');
+        miSaveAs.setText("Save As...");
+        miSaveAs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSaveAsActionPerformed(evt);
+            }
+        });
+        mFile.add(miSaveAs);
+        mFile.add(jSeparator2);
 
-    miQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
-    miQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/exit16.png"))); // NOI18N
-    miQuit.setMnemonic('Q');
-    miQuit.setText("Quit");
-    miQuit.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miQuitActionPerformed(evt);
-      }
-    });
-    mFile.add(miQuit);
+        miQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
+        miQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/exit16.png"))); // NOI18N
+        miQuit.setMnemonic('Q');
+        miQuit.setText("Quit");
+        miQuit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miQuitActionPerformed(evt);
+            }
+        });
+        mFile.add(miQuit);
 
-    mbMain.add(mFile);
+        mbMain.add(mFile);
 
-    mEdit.setMnemonic('E');
-    mEdit.setText("Edit");
+        mEdit.setMnemonic('E');
+        mEdit.setText("Edit");
 
-    miSearch.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
-    miSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/search16.png"))); // NOI18N
-    miSearch.setMnemonic('S');
-    miSearch.setText("Search");
-    miSearch.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miSearchActionPerformed(evt);
-      }
-    });
-    mEdit.add(miSearch);
+        miSearch.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        miSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/search16.png"))); // NOI18N
+        miSearch.setMnemonic('S');
+        miSearch.setText("Search");
+        miSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSearchActionPerformed(evt);
+            }
+        });
+        mEdit.add(miSearch);
 
-    miSearchProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-    miSearchProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/find.png"))); // NOI18N
-    miSearchProject.setText("Search in Project");
-    miSearchProject.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miSearchProjectActionPerformed(evt);
-      }
-    });
-    mEdit.add(miSearchProject);
-    mEdit.add(jSeparator4);
+        miSearchProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        miSearchProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/find.png"))); // NOI18N
+        miSearchProject.setText("Search in Project");
+        miSearchProject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSearchProjectActionPerformed(evt);
+            }
+        });
+        mEdit.add(miSearchProject);
+        mEdit.add(jSeparator4);
 
-    miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
-    miCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"))); // NOI18N
-    miCompile.setMnemonic('C');
-    miCompile.setText("Compile Behavior");
-    miCompile.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        compileAction(evt);
-      }
-    });
-    mEdit.add(miCompile);
+        miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
+        miCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"))); // NOI18N
+        miCompile.setMnemonic('C');
+        miCompile.setText("Compile Behavior");
+        miCompile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compileAction(evt);
+            }
+        });
+        mEdit.add(miCompile);
 
-    miRefreshGraph.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-    miRefreshGraph.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/reload.png"))); // NOI18N
-    miRefreshGraph.setMnemonic('R');
-    miRefreshGraph.setText("Refresh Graph");
-    miRefreshGraph.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miRefreshGraphActionPerformed(evt);
-      }
-    });
-    mEdit.add(miRefreshGraph);
-    mEdit.add(jSeparator3);
+        miRefreshGraph.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        miRefreshGraph.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/reload.png"))); // NOI18N
+        miRefreshGraph.setMnemonic('R');
+        miRefreshGraph.setText("Refresh Graph");
+        miRefreshGraph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miRefreshGraphActionPerformed(evt);
+            }
+        });
+        mEdit.add(miRefreshGraph);
+        mEdit.add(jSeparator3);
 
-    miOption.setMnemonic('O');
-    miOption.setText("Options");
-    miOption.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miOptionActionPerformed(evt);
-      }
-    });
-    mEdit.add(miOption);
+        miOption.setMnemonic('O');
+        miOption.setText("Options");
+        miOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miOptionActionPerformed(evt);
+            }
+        });
+        mEdit.add(miOption);
 
-    mbMain.add(mEdit);
+        mbMain.add(mEdit);
 
-    mProject.setMnemonic('p');
-    mProject.setText("Project");
+        mProject.setMnemonic('p');
+        mProject.setText("Project");
 
-    jMenuItem1.setFont(jMenuItem1.getFont().deriveFont((jMenuItem1.getFont().getStyle() | java.awt.Font.ITALIC)));
-    jMenuItem1.setText("empty");
-    mProject.add(jMenuItem1);
+        jMenuItem1.setFont(jMenuItem1.getFont().deriveFont((jMenuItem1.getFont().getStyle() | java.awt.Font.ITALIC)));
+        jMenuItem1.setText("empty");
+        mProject.add(jMenuItem1);
 
-    mbMain.add(mProject);
+        mbMain.add(mProject);
 
-    mHelp.setMnemonic('H');
-    mHelp.setText("Help");
+        mHelp.setMnemonic('H');
+        mHelp.setText("Help");
 
-    miInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/info16.png"))); // NOI18N
-    miInfo.setMnemonic('I');
-    miInfo.setText("Info");
-    miInfo.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        miInfoActionPerformed(evt);
-      }
-    });
-    mHelp.add(miInfo);
+        miInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/info16.png"))); // NOI18N
+        miInfo.setMnemonic('I');
+        miInfo.setText("Info");
+        miInfo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miInfoActionPerformed(evt);
+            }
+        });
+        mHelp.add(miInfo);
 
-    mbMain.add(mHelp);
+        mbMain.add(mHelp);
 
-    setJMenuBar(mbMain);
+        setJMenuBar(mbMain);
 
-    pack();
-  }// </editor-fold>//GEN-END:initComponents
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
 
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
@@ -1059,6 +1150,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     }//GEN-LAST:event_miSearchProjectActionPerformed
 
+
   /**
    * @param args the command line arguments
    */
@@ -1066,14 +1158,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   {
     java.awt.EventQueue.invokeLater(new Runnable()
     {
-
       @Override
       public void run()
       {
-        new Main().setVisible(true);
+        new Main(null).setVisible(true);
       }
     });
   }//end main
+
 
   private XEditorPanel createDocumentTab(File file, XABSLContext context)
   {
@@ -1114,7 +1206,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
       }
 
-      updateProjectMenu();
+      //updateProjectMenu();
+      updateProjectDirectoryMenu();
 
       editor.addDocumentChangedListener(new DocumentChangedListener()
       {
@@ -1266,42 +1359,42 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       return null;
     }
   }
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JButton btCompile;
-  private javax.swing.JButton btNew;
-  private javax.swing.JButton btOpen;
-  private javax.swing.JButton btSave;
-  private de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel compilerOutputPanel;
-  private javax.swing.JMenuItem jMenuItem1;
-  private javax.swing.JSeparator jSeparator1;
-  private javax.swing.JSeparator jSeparator2;
-  private javax.swing.JSeparator jSeparator3;
-  private javax.swing.JSeparator jSeparator4;
-  private javax.swing.JSplitPane jSplitPane;
-  private javax.swing.JMenu mEdit;
-  private javax.swing.JMenu mFile;
-  private javax.swing.JMenu mHelp;
-  private javax.swing.JMenu mProject;
-  private javax.swing.JMenuBar mbMain;
-  private javax.swing.JMenuItem miClose;
-  private javax.swing.JMenuItem miCompile;
-  private javax.swing.JMenuItem miInfo;
-  private javax.swing.JMenuItem miNew;
-  private javax.swing.JMenuItem miOpenFile;
-  private javax.swing.JMenuItem miOption;
-  private javax.swing.JMenuItem miQuit;
-  private javax.swing.JMenuItem miRefreshGraph;
-  private javax.swing.JMenuItem miSave;
-  private javax.swing.JMenuItem miSaveAs;
-  private javax.swing.JMenuItem miSearch;
-  private javax.swing.JMenuItem miSearchProject;
-  private javax.swing.JPanel panelAgent;
-  private javax.swing.JPanel panelOption;
-  private javax.swing.JToolBar.Separator seperator1;
-  private javax.swing.JTabbedPane tabbedPanelEditor;
-  private javax.swing.JTabbedPane tabbedPanelView;
-  private javax.swing.JToolBar toolbarMain;
-  // End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btCompile;
+    private javax.swing.JButton btNew;
+    private javax.swing.JButton btOpen;
+    private javax.swing.JButton btSave;
+    private de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel compilerOutputPanel;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSplitPane jSplitPane;
+    private javax.swing.JMenu mEdit;
+    private javax.swing.JMenu mFile;
+    private javax.swing.JMenu mHelp;
+    private javax.swing.JMenu mProject;
+    private javax.swing.JMenuBar mbMain;
+    private javax.swing.JMenuItem miClose;
+    private javax.swing.JMenuItem miCompile;
+    private javax.swing.JMenuItem miInfo;
+    private javax.swing.JMenuItem miNew;
+    private javax.swing.JMenuItem miOpenFile;
+    private javax.swing.JMenuItem miOption;
+    private javax.swing.JMenuItem miQuit;
+    private javax.swing.JMenuItem miRefreshGraph;
+    private javax.swing.JMenuItem miSave;
+    private javax.swing.JMenuItem miSaveAs;
+    private javax.swing.JMenuItem miSearch;
+    private javax.swing.JMenuItem miSearchProject;
+    private javax.swing.JPanel panelAgent;
+    private javax.swing.JPanel panelOption;
+    private javax.swing.JToolBar.Separator seperator1;
+    private javax.swing.JTabbedPane tabbedPanelEditor;
+    private javax.swing.JTabbedPane tabbedPanelView;
+    private javax.swing.JToolBar toolbarMain;
+    // End of variables declaration//GEN-END:variables
 
   @Override
   public void compilationFinished(CompileResult result)
