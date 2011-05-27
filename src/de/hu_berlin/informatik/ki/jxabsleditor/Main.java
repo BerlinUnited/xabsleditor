@@ -819,6 +819,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mHelp.setText("Help");
 
         miHelp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        miHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/help.png"))); // NOI18N
         miHelp.setText("Help");
         miHelp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
