@@ -46,7 +46,7 @@ public class AboutDialog extends javax.swing.JDialog {
     jEditorPane1.setBorder(null);
     jEditorPane1.setContentType("text/html");
     jEditorPane1.setEditable(false);
-    jEditorPane1.setText("<html> \n<center>\n  <h3>XabslEditor 1.0-rc1 (Release Candidate)</h3> \n  <p>\n   <a href=\"https://launchpad.net/xabsleditor/\">https://launchpad.net/xabsleditor/</a> \n   </p>\n   <p>\n   initially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt \n  <br><a href=\"http://www.naoteamhumboldt.de\">http://www.naoteamhumboldt.de</a> \n  </p>\n  <br>&copy; 2009\n</center>\n</html>");
+    jEditorPane1.setText("<html> \n<center>\n  <h3>XabslEditor 1.0-rc1 (Release Candidate)</h3> \n  <p>\n   <a href=\"https://launchpad.net/xabsleditor/\">https://launchpad.net/xabsleditor/</a> \n   </p>\n   <p>\n   initially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt \n  <br><a href=\"http://www.naoteamhumboldt.de\">http://www.naoteamhumboldt.de</a> \n  </p>\n  <br>&copy; 2008-2011\n</center>\n</html>");
     jScrollPane1.setViewportView(jEditorPane1);
 
     jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/XabslEditor.png"))); // NOI18N
@@ -62,7 +62,7 @@ public class AboutDialog extends javax.swing.JDialog {
           .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
             .addComponent(jLabel1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -71,10 +71,10 @@ public class AboutDialog extends javax.swing.JDialog {
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(layout.createSequentialGroup()
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
             .addGap(39, 39, 39))
           .addGroup(layout.createSequentialGroup()
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
         .addComponent(btOk)
         .addContainerGap())

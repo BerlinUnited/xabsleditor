@@ -29,7 +29,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="444" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="452" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -42,11 +42,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="jLabel1" max="32767" attributes="1"/>
+                      <Component id="jLabel1" pref="138" max="32767" attributes="1"/>
                       <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Component id="jScrollPane1" pref="161" max="32767" attributes="1"/>
+                      <Component id="jScrollPane1" pref="171" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -87,7 +87,7 @@
             </Property>
             <Property name="contentType" type="java.lang.String" value="text/html"/>
             <Property name="editable" type="boolean" value="false"/>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;center&gt;&#xa;  &lt;h3&gt;XabslEditor 1.0-rc1 (Release Candidate)&lt;/h3&gt; &#xa;  &lt;p&gt;&#xa;   &lt;a href=&quot;https://launchpad.net/xabsleditor/&quot;&gt;https://launchpad.net/xabsleditor/&lt;/a&gt; &#xa;   &lt;/p&gt;&#xa;   &lt;p&gt;&#xa;   initially created by the &lt;b&gt;N&lt;/b&gt;ao &lt;b&gt;T&lt;/b&gt;eam &lt;b&gt;H&lt;/b&gt;umboldt &#xa;  &lt;br&gt;&lt;a href=&quot;http://www.naoteamhumboldt.de&quot;&gt;http://www.naoteamhumboldt.de&lt;/a&gt; &#xa;  &lt;/p&gt;&#xa;  &lt;br&gt;&amp;copy; 2009&#xa;&lt;/center&gt;&#xa;&lt;/html&gt;"/>
+            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;center&gt;&#xa;  &lt;h3&gt;XabslEditor 1.0-rc1 (Release Candidate)&lt;/h3&gt; &#xa;  &lt;p&gt;&#xa;   &lt;a href=&quot;https://launchpad.net/xabsleditor/&quot;&gt;https://launchpad.net/xabsleditor/&lt;/a&gt; &#xa;   &lt;/p&gt;&#xa;   &lt;p&gt;&#xa;   initially created by the &lt;b&gt;N&lt;/b&gt;ao &lt;b&gt;T&lt;/b&gt;eam &lt;b&gt;H&lt;/b&gt;umboldt &#xa;  &lt;br&gt;&lt;a href=&quot;http://www.naoteamhumboldt.de&quot;&gt;http://www.naoteamhumboldt.de&lt;/a&gt; &#xa;  &lt;/p&gt;&#xa;  &lt;br&gt;&amp;copy; 2008-2011&#xa;&lt;/center&gt;&#xa;&lt;/html&gt;"/>
           </Properties>
         </Component>
       </SubComponents>
