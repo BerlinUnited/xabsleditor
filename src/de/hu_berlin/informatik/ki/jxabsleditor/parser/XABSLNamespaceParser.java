@@ -173,14 +173,33 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
       currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.input);
       isTokenAndEat("input");
     }
-    else
+    else if(isToken("internal"))
     {
       currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType.internal);
       isTokenAndEat("internal");
     }
+    else
+    {
+      currentSymbol.setSecondaryType(XABSLSymbol.SecondaryType._const);
+      isTokenAndEat("const");
+    }
 
     currentSymbol.setDeclarationSource(getCurrentDeclarationSource());
     currentSymbol.setName(parseIdentifier());
+
+    // parse the value for constant definition
+    if(currentSymbol.getSecondaryType() == XABSLSymbol.SecondaryType._const)
+    {
+      isTokenAndEat("=");
+      if(isToken(Token.LITERAL_NUMBER_DECIMAL_INT))
+      {
+        eat();
+      }
+      else
+      {
+        isTokenAndEat(Token.LITERAL_NUMBER_FLOAT);
+      }
+    }
 
     if(isToken("["))
     {

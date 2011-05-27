@@ -213,7 +213,8 @@ public class XABSLContext
     {
       output,
       input,
-      internal
+      internal,
+      _const
     }
 
     public XABSLSymbol()

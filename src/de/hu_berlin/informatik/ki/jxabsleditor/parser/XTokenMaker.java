@@ -29,7 +29,7 @@ public class XTokenMaker extends AbstractTokenMaker
 
   private static String KEYWORDS = "" +
     "option|action|decision|common|state|initial|target|agent|float|bool" +
-    "|if|else|enum|include|namespace|input|output|internal|goto|stay"; // to be extended
+    "|if|else|enum|include|namespace|input|output|internal|const|goto|stay"; // to be extended
   protected final String operators = "+-*/%!=<>^&|?:";
   protected final String separators = "()[]{}";
   protected final String dotSeparators = ".,;";

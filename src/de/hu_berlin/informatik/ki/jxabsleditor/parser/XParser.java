@@ -355,8 +355,7 @@ public class XParser extends AbstractParser
       return false;
     }
 
-    boolean result = currentToken.type == type;
-    return result;
+    return currentToken.type == type;
   }//end isToken
 
   protected boolean isToken(String keyWord) throws Exception
@@ -366,8 +365,7 @@ public class XParser extends AbstractParser
       return false;
     }
 
-    boolean result = keyWord.equals(currentToken.getLexeme());
-    return result;
+    return keyWord.equals(currentToken.getLexeme());
   }//end isTokenAndEat
 
   protected boolean isTokenAndEat(int type) throws Exception
