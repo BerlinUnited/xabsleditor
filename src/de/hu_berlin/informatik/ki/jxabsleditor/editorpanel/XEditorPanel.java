@@ -124,6 +124,8 @@ public class XEditorPanel extends javax.swing.JPanel
       textArea.setText(str);
     }
 
+    textArea.setAutoIndentEnabled(true);
+    
     textArea.setCaretPosition(0);
     //textArea.addHyperlinkListener(this);
     textArea.requestFocusInWindow();
@@ -450,6 +452,11 @@ public class XEditorPanel extends javax.swing.JPanel
   public XABSLContext getXABSLContext()
   {
     return context;
+  }
+
+  public void setTabSize(int size)
+  {
+    this.textArea.setTabSize(size);
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

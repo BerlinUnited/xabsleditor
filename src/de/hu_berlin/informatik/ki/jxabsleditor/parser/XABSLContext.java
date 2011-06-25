@@ -29,7 +29,13 @@ public class XABSLContext
   private Map<String, XABSLSymbol> symbolMap = new TreeMap<String, XABSLSymbol>();
   private Map<String, XABSLEnum> enumMap = new TreeMap<String, XABSLEnum>();
   private Map<String, XABSLOption> optionMap = new TreeMap<String, XABSLOption>();
+
+  // TODO: clean
   private Map<String, File> optionPathMap = new TreeMap<String, File>();
+
+  // relative path -> "agent", "option" or "symbol"
+  private Map<String, String> fileTypeMap = new TreeMap<String, String>();
+
   private Map<String, String> agentMap = new TreeMap<String, String>();
 
   public Map<String, XABSLOption> getOptionMap() {
@@ -47,6 +53,10 @@ public class XABSLContext
   public Map<String, File> getOptionPathMap()
   {
     return optionPathMap;
+  }
+
+  public Map<String, String> getFileTypeMap() {
+    return fileTypeMap;
   }
 
   public Map<String, String> getAgentMap()
