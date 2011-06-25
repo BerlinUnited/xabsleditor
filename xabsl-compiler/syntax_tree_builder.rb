@@ -329,7 +329,7 @@ module Translator
 			tag.attr[ATTR_DESCRIPTION] = val[0].to_s unless val[0].nil?
 			tag.attr[ATTR_MEASURE] = val[7].to_s unless val[7].nil?
 			symbol.value = val[6].to_s
-			symbol.value = -symbol.value unless val[5].nil? 
+			symbol.value = "-#{symbol.value}" unless val[5].nil? 
 			tag.attr[ATTR_VALUE] = symbol.value
 			return tag
 		end
