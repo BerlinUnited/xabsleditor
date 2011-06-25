@@ -29,6 +29,9 @@ public class OptionsDialog extends javax.swing.JDialog
   public static final String DEFAULT_COMPILATION_PATH = "defaultCompilationPath";
   public static final String XABSL_COMPILER_COMMAND = "xabslCompilerCommand";
   public static final String USE_INSTALLED_RUBY = "useInstalledRuby";
+
+  public static final String EDITOR_TAB_SIZE = "editorTabSize";
+  
   private Properties configuration;
 
   /** Creates new form Options */
@@ -62,6 +65,12 @@ public class OptionsDialog extends javax.swing.JDialog
       else
         this.cbUseRuby.setSelected(false);
     }
+
+    if(configuration.containsKey(EDITOR_TAB_SIZE))
+    {
+      int n = Integer.parseInt(configuration.getProperty(EDITOR_TAB_SIZE));
+      this.spTabSize.setValue(n);
+    }
   }//end loadOptions
 
   /** This method is called from within the constructor to
@@ -75,13 +84,18 @@ public class OptionsDialog extends javax.swing.JDialog
 
     fileChooserCompilationPath = new javax.swing.JFileChooser();
     jButtonOK = new javax.swing.JButton();
+    jButtonCancel = new javax.swing.JButton();
+    optionPanel = new javax.swing.JTabbedPane();
+    jpCompiler = new javax.swing.JPanel();
+    cbUseRuby = new javax.swing.JCheckBox();
     txtDefaultCompilationPath = new javax.swing.JTextField();
     jLabel2 = new javax.swing.JLabel();
-    btBrowseCompilation = new javax.swing.JButton();
-    jButtonOK1 = new javax.swing.JButton();
     jLabel3 = new javax.swing.JLabel();
     txtXabslCompilerCommand = new javax.swing.JTextField();
-    cbUseRuby = new javax.swing.JCheckBox();
+    btBrowseCompilation = new javax.swing.JButton();
+    jpEditor = new javax.swing.JPanel();
+    jLabel4 = new javax.swing.JLabel();
+    spTabSize = new javax.swing.JSpinner();
 
     fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
@@ -98,7 +112,19 @@ public class OptionsDialog extends javax.swing.JDialog
       }
     });
 
+    jButtonCancel.setText("Cancel");
+    jButtonCancel.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButtonCancelActionPerformed(evt);
+      }
+    });
+
+    cbUseRuby.setSelected(true);
+    cbUseRuby.setText("try to use installed ruby");
+
     jLabel2.setText("Default compilation path");
+
+    jLabel3.setText("XABSL Compiler command");
 
     btBrowseCompilation.setText("Browse...");
     btBrowseCompilation.addActionListener(new java.awt.event.ActionListener() {
@@ -107,53 +133,34 @@ public class OptionsDialog extends javax.swing.JDialog
       }
     });
 
-    jButtonOK1.setText("Cancel");
-    jButtonOK1.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButtonOK1ActionPerformed(evt);
-      }
-    });
-
-    jLabel3.setText("XABSL Compiler command");
-
-    cbUseRuby.setSelected(true);
-    cbUseRuby.setText("try to use installed ruby");
-
-    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-    getContentPane().setLayout(layout);
-    layout.setHorizontalGroup(
-      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(layout.createSequentialGroup()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(layout.createSequentialGroup()
-            .addContainerGap()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+    javax.swing.GroupLayout jpCompilerLayout = new javax.swing.GroupLayout(jpCompiler);
+    jpCompiler.setLayout(jpCompilerLayout);
+    jpCompilerLayout.setHorizontalGroup(
+      jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jpCompilerLayout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGroup(jpCompilerLayout.createSequentialGroup()
+            .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(jLabel2)
               .addComponent(txtDefaultCompilationPath, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(btBrowseCompilation))
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addGap(204, 204, 204)
-            .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jButtonOK1, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))
-          .addGroup(layout.createSequentialGroup()
-            .addContainerGap()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-              .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-              .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel3)
-                .addGap(124, 124, 124))
-              .addComponent(cbUseRuby))))
-        .addContainerGap())
+          .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+            .addGroup(jpCompilerLayout.createSequentialGroup()
+              .addComponent(jLabel3)
+              .addGap(124, 124, 124))
+            .addComponent(cbUseRuby)))
+        .addGap(20, 20, 20))
     );
-    layout.setVerticalGroup(
-      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(layout.createSequentialGroup()
+    jpCompilerLayout.setVerticalGroup(
+      jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jpCompilerLayout.createSequentialGroup()
         .addContainerGap()
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(txtDefaultCompilationPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(btBrowseCompilation))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -162,9 +169,62 @@ public class OptionsDialog extends javax.swing.JDialog
         .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(cbUseRuby)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+
+    optionPanel.addTab("Compiler", jpCompiler);
+
+    jLabel4.setText("Tab Size");
+
+    spTabSize.setModel(new javax.swing.SpinnerNumberModel(2, 0, 13, 1));
+
+    javax.swing.GroupLayout jpEditorLayout = new javax.swing.GroupLayout(jpEditor);
+    jpEditor.setLayout(jpEditorLayout);
+    jpEditorLayout.setHorizontalGroup(
+      jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jpEditorLayout.createSequentialGroup()
+        .addContainerGap()
+        .addComponent(jLabel4)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addContainerGap(327, Short.MAX_VALUE))
+    );
+    jpEditorLayout.setVerticalGroup(
+      jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jpEditorLayout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(jLabel4)
+          .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addContainerGap(106, Short.MAX_VALUE))
+    );
+
+    optionPanel.addTab("Editor", jpEditor);
+
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(layout.createSequentialGroup()
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGroup(layout.createSequentialGroup()
+            .addGap(239, 239, 239)
+            .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jButtonCancel, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(optionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        .addContainerGap())
+    );
+    layout.setVerticalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+        .addContainerGap()
+        .addComponent(optionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(jButtonOK1)
+          .addComponent(jButtonCancel)
           .addComponent(jButtonOK))
         .addContainerGap())
     );
@@ -196,6 +256,9 @@ public class OptionsDialog extends javax.swing.JDialog
 
       configuration.setProperty(USE_INSTALLED_RUBY, Boolean.toString(this.cbUseRuby.isSelected()));
 
+
+      configuration.setProperty(EDITOR_TAB_SIZE, this.spTabSize.getValue().toString());
+
       this.setVisible(false);
       this.dispose();
     }//GEN-LAST:event_jButtonOKActionPerformed
@@ -218,19 +281,24 @@ public class OptionsDialog extends javax.swing.JDialog
 
 }//GEN-LAST:event_btBrowseCompilationActionPerformed
 
-    private void jButtonOK1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOK1ActionPerformed
+    private void jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelActionPerformed
       this.setVisible(false);
       this.dispose();
-    }//GEN-LAST:event_jButtonOK1ActionPerformed
+    }//GEN-LAST:event_jButtonCancelActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton btBrowseCompilation;
   private javax.swing.JCheckBox cbUseRuby;
   private javax.swing.JFileChooser fileChooserCompilationPath;
+  private javax.swing.JButton jButtonCancel;
   private javax.swing.JButton jButtonOK;
-  private javax.swing.JButton jButtonOK1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
+  private javax.swing.JLabel jLabel4;
+  private javax.swing.JPanel jpCompiler;
+  private javax.swing.JPanel jpEditor;
+  private javax.swing.JTabbedPane optionPanel;
+  private javax.swing.JSpinner spTabSize;
   private javax.swing.JTextField txtDefaultCompilationPath;
   private javax.swing.JTextField txtXabslCompilerCommand;
   // End of variables declaration//GEN-END:variables

@@ -58,6 +58,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -102,6 +103,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileDrop fileDrop = null;
   
   private HelpDialog helpDialog = null;
+
+
+  // xabsl files icons
+  private final ImageIcon icon_xabsl_agent =
+      new ImageIcon(this.getClass().getResource("res/xabsl_agents_file.png"));
+  private final ImageIcon icon_xabsl_option =
+      new ImageIcon(this.getClass().getResource("res/xabsl_option_file.png"));
+  private final ImageIcon icon_xabsl_symbol =
+      new ImageIcon(this.getClass().getResource("res/xabsl_symbols_file.png"));
+  
 
   /** Creates new form Main */
   public Main(String file)
@@ -385,7 +396,21 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           continue;
 
         // create new item
-        JMenuItem miOptionOpener = new JMenuItem(name);
+        JMenuItem miOptionOpener = setJMenuItemXabslFont(new JMenuItem(name));
+
+        // agent, option or symbol file
+        String type = context.getFileTypeMap().get(name);
+        if(type != null)
+        {
+          if(type.equals("option"))
+            miOptionOpener.setIcon(icon_xabsl_option);
+          else if(type.equals("symbol"))
+            miOptionOpener.setIcon(icon_xabsl_symbol);
+          else if(type.equals("agent"))
+            miOptionOpener.setIcon(icon_xabsl_agent);
+        }//end if
+
+
         miOptionOpener.addActionListener(new ActionListener()
         {
           @Override
@@ -425,8 +450,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         foundAgents.add(agentFile);
       }
     }//end for
+
+    if(mProject.getMenuComponentCount() == 0)
+    {
+      mProject.add(setJMenuItemXabslFont(new JMenuItem("empty")));
+    }
   }//end updateProjectMenu
 
+  private JMenuItem setJMenuItemXabslFont(JMenuItem jMenuItem)
+  {
+    jMenuItem.setFont(jMenuItem.getFont().deriveFont((jMenuItem.getFont().getStyle() | java.awt.Font.ITALIC)));
+    return jMenuItem;
+  }
 
 
   private XABSLContext loadXABSLContext(File folder, XABSLContext context)
@@ -459,6 +494,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           XParser p = new XParser(context);
           p.parse(new FileReader(file), file.getAbsolutePath());
 
+          // HACK: problems with equal file names
+          context.getFileTypeMap().put(name, p.getFileType());
         }
         catch (Exception e)
         {
@@ -1055,17 +1092,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
+
+    XABSLContext newContext = null;
+    
     if (agentsFile != null)
     {
       file2Agent.put(selectedFile, agentsFile);
-      XABSLContext newContext = loadXABSLContext(agentsFile.getParentFile(), null);
+      newContext = loadXABSLContext(agentsFile.getParentFile(), null);
+    }
 
-      return createDocumentTab(selectedFile, newContext);
-    }
-    else
-    {
-      return null;
-    }
+    return createDocumentTab(selectedFile, newContext);
   }//end openFile
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
@@ -1191,6 +1227,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   {
     try
     {
+      // HACK: make it a bean :)
+      int tabSize = 2;
+      if(this.configuration.containsKey(OptionsDialog.EDITOR_TAB_SIZE))
+      {
+        tabSize = Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE));
+      }
+
       // create new document
       XEditorPanel editor = null;
       if (file == null)
@@ -1198,6 +1241,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         editor = new XEditorPanel();
         editor.setXABSLContext(context);
         editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
+        editor.setTabSize(tabSize);
 
         int tabCount = tabbedPanelEditor.getTabCount();
         tabbedPanelEditor.addTab("New " + tabCount, editor);
@@ -1209,7 +1253,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         editor.setFile(file);
         editor.setXABSLContext(context);
         editor.setCompletionProvider(createCompletitionProvider(editor.getXABSLContext()));
-
+        editor.setTabSize(tabSize);
+        
         // create a tab
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }

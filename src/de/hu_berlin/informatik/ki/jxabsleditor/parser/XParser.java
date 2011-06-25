@@ -53,6 +53,9 @@ public class XParser extends AbstractParser
 
   private XABSLAbstractParser parser;
 
+  // HACK: make it beter
+  private String fileType = "";
+
   public XParser(XABSLContext xabslContext)
   {
     this.xabslContext = xabslContext;
@@ -144,14 +147,17 @@ public class XParser extends AbstractParser
         if(isToken("option"))
         {
           this.parser = new XABSLOptionParser(this);
+          this.fileType = "option";
         }
         else if(isToken("namespace"))
         {
           this.parser = new XABSLNamespaceParser(this);
+          this.fileType = "symbol";
         }
         else if(isToken("include"))
         {
           this.parser = new XABSLAgentParser(this);
+          this.fileType = "agent";
         }
       }
 
@@ -168,7 +174,10 @@ public class XParser extends AbstractParser
       System.err.println(e.getMessage());
     }
   }//end parse
-  
+
+  public String getFileType() {
+    return fileType;
+  }
 
   public Map<String, State> getStateMap()
   {
