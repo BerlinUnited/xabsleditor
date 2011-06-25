@@ -191,6 +191,14 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
     if(currentSymbol.getSecondaryType() == XABSLSymbol.SecondaryType._const)
     {
       isTokenAndEat("=");
+
+      // TODO: parse decimal number
+      // allow to write + or -
+      if(isToken("-") || isToken("+"))
+      {
+        eat();
+      }
+      
       if(isToken(Token.LITERAL_NUMBER_DECIMAL_INT))
       {
         eat();
