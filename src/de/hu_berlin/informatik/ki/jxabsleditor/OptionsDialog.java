@@ -28,6 +28,7 @@ public class OptionsDialog extends javax.swing.JDialog
 
   public static final String DEFAULT_COMPILATION_PATH = "defaultCompilationPath";
   public static final String XABSL_COMPILER_COMMAND = "xabslCompilerCommand";
+  public static final String USE_INSTALLED_RUBY = "useInstalledRuby";
   private Properties configuration;
 
   /** Creates new form Options */
@@ -53,6 +54,14 @@ public class OptionsDialog extends javax.swing.JDialog
     {
       this.txtXabslCompilerCommand.setText(configuration.getProperty(XABSL_COMPILER_COMMAND));
     }
+
+    if(configuration.containsKey(USE_INSTALLED_RUBY))
+    {
+      if(Boolean.parseBoolean(configuration.getProperty(USE_INSTALLED_RUBY)) == Boolean.TRUE)
+        this.cbUseRuby.setSelected(true);
+      else
+        this.cbUseRuby.setSelected(false);
+    }
   }//end loadOptions
 
   /** This method is called from within the constructor to
@@ -72,6 +81,7 @@ public class OptionsDialog extends javax.swing.JDialog
     jButtonOK1 = new javax.swing.JButton();
     jLabel3 = new javax.swing.JLabel();
     txtXabslCompilerCommand = new javax.swing.JTextField();
+    cbUseRuby = new javax.swing.JCheckBox();
 
     fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
@@ -106,6 +116,9 @@ public class OptionsDialog extends javax.swing.JDialog
 
     jLabel3.setText("XABSL Compiler command");
 
+    cbUseRuby.setSelected(true);
+    cbUseRuby.setText("try to use installed ruby");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -120,18 +133,18 @@ public class OptionsDialog extends javax.swing.JDialog
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(btBrowseCompilation))
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addGap(305, 305, 305)
-            .addComponent(jButtonOK1, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addGap(305, 305, 305)
-            .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
+            .addGap(204, 204, 204)
+            .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jButtonOK1, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))
           .addGroup(layout.createSequentialGroup()
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
               .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel3)
-                .addGap(124, 124, 124)))))
+                .addGap(124, 124, 124))
+              .addComponent(cbUseRuby))))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -147,10 +160,12 @@ public class OptionsDialog extends javax.swing.JDialog
         .addComponent(jLabel3)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
-        .addComponent(jButtonOK)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addComponent(jButtonOK1)
+        .addComponent(cbUseRuby)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(jButtonOK1)
+          .addComponent(jButtonOK))
         .addContainerGap())
     );
 
@@ -158,7 +173,6 @@ public class OptionsDialog extends javax.swing.JDialog
   }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOKActionPerformed
-
 
       // save settings
       if("".equals(txtDefaultCompilationPath.getText()) && configuration.containsKey(DEFAULT_COMPILATION_PATH))
@@ -179,6 +193,8 @@ public class OptionsDialog extends javax.swing.JDialog
         configuration.setProperty(XABSL_COMPILER_COMMAND,
           txtXabslCompilerCommand.getText());
       }
+
+      configuration.setProperty(USE_INSTALLED_RUBY, Boolean.toString(this.cbUseRuby.isSelected()));
 
       this.setVisible(false);
       this.dispose();
@@ -209,6 +225,7 @@ public class OptionsDialog extends javax.swing.JDialog
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton btBrowseCompilation;
+  private javax.swing.JCheckBox cbUseRuby;
   private javax.swing.JFileChooser fileChooserCompilationPath;
   private javax.swing.JButton jButtonOK;
   private javax.swing.JButton jButtonOK1;

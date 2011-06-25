@@ -88,9 +88,10 @@ public class CompilerDialog extends javax.swing.JDialog
         try
         {
 
-          Process compilerProcess;
+          Process compilerProcess = null;
 
-          String compilerCommand = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);
+          String compilerCommand = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);          
+          // use the custom compiler command if specified
           if(compilerCommand != null && !"".equals(compilerCommand))
           {
             String cmd = compilerCommand;
@@ -101,7 +102,24 @@ public class CompilerDialog extends javax.swing.JDialog
           else
           {
             String[] cmdarray = autoSearchCommand(agentsFile);
-            compilerProcess = Runtime.getRuntime().exec(cmdarray);
+
+            Boolean useRuby = Boolean.parseBoolean(configuration.getProperty(OptionsDialog.USE_INSTALLED_RUBY));
+
+            if(useRuby)
+            {
+              // try to use the installed ruby
+              try{
+                String cmd = "ruby " + cmdarray[3] + " " + agentsFile.getAbsolutePath() + " -i "
+                  + outputFile.getAbsolutePath();
+                compilerProcess = Runtime.getRuntime().exec(cmd);
+              }catch(IOException ex){}
+            }//end if
+
+            // ...didn't work, try jruby
+            if(compilerProcess == null)
+            {
+              compilerProcess = Runtime.getRuntime().exec(cmdarray);
+            }
           }
 
 
