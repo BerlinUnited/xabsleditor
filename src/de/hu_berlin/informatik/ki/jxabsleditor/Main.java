@@ -612,6 +612,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mEdit = new javax.swing.JMenu();
         miSearch = new javax.swing.JMenuItem();
         miSearchProject = new javax.swing.JMenuItem();
+        miFindUnusedOptions = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
         miCompile = new javax.swing.JMenuItem();
         miRefreshGraph = new javax.swing.JMenuItem();
@@ -807,6 +808,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             }
         });
         mEdit.add(miSearchProject);
+
+        miFindUnusedOptions.setText("Search unused options");
+        miFindUnusedOptions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miFindUnusedOptionsActionPerformed(evt);
+            }
+        });
+        mEdit.add(miFindUnusedOptions);
         mEdit.add(jSeparator4);
 
         miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
@@ -1206,6 +1215,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     this.helpDialog.setVisible(true);
 }//GEN-LAST:event_miHelpActionPerformed
 
+  private void miFindUnusedOptionsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miFindUnusedOptionsActionPerformed
+  {//GEN-HEADEREND:event_miFindUnusedOptionsActionPerformed
+    
+    // get selected tab
+    if (tabbedPanelEditor.getSelectedComponent() != null)
+    {
+      XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
+      new UnusedOptions(this, editor.getXABSLContext()).setVisible(
+        true);
+    }
+    
+  }//GEN-LAST:event_miFindUnusedOptionsActionPerformed
+
 
   /**
    * @param args the command line arguments
@@ -1443,6 +1465,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JMenuBar mbMain;
     private javax.swing.JMenuItem miClose;
     private javax.swing.JMenuItem miCompile;
+    private javax.swing.JMenuItem miFindUnusedOptions;
     private javax.swing.JMenuItem miHelp;
     private javax.swing.JMenuItem miInfo;
     private javax.swing.JMenuItem miNew;
