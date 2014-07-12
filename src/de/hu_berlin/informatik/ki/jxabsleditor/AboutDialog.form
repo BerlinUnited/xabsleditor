@@ -6,6 +6,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -82,12 +83,12 @@
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="jEditorPane1">
           <Properties>
+            <Property name="editable" type="boolean" value="false"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="null"/>
             </Property>
-            <Property name="contentType" type="java.lang.String" value="text/html"/>
-            <Property name="editable" type="boolean" value="false"/>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;center&gt;&#xa;  &lt;h3&gt;XabslEditor 1.0-rc1 (Release Candidate)&lt;/h3&gt; &#xa;  &lt;p&gt;&#xa;   &lt;a href=&quot;https://launchpad.net/xabsleditor/&quot;&gt;https://launchpad.net/xabsleditor/&lt;/a&gt; &#xa;   &lt;/p&gt;&#xa;   &lt;p&gt;&#xa;   initially created by the &lt;b&gt;N&lt;/b&gt;ao &lt;b&gt;T&lt;/b&gt;eam &lt;b&gt;H&lt;/b&gt;umboldt &#xa;  &lt;br&gt;&lt;a href=&quot;http://www.naoteamhumboldt.de&quot;&gt;http://www.naoteamhumboldt.de&lt;/a&gt; &#xa;  &lt;/p&gt;&#xa;  &lt;br&gt;&amp;copy; 2008-2011&#xa;&lt;/center&gt;&#xa;&lt;/html&gt;"/>
+            <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
+            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;center&gt;&#xa;  &lt;h3&gt;XabslEditor 1.0-rc2 (Release Candidate)&lt;/h3&gt; &#xa;  &lt;p&gt;&#xa;   &lt;a href=&quot;https://launchpad.net/xabsleditor/&quot;&gt;https://launchpad.net/xabsleditor/&lt;/a&gt; &#xa;   &lt;/p&gt;&#xa;   &lt;p&gt;&#xa;   initially created by the &lt;b&gt;N&lt;/b&gt;ao &lt;b&gt;T&lt;/b&gt;eam &lt;b&gt;H&lt;/b&gt;umboldt &#xa;  &lt;br&gt;&lt;a href=&quot;http://naoth.de&quot;&gt;http://naoth.de&lt;/a&gt; &#xa;  &lt;/p&gt;&#xa;  &lt;br&gt;&amp;copy; 2008-2014&#xa;&lt;/center&gt;&#xa;&lt;/html&gt;"/>
           </Properties>
         </Component>
       </SubComponents>
