@@ -1,0 +1,9 @@
+#general
+dist/
+build/
+private/
+
+#java project files
+build.xml
+build-impl.xml
+genfiles.properties
