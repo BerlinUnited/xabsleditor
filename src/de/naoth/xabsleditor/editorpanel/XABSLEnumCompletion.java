@@ -40,7 +40,7 @@ public class XABSLEnumCompletion extends BasicCompletion
 
 
   protected String createSummary() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     sb.append("<font color=\"#0000FF\">")
       .append("enum ")

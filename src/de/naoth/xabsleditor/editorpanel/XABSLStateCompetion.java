@@ -36,7 +36,7 @@ public class XABSLStateCompetion extends BasicCompletion
   }
 
   protected String createSummary() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     sb.append("<b> ")
       .append(this.stateName)

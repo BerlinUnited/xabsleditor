@@ -172,7 +172,7 @@ public class CompilerOutputPanel extends javax.swing.JPanel {
     @Override
     public String toString()
     {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append(fileName).append(':').append(lineNumber);
       return sb.toString();
     }//end toString

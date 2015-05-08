@@ -40,7 +40,7 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
 
   
   protected String createSummary() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     
 //    if(symbol.getDeclarationSource() != null)
 //    {
@@ -63,7 +63,7 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
   }//end createSummary
   
 
-  protected void possiblyAddEnumDefinition(StringBuffer sb) {
+  protected void possiblyAddEnumDefinition(StringBuilder sb) {
 		// list the enum elements
     if(symbol.getType().equals("enum"))
     {

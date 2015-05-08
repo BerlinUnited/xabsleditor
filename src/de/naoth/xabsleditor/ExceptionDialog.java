@@ -32,7 +32,7 @@ public class ExceptionDialog extends javax.swing.JDialog
     {
       txtMessage.setText(exception.getLocalizedMessage());
       txtMessage.setCaretPosition(0);
-      StringBuffer details = new StringBuffer();
+      StringBuilder details = new StringBuilder();
       details.append(exception.getLocalizedMessage());
       details.append("\nat\n");
       StackTraceElement[] st = exception.getStackTrace();

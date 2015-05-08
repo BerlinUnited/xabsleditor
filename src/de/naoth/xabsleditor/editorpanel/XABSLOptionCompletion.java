@@ -41,7 +41,7 @@ public class XABSLOptionCompletion
 
 
   protected String createSummary() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     sb.append(option.getName())
       .append("</b>")

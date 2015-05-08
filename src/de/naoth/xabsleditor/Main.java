@@ -1701,7 +1701,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   class XABSLErrorOutputStream extends OutputStream
   {
 
-    private StringBuffer messageBuffer = new StringBuffer();
+    private StringBuilder messageBuffer = new StringBuilder();
 
     @Override
     public void write(int b) throws IOException
