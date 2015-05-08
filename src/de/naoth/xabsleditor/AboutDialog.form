@@ -88,7 +88,7 @@
               <Border info="null"/>
             </Property>
             <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;center&gt;&#xa;  &lt;h3&gt;XabslEditor 1.0-rc2 (Release Candidate)&lt;/h3&gt; &#xa;  &lt;p&gt;&#xa;   &lt;a href=&quot;https://launchpad.net/xabsleditor/&quot;&gt;https://launchpad.net/xabsleditor/&lt;/a&gt; &#xa;   &lt;/p&gt;&#xa;   &lt;p&gt;&#xa;   initially created by the &lt;b&gt;N&lt;/b&gt;ao &lt;b&gt;T&lt;/b&gt;eam &lt;b&gt;H&lt;/b&gt;umboldt &#xa;  &lt;br&gt;&lt;a href=&quot;http://naoth.de&quot;&gt;http://naoth.de&lt;/a&gt; &#xa;  &lt;/p&gt;&#xa;  &lt;br&gt;&amp;copy; 2008-2014&#xa;&lt;/center&gt;&#xa;&lt;/html&gt;"/>
+            <Property name="text" type="java.lang.String" value="&lt;html&gt; &#xa;&lt;center&gt;&#xa;  &lt;h3&gt;XabslEditor 1.0-rc2 (Release Candidate)&lt;/h3&gt; &#xa;  &lt;p&gt;&#xa;   &lt;a href=&quot;https://github.com/BerlinUnited/xabsleditor&quot;&gt;https://github.com/BerlinUnited/xabsleditor&lt;/a&gt; &#xa;   &lt;/p&gt;&#xa;   &lt;p&gt;&#xa;   initially created by the &lt;b&gt;N&lt;/b&gt;ao &lt;b&gt;T&lt;/b&gt;eam &lt;b&gt;H&lt;/b&gt;umboldt &#xa;  &lt;br&gt;&lt;a href=&quot;http://naoth.de&quot;&gt;http://naoth.de&lt;/a&gt; &#xa;  &lt;/p&gt;&#xa;  &lt;br&gt;&amp;copy; 2008-2015&#xa;&lt;/center&gt;&#xa;&lt;/html&gt;"/>
           </Properties>
         </Component>
       </SubComponents>

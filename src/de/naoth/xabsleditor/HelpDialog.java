@@ -29,7 +29,7 @@ public class HelpDialog extends javax.swing.JDialog {
         initComponents();
 
         // load the help html
-        String content = Tools.getResourceAsString("/de/hu_berlin/informatik/ki/jxabsleditor/help.html");
+        String content = Tools.getResourceAsString("/de/naoth/xabsleditor/help.html");
 
         this.helpPanel.setText(content);
 

@@ -46,7 +46,7 @@ public class AboutDialog extends javax.swing.JDialog {
         jEditorPane1.setEditable(false);
         jEditorPane1.setBorder(null);
         jEditorPane1.setContentType("text/html"); // NOI18N
-        jEditorPane1.setText("<html> \n<center>\n  <h3>XabslEditor 1.0-rc2 (Release Candidate)</h3> \n  <p>\n   <a href=\"https://launchpad.net/xabsleditor/\">https://launchpad.net/xabsleditor/</a> \n   </p>\n   <p>\n   initially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt \n  <br><a href=\"http://naoth.de\">http://naoth.de</a> \n  </p>\n  <br>&copy; 2008-2014\n</center>\n</html>");
+        jEditorPane1.setText("<html> \n<center>\n  <h3>XabslEditor 1.0-rc2 (Release Candidate)</h3> \n  <p>\n   <a href=\"https://github.com/BerlinUnited/xabsleditor\">https://github.com/BerlinUnited/xabsleditor</a> \n   </p>\n   <p>\n   initially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt \n  <br><a href=\"http://naoth.de\">http://naoth.de</a> \n  </p>\n  <br>&copy; 2008-2015\n</center>\n</html>");
         jScrollPane1.setViewportView(jEditorPane1);
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/XabslEditor.png"))); // NOI18N
