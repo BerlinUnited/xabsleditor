@@ -9,7 +9,7 @@
  * Created on 27.05.2011, 15:55:48
  */
 
-package de.hu_berlin.informatik.ki.jxabsleditor;
+package de.naoth.xabsleditor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,7 +61,7 @@ public class HelpDialog extends javax.swing.JDialog {
         setTitle("XabslEditor Help");
         setLocationByPlatform(true);
 
-        helpPanel.setContentType("text/html");
+        helpPanel.setContentType("text/html"); // NOI18N
         helpPanel.setEditable(false);
         helpPanel.setText("<html>\r\n  <head>\r\n\r\n  </head>\r\n  <body>\r\n    <p style=\"margin-top: 0\">\r\n      \r...could not load the help file...\n    </p>\r\n  </body>\r\n</html>\r\n");
         helpPanel.setPreferredSize(new java.awt.Dimension(480, 600));

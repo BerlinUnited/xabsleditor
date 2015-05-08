@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
+package de.naoth.xabsleditor.editorpanel;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XTokenMaker;
+import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLOptionContext;
+import de.naoth.xabsleditor.parser.XParser;
+import de.naoth.xabsleditor.parser.XTokenMaker;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
@@ -460,6 +460,6 @@ public class XEditorPanel extends javax.swing.JPanel
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.SearchPanel searchPanel;
+  private de.naoth.xabsleditor.editorpanel.SearchPanel searchPanel;
   // End of variables declaration//GEN-END:variables
 }//end class XEditorPanel

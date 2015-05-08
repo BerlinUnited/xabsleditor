@@ -2,10 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor;
+package de.naoth.xabsleditor;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLOption;
+import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
 import java.io.File;
 import java.util.HashSet;
 import javax.swing.DefaultListModel;

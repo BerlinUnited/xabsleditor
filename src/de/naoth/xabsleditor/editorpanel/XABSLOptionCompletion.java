@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.editorpanel;
+package de.naoth.xabsleditor.editorpanel;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLContext;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.ParameterizedCompletion;

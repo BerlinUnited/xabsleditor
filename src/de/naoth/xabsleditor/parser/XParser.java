@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.parser;
+package de.naoth.xabsleditor.parser;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.Transition;
+import de.naoth.xabsleditor.parser.XABSLOptionContext.State;
+import de.naoth.xabsleditor.parser.XABSLOptionContext.Transition;
 import edu.uci.ics.jung.graph.Graph;
 import java.io.Reader;
 import java.util.ArrayList;

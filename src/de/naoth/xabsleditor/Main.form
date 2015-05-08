@@ -16,7 +16,7 @@
                   <KeyStroke key="Ctrl+N"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/filenew16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="78"/>
                 <Property name="text" type="java.lang.String" value="New"/>
@@ -31,7 +31,7 @@
                   <KeyStroke key="Ctrl+O"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/fileopen16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="79"/>
                 <Property name="text" type="java.lang.String" value="Open File"/>
@@ -46,7 +46,7 @@
                   <KeyStroke key="Ctrl+W"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/fileclose16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/fileclose16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="67"/>
                 <Property name="text" type="java.lang.String" value="Close"/>
@@ -63,7 +63,7 @@
                   <KeyStroke key="Ctrl+S"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/filesave16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="83"/>
                 <Property name="text" type="java.lang.String" value="Save"/>
@@ -78,7 +78,7 @@
                   <KeyStroke key="Shift+Ctrl+S"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/filesaveas16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/filesaveas16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="97"/>
                 <Property name="text" type="java.lang.String" value="Save As..."/>
@@ -95,7 +95,7 @@
                   <KeyStroke key="Ctrl+X"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/exit16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/exit16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="81"/>
                 <Property name="text" type="java.lang.String" value="Quit"/>
@@ -118,7 +118,7 @@
                   <KeyStroke key="Ctrl+F"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/search16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/search16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="83"/>
                 <Property name="text" type="java.lang.String" value="Search"/>
@@ -133,7 +133,7 @@
                   <KeyStroke key="Shift+Ctrl+F"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/find.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/find.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Search in Project"/>
               </Properties>
@@ -157,7 +157,7 @@
                   <KeyStroke key="Alt+C"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/compfile16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="67"/>
                 <Property name="text" type="java.lang.String" value="Compile Behavior"/>
@@ -172,7 +172,7 @@
                   <KeyStroke key="Ctrl+R"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/reload.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/reload.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="82"/>
                 <Property name="text" type="java.lang.String" value="Refresh Graph"/>
@@ -224,7 +224,7 @@
                   <KeyStroke key="Ctrl+H"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/help.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/help.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Help"/>
               </Properties>
@@ -235,7 +235,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="miInfo">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/info16.png"/>
+                  <Image iconType="3" name="/de/naoth/xabsleditor/res/info16.png"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="73"/>
                 <Property name="text" type="java.lang.String" value="Info"/>
@@ -296,7 +296,7 @@
         <Component class="javax.swing.JButton" name="btNew">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew22.png"/>
+              <Image iconType="3" name="/de/naoth/xabsleditor/res/filenew22.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="New file"/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -310,7 +310,7 @@
         <Component class="javax.swing.JButton" name="btOpen">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen22.png"/>
+              <Image iconType="3" name="/de/naoth/xabsleditor/res/fileopen22.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Open File"/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -324,7 +324,7 @@
         <Component class="javax.swing.JButton" name="btSave">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave22.png"/>
+              <Image iconType="3" name="/de/naoth/xabsleditor/res/filesave22.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Save File"/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -340,7 +340,7 @@
         <Component class="javax.swing.JButton" name="btCompile">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile22.png"/>
+              <Image iconType="3" name="/de/naoth/xabsleditor/res/compfile22.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Compile Behavior"/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -457,7 +457,7 @@
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
                 </Container>
-                <Component class="de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel" name="compilerOutputPanel">
+                <Component class="de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel" name="compilerOutputPanel">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                       <JTabbedPaneConstraints tabName="Compiler">

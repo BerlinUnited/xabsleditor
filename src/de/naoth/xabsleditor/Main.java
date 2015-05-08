@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor;
+package de.naoth.xabsleditor;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilationFinishedReceiver;
-import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompileResult;
-import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerDialog;
-import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
-import de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.DocumentChangedListener;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLEnumCompletion;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLOptionCompletion;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLStateCompetion;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolCompletion;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
-import de.hu_berlin.informatik.ki.jxabsleditor.editorpanel.XEditorPanel;
-import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.AgentVisualizer;
-import de.hu_berlin.informatik.ki.jxabsleditor.graphpanel.OptionVisualizer;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLSymbol;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLOptionContext.State;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XabslNode;
+import de.naoth.xabsleditor.compilerconnection.CompilationFinishedReceiver;
+import de.naoth.xabsleditor.compilerconnection.CompileResult;
+import de.naoth.xabsleditor.compilerconnection.CompilerDialog;
+import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
+import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
+import de.naoth.xabsleditor.editorpanel.DocumentChangedListener;
+import de.naoth.xabsleditor.editorpanel.XABSLEnumCompletion;
+import de.naoth.xabsleditor.editorpanel.XABSLOptionCompletion;
+import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
+import de.naoth.xabsleditor.editorpanel.XABSLSymbolCompletion;
+import de.naoth.xabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
+import de.naoth.xabsleditor.editorpanel.XEditorPanel;
+import de.naoth.xabsleditor.graphpanel.AgentVisualizer;
+import de.naoth.xabsleditor.graphpanel.OptionVisualizer;
+import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLContext.XABSLSymbol;
+import de.naoth.xabsleditor.parser.XABSLOptionContext.State;
+import de.naoth.xabsleditor.parser.XParser;
+import de.naoth.xabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -714,7 +714,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelView = new javax.swing.JTabbedPane();
         panelOption = new javax.swing.JPanel();
         panelAgent = new javax.swing.JPanel();
-        compilerOutputPanel = new de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel();
+        compilerOutputPanel = new de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel();
         mbMain = new javax.swing.JMenuBar();
         mFile = new javax.swing.JMenu();
         miNew = new javax.swing.JMenuItem();
@@ -753,7 +753,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         toolbarMain.setFloatable(false);
         toolbarMain.setRollover(true);
 
-        btNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew22.png"))); // NOI18N
+        btNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/filenew22.png"))); // NOI18N
         btNew.setToolTipText("New file");
         btNew.setFocusable(false);
         btNew.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -765,7 +765,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         });
         toolbarMain.add(btNew);
 
-        btOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen22.png"))); // NOI18N
+        btOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/fileopen22.png"))); // NOI18N
         btOpen.setToolTipText("Open File");
         btOpen.setFocusable(false);
         btOpen.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -777,7 +777,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         });
         toolbarMain.add(btOpen);
 
-        btSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave22.png"))); // NOI18N
+        btSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/filesave22.png"))); // NOI18N
         btSave.setToolTipText("Save File");
         btSave.setFocusable(false);
         btSave.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -790,7 +790,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         toolbarMain.add(btSave);
         toolbarMain.add(seperator1);
 
-        btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile22.png"))); // NOI18N
+        btCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/compfile22.png"))); // NOI18N
         btCompile.setToolTipText("Compile Behavior");
         btCompile.setFocusable(false);
         btCompile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -844,7 +844,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mFile.setText("File");
 
         miNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-        miNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filenew16.png"))); // NOI18N
+        miNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/filenew16.png"))); // NOI18N
         miNew.setMnemonic('N');
         miNew.setText("New");
         miNew.addActionListener(new java.awt.event.ActionListener() {
@@ -855,7 +855,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mFile.add(miNew);
 
         miOpenFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        miOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileopen16.png"))); // NOI18N
+        miOpenFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/fileopen16.png"))); // NOI18N
         miOpenFile.setMnemonic('O');
         miOpenFile.setText("Open File");
         miOpenFile.addActionListener(new java.awt.event.ActionListener() {
@@ -866,7 +866,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mFile.add(miOpenFile);
 
         miClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
-        miClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/fileclose16.png"))); // NOI18N
+        miClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/fileclose16.png"))); // NOI18N
         miClose.setMnemonic('C');
         miClose.setText("Close");
         miClose.addActionListener(new java.awt.event.ActionListener() {
@@ -878,7 +878,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mFile.add(jSeparator1);
 
         miSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        miSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesave16.png"))); // NOI18N
+        miSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/filesave16.png"))); // NOI18N
         miSave.setMnemonic('S');
         miSave.setText("Save");
         miSave.addActionListener(new java.awt.event.ActionListener() {
@@ -889,7 +889,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mFile.add(miSave);
 
         miSaveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        miSaveAs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/filesaveas16.png"))); // NOI18N
+        miSaveAs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/filesaveas16.png"))); // NOI18N
         miSaveAs.setMnemonic('a');
         miSaveAs.setText("Save As...");
         miSaveAs.addActionListener(new java.awt.event.ActionListener() {
@@ -901,7 +901,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mFile.add(jSeparator2);
 
         miQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
-        miQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/exit16.png"))); // NOI18N
+        miQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/exit16.png"))); // NOI18N
         miQuit.setMnemonic('Q');
         miQuit.setText("Quit");
         miQuit.addActionListener(new java.awt.event.ActionListener() {
@@ -917,7 +917,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mEdit.setText("Edit");
 
         miSearch.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
-        miSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/search16.png"))); // NOI18N
+        miSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/search16.png"))); // NOI18N
         miSearch.setMnemonic('S');
         miSearch.setText("Search");
         miSearch.addActionListener(new java.awt.event.ActionListener() {
@@ -928,7 +928,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mEdit.add(miSearch);
 
         miSearchProject.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        miSearchProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/find.png"))); // NOI18N
+        miSearchProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/find.png"))); // NOI18N
         miSearchProject.setText("Search in Project");
         miSearchProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -947,7 +947,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mEdit.add(jSeparator4);
 
         miCompile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.ALT_MASK));
-        miCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/compfile16.png"))); // NOI18N
+        miCompile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/compfile16.png"))); // NOI18N
         miCompile.setMnemonic('C');
         miCompile.setText("Compile Behavior");
         miCompile.addActionListener(new java.awt.event.ActionListener() {
@@ -958,7 +958,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mEdit.add(miCompile);
 
         miRefreshGraph.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-        miRefreshGraph.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/reload.png"))); // NOI18N
+        miRefreshGraph.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/reload.png"))); // NOI18N
         miRefreshGraph.setMnemonic('R');
         miRefreshGraph.setText("Refresh Graph");
         miRefreshGraph.addActionListener(new java.awt.event.ActionListener() {
@@ -993,7 +993,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mHelp.setText("Help");
 
         miHelp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
-        miHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/help.png"))); // NOI18N
+        miHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/help.png"))); // NOI18N
         miHelp.setText("Help");
         miHelp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1002,7 +1002,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         });
         mHelp.add(miHelp);
 
-        miInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/hu_berlin/informatik/ki/jxabsleditor/res/info16.png"))); // NOI18N
+        miInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/info16.png"))); // NOI18N
         miInfo.setMnemonic('I');
         miInfo.setText("Info");
         miInfo.addActionListener(new java.awt.event.ActionListener() {
@@ -1583,7 +1583,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JButton btNew;
     private javax.swing.JButton btOpen;
     private javax.swing.JButton btSave;
-    private de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection.CompilerOutputPanel compilerOutputPanel;
+    private de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel compilerOutputPanel;
     private javax.swing.JTree fileTree;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPaneFileTree;

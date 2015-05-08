@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.parser;
+package de.naoth.xabsleditor.parser;
 
 import java.io.File;
 import java.util.ArrayList;

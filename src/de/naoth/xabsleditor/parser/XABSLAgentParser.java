@@ -1,7 +1,7 @@
 
-package de.hu_berlin.informatik.ki.jxabsleditor.parser;
+package de.naoth.xabsleditor.parser;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser.XABSLAbstractParser;
+import de.naoth.xabsleditor.parser.XParser.XABSLAbstractParser;
 import org.fife.ui.rsyntaxtextarea.Token;
 
 /**

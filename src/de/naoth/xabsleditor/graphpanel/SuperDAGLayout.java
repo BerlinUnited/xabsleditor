@@ -1,4 +1,4 @@
-package de.hu_berlin.informatik.ki.jxabsleditor.graphpanel;
+package de.naoth.xabsleditor.graphpanel;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;

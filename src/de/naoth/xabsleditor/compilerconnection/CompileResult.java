@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.compilerconnection;
+package de.naoth.xabsleditor.compilerconnection;
 
 import java.util.ArrayList;
 

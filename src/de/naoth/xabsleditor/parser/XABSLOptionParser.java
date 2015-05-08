@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.hu_berlin.informatik.ki.jxabsleditor.parser;
+package de.naoth.xabsleditor.parser;
 
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLBasicSymbol;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XABSLContext.XABSLOption;
-import de.hu_berlin.informatik.ki.jxabsleditor.parser.XParser.XABSLAbstractParser;
+import de.naoth.xabsleditor.parser.XABSLContext.XABSLBasicSymbol;
+import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
+import de.naoth.xabsleditor.parser.XParser.XABSLAbstractParser;
 import java.util.HashSet;
 import java.util.Set;
 import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
