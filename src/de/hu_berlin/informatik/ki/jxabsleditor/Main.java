@@ -72,7 +72,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -126,8 +126,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     UIManager.put("swing.boldMetal", Boolean.FALSE);
     try
     {
-      UIManager.setLookAndFeel(new MetalLookAndFeel());
-      //UIManager.setLookAndFeel(new NimbusLookAndFeel());
+      //UIManager.setLookAndFeel(new MetalLookAndFeel());
+      UIManager.setLookAndFeel(new NimbusLookAndFeel());
     }
     catch (UnsupportedLookAndFeelException ex)
     {
