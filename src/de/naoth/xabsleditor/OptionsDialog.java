@@ -15,9 +15,12 @@
  */
 package de.naoth.xabsleditor;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.Properties;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -39,7 +42,14 @@ public class OptionsDialog extends javax.swing.JDialog
   {
     super(parent, modal);
     initComponents();
-    this.setTitle("Options");
+    
+    // close preference/options dialog with esc key!
+    this.getRootPane().registerKeyboardAction(new java.awt.event.ActionListener() {
+        @Override
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButtonCancelActionPerformed(evt);
+        }
+    }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
     this.configuration = configuration;
     loadOptions();
@@ -100,9 +110,10 @@ public class OptionsDialog extends javax.swing.JDialog
         fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Preferences");
         setLocationByPlatform(true);
         setModal(true);
-        setName("Options"); // NOI18N
+        setName("Preferences"); // NOI18N
         setResizable(false);
 
         jButtonOK.setText("OK");
@@ -149,9 +160,10 @@ public class OptionsDialog extends javax.swing.JDialog
                     .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
                         .addGroup(jpCompilerLayout.createSequentialGroup()
-                            .addComponent(jLabel3)
-                            .addGap(124, 124, 124))
-                        .addComponent(cbUseRuby)))
+                            .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel3)
+                                .addComponent(cbUseRuby))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))))
                 .addGap(20, 20, 20))
         );
         jpCompilerLayout.setVerticalGroup(

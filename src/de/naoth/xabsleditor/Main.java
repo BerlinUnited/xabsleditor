@@ -969,8 +969,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mEdit.add(miRefreshGraph);
         mEdit.add(jSeparator3);
 
+        miOption.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         miOption.setMnemonic('O');
-        miOption.setText("Options");
+        miOption.setText("Preferences");
         miOption.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miOptionActionPerformed(evt);
