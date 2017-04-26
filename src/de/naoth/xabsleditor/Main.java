@@ -20,6 +20,7 @@ import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
+import de.naoth.xabsleditor.editorpanel.ButtonTabComponent;
 import de.naoth.xabsleditor.editorpanel.DocumentChangedListener;
 import de.naoth.xabsleditor.editorpanel.XABSLEnumCompletion;
 import de.naoth.xabsleditor.editorpanel.XABSLOptionCompletion;
@@ -34,6 +35,8 @@ import de.naoth.xabsleditor.parser.XABSLContext.XABSLSymbol;
 import de.naoth.xabsleditor.parser.XABSLOptionContext.State;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.parser.XabslNode;
+import de.naoth.xabsleditor.utils.DotFileFilter;
+import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -161,14 +164,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       public void windowClosing(WindowEvent e)
       {
         // check if there are unsaved files
-        for (Component component : tabbedPanelEditor.getComponents())
+        for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
         {
-          XEditorPanel editor = ((XEditorPanel) component);
-          String tabName = tabbedPanelEditor.getTitleAt(tabbedPanelEditor.indexOfComponent(component));
+          XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getComponentAt(i));
+          String tabName = tabbedPanelEditor.getTitleAt(i);
           
           if(editor.isChanged())
           {
-            tabbedPanelEditor.setSelectedComponent(component);
+            tabbedPanelEditor.setSelectedComponent(editor);
             
             int result = JOptionPane.showConfirmDialog(tabbedPanelEditor.getParent(),
               "The file " + tabName + " is modified. Close anyway?",
@@ -689,6 +692,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         this.defaultCompilationPath = path;
       }
     }
+    
+    // set "tab close button" default to true!
+    if(!configuration.containsKey(OptionsDialog.EDITOR_TAB_CLOSE_BTN)) {
+      configuration.setProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN, Boolean.toString(true));
+    }
   }//end loadConfiguration
 
   /** This method is called from within the constructor to
@@ -1024,89 +1032,22 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // create new tab
     createDocumentTab(null, null);
 }//GEN-LAST:event_newFileAction
-
+  
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
     {//GEN-HEADEREND:event_miCloseActionPerformed
       // close current tab
-
       XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-      if (!editor.isChanged())
-      {
+      if(editor.close()) {
         tabbedPanelEditor.remove(editor);
-        return;
       }
-
-      int result = JOptionPane.showConfirmDialog(this, "Save changes?", "File was modified.",
-        JOptionPane.YES_NO_CANCEL_OPTION);
-
-      if (result == JOptionPane.CANCEL_OPTION)
-      {
-        return;
-      }
-      else if (result == JOptionPane.NO_OPTION)
-      {
-        tabbedPanelEditor.remove(editor);
-        return;
-      }
-
-      String text = editor.getText();
-      File selectedFile = editor.getFile();
-      try
-      {
-        File file = saveStringToFile(selectedFile, text);
-        if (file != null)
-        {
-          editor.setChanged(false);
-          editor.setFile(file);
-          tabbedPanelEditor.setTitleAt(tabbedPanelEditor.getSelectedIndex(), file.getName());
-        }//end if
-      }
-      catch (IOException e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "The file could not be written.", JOptionPane.ERROR_MESSAGE);
-      }
-      catch (Exception e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
-      }//end catch
-
-      if (!editor.isChanged())
-      {
-        tabbedPanelEditor.remove(editor);
-      }//end if
 }//GEN-LAST:event_miCloseActionPerformed
 
     private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
     {//GEN-HEADEREND:event_saveFileAction
-
       XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-      String text = editor.getText();
-      File selectedFile = editor.getFile();
-
-      try
-      {
-        File file = saveStringToFile(selectedFile, text);
-        if (file != null)
-        {
-          editor.setChanged(false);
-          editor.setFile(file);
-          tabbedPanelEditor.setTitleAt(tabbedPanelEditor.getSelectedIndex(), file.getName());
+      if(editor.save()) {
           refreshGraph();
-        }
       }
-      catch (IOException e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "The file could not be written.", JOptionPane.ERROR_MESSAGE);
-      }
-      catch (Exception e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
-      }//end catch
-
 }//GEN-LAST:event_saveFileAction
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
@@ -1117,31 +1058,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private void miSaveAsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveAsActionPerformed
     {//GEN-HEADEREND:event_miSaveAsActionPerformed
       XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-      String text = editor.getText();
-
-      try
-      {
-        // save as a new file
-        File file = saveStringToFile(null, text);
-        if (file != null)
-        {
-          int idx = tabbedPanelEditor.getSelectedIndex();
-          editor.setChanged(false);
-          editor.setFile(file);
-          tabbedPanelEditor.setTitleAt(idx, file.getName());
-          tabbedPanelEditor.setToolTipTextAt(idx, file.getAbsolutePath());
-        }
-      }
-      catch (IOException e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "The file could not be written.", JOptionPane.ERROR_MESSAGE);
-      }
-      catch (Exception e)
-      {
-        JOptionPane.showMessageDialog(this,
-          e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
-      }//end catch
+      editor.setFile(null);
+      editor.save();
 }//GEN-LAST:event_miSaveAsActionPerformed
 
     private void miOptionActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOptionActionPerformed
@@ -1412,12 +1330,19 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.addTab(editor.getFile().getName(), null, editor, file.getAbsolutePath());
       }
 
+      // NOTE: 'cause we're adding the close button, the tabpane has the double amount of components than tabs.
+      //        To get the correct tab count, use "getTabCount()"!
+      // adds the close button" to the tab
+      tabbedPanelEditor.setTabComponentAt(
+              tabbedPanelEditor.indexOfComponent(editor), 
+              new ButtonTabComponent(tabbedPanelEditor, Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)))
+      );
       tabbedPanelEditor.setSelectedComponent(editor);
 
       // update the other openend editors
       for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
       {
-        XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getTabComponentAt(i);
+        XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getComponentAt(i);
         if (p != editor && p != null)
         {
           p.setXABSLContext(context);
@@ -1540,32 +1465,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
   }//end jumpTo
 
-  private File saveStringToFile(File selectedFile, String text) throws Exception
-  {
-    if (selectedFile == null)
-    {
-      fileChooser.setFileFilter(xabslFilter);
-      int result = fileChooser.showSaveDialog(this);
-      if (JFileChooser.APPROVE_OPTION != result)
-      {
-        return null;
-      }
-      selectedFile = fileChooser.getSelectedFile();
-      selectedFile = Tools.validateFileName(selectedFile, fileChooser.getFileFilter());
-    }
-
-    if (selectedFile == null)
-    {
-      return null;
-    }
-
-    FileWriter writer = new FileWriter(selectedFile);
-    writer.write(text);
-    writer.close();
-
-    return selectedFile;
-  }//end saveStringToFile
-
   public Map<String, File> getOptionPathMap()
   {
     XEditorPanel selectedEditorPanel = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
@@ -1643,61 +1542,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
   }//end saveConfiguration
 
-  private class XABSLFileFilter extends javax.swing.filechooser.FileFilter
-  {
-
-    @Override
-    public boolean accept(File file)
-    {
-      if (file.isDirectory())
-      {
-        return true;
-      }
-      String filename = file.getName();
-
-      return filename.endsWith(".xabsl") || filename.endsWith(".XABSL");
-    }
-
-    @Override
-    public String getDescription()
-    {
-      return "Extensible Agent Behavior Language (*.xabsl)";
-    }
-
-    @Override
-    public String toString()
-    {
-      return "xabsl";
-    }
-  }//end class XABSLFileFilter
-
-  private class DotFileFilter extends javax.swing.filechooser.FileFilter
-  {
-
-    @Override
-    public boolean accept(File file)
-    {
-      if (file.isDirectory())
-      {
-        return true;
-      }
-      String filename = file.getName();
-      return filename.endsWith(".dot") || filename.endsWith(".DOT");
-    }
-
-    @Override
-    public String getDescription()
-    {
-      return "DOT (*.dot)";
-    }
-
-    @Override
-    public String toString()
-    {
-      return "dot";
-    }
-  }//end class DotFileFilter
-
+  // NOTICE: do we need this?!?
   class XABSLErrorOutputStream extends OutputStream
   {
 
