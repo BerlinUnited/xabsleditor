@@ -16,8 +16,9 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
+import javax.swing.text.JTextComponent;
+import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.autocomplete.ParameterizedCompletion;
 
 /**
  *
@@ -25,7 +26,6 @@ import org.fife.ui.autocomplete.ParameterizedCompletion;
  */
 public class XABSLSymbolCompletion
         extends XABSLSymbolSimpleCompletion
-        implements ParameterizedCompletion
 {
 
   public XABSLSymbolCompletion(CompletionProvider provider, XABSLContext.XABSLSymbol symbol)
@@ -33,7 +33,6 @@ public class XABSLSymbolCompletion
     super(provider, symbol);
   }
 
-  @Override
   public String getDefinitionString() {
     /*
      helpBody += "<br><u>Parameter</u>:<table>";
@@ -71,15 +70,12 @@ public class XABSLSymbolCompletion
     return "test";
   }//end getDefinitionString
 
-  @Override
   public Parameter getParam(int idx) {
     XABSLContext.XABSLBasicSymbol parameter = this.symbol.getParameter().get(idx);
     return new Parameter(parameter.getType(), parameter.getName());
   }//end getParam
 
-  @Override
   public int getParamCount() {
     return this.symbol.getParameter().size();
   }//end getParamCount
-  
 }//end class XABSLSymbolCompletion

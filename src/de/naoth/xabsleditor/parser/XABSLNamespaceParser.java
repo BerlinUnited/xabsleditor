@@ -130,7 +130,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
     {
       eat();
       addNotice(new DefaultParserNotice(this.parent, "A symbol declaration or enum definition expected.",
-              getCurrentLine(), getCurrentToken().offset, getCurrentToken().getLexeme().length()));
+              getCurrentLine(), getCurrentToken().getOffset(), getCurrentToken().getLexeme().length()));
     }
 
   }//end parseSymbolsEntry
@@ -139,7 +139,7 @@ public class XABSLNamespaceParser extends XABSLAbstractParser
   {
     if(getCurrentFileName() != null)
     {
-      return new XABSLContext.DeclarationSource(getCurrentFileName(), getCurrentToken().offset);
+      return new XABSLContext.DeclarationSource(getCurrentFileName(), getCurrentToken().getOffset());
     }//end if
 
     return null;

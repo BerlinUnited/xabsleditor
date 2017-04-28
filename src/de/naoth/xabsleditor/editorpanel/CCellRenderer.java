@@ -63,7 +63,7 @@ class CCellRenderer extends CompletionCellRenderer {
      * resource loadable by the current ClassLoader.
      * @return The icon.
      */
-    private Icon getIcon(String resource) {
+    protected Icon getIcon(String resource) {
         return new ImageIcon(this.getClass().getResource(resource));
     }
 

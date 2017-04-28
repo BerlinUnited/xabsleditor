@@ -18,25 +18,27 @@ package de.naoth.xabsleditor.editorpanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.autocomplete.ParameterizedCompletion;
+import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
+import org.fife.ui.autocomplete.TemplateCompletion;
 
 /**
  *
  * @author Heinrich Mellmann
  */
 public class XABSLOptionCompletion
-        extends BasicCompletion
-        implements ParameterizedCompletion
+        extends TemplateCompletion
 {
   protected XABSLContext.XABSLOption option;
 
   public XABSLOptionCompletion(CompletionProvider provider, XABSLContext.XABSLOption option)
   {
-    super(provider, option.getName());
+      super(provider, option.getName(), "XABSLOptionCompletition.DefinitionString", "", "", option.getName()+"</b><hr>"+option.getComment());
+      
     this.option = option;
 
     //this.setShortDescription(option.toString());
-    this.setSummary(createSummary());
+//    this.setSummary(createSummary());
+//    this.
   }
 
 
@@ -51,11 +53,6 @@ public class XABSLOptionCompletion
 
     return sb.toString();
   }//end createSummary
-
-  @Override
-  public String getDefinitionString() {
-    return "XABSLOptionCompletition.DefinitionString";
-  }//end getDefinitionString
 
   @Override
   public Parameter getParam(int idx) {

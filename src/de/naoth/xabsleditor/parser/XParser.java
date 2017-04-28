@@ -141,7 +141,7 @@ public class XParser extends AbstractParser
 
     try
     {
-      if(currentToken != null && currentToken.type != Token.NULL)
+      if(currentToken != null && currentToken.getType() != Token.NULL)
       {
         skipSpace();
         if(isToken("option"))
@@ -163,7 +163,7 @@ public class XParser extends AbstractParser
 
       this.parser.parse();
 
-      if(currentToken != null && currentToken.type != Token.NULL)
+      if(currentToken != null && currentToken.getType() != Token.NULL)
       {
         throw new Exception("Unexpected end of file.");
         //System.out.println("Unexpected end of File.");
@@ -256,7 +256,7 @@ public class XParser extends AbstractParser
         return "LITERAL_STRING_DOUBLE_QUOTE";
       case Token.NULL:
         return "NULL";
-      case Token.NUM_TOKEN_TYPES:
+      case Token.DEFAULT_NUM_TOKEN_TYPES:
         return "NUM_TOKEN_TYPES";
       case Token.OPERATOR:
         return "OPERATOR";
@@ -289,19 +289,19 @@ public class XParser extends AbstractParser
   private void skipSpace()
   {
     while(currentToken != null &&
-      (currentToken.type == Token.WHITESPACE ||
-      currentToken.type == Token.NULL ||
-      currentToken.type == Token.COMMENT_DOCUMENTATION ||
-      currentToken.type == Token.COMMENT_EOL ||
-      currentToken.type == Token.COMMENT_MULTILINE))
+      (currentToken.getType() == Token.WHITESPACE ||
+      currentToken.getType() == Token.NULL ||
+      currentToken.getType() == Token.COMMENT_DOCUMENTATION ||
+      currentToken.getType() == Token.COMMENT_EOL ||
+      currentToken.getType() == Token.COMMENT_MULTILINE))
     {
       // accept only dokumentation comments (i.e. /** ... */)
       if( //currentToken.type == Token.COMMENT_EOL ||
           //currentToken.type == Token.COMMENT_MULTILINE ||
-          currentToken.type == Token.COMMENT_DOCUMENTATION )
+          currentToken.getType() == Token.COMMENT_DOCUMENTATION )
       {
         currentComment = getCommentString(currentToken.getLexeme()); // remember last coment
-      }else if(currentToken.type == Token.NULL)
+      }else if(currentToken.getType() == Token.NULL)
       {
         //currentLine++;
       }
@@ -319,7 +319,7 @@ public class XParser extends AbstractParser
     }
     else
     {
-      result.addNotice(new DefaultParserNotice(this, "Identifier expected", getCurrentLine(), currentToken.offset, Math.max(currentToken.textCount, 2)));
+      result.addNotice(new DefaultParserNotice(this, "Identifier expected", getCurrentLine(), currentToken.getOffset(), Math.max(currentToken.getEndOffset(), 2)));
     }
 
     return null;
@@ -352,7 +352,7 @@ public class XParser extends AbstractParser
   {
     if(currentToken != null)
     {
-      this.result.addNotice(new DefaultParserNotice(this, "End of file expected.", getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
+      this.result.addNotice(new DefaultParserNotice(this, "End of file expected.", getCurrentLine(), currentToken.getOffset(), currentToken.getLexeme().length()));
       throw new Exception("End of file expected.");
     }//end if
   }//end isEOF
@@ -364,7 +364,7 @@ public class XParser extends AbstractParser
       return false;
     }
 
-    return currentToken.type == type;
+    return currentToken.getType() == type;
   }//end isToken
 
   protected boolean isToken(String keyWord) throws Exception
@@ -388,8 +388,8 @@ public class XParser extends AbstractParser
 
     if(!result)
     {
-      String message = "is " + getNameForTokenType(currentToken.type) + " but " + getNameForTokenType(type) + " expected";
-      this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
+      String message = "is " + getNameForTokenType(currentToken.getType()) + " but " + getNameForTokenType(type) + " expected";
+      this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.getOffset(), currentToken.getLexeme().length()));
       throw new Exception("Unexpected token type: " + message);
     }
 
@@ -409,7 +409,7 @@ public class XParser extends AbstractParser
     if(!result)
     {
       String message = keyWord + " expected";
-      this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.offset, currentToken.getLexeme().length()));
+      this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.getOffset(), currentToken.getLexeme().length()));
       throw new Exception("Unexpected token: " + message);
     }//end if
 
@@ -423,7 +423,7 @@ public class XParser extends AbstractParser
       return 0;
 
     Element root = currentDocument.getDefaultRootElement();
-    return root.getElementIndex(currentToken.offset);
+    return root.getElementIndex(currentToken.getOffset());
   }//end getCurrentLine
 
   protected String getCurrentFileName()

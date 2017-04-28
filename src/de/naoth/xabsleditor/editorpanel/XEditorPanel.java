@@ -39,8 +39,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import de.naoth.xabsleditor.autocomplete.CCompletionProvider;
+import org.fife.ui.autocomplete.AbstractCompletionProvider;
 import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.autocomplete.CCompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -405,7 +406,7 @@ public class XEditorPanel extends javax.swing.JPanel
   
   private void createCompletionProvider()
   {
-    this.completionProvider = new CCompletionProvider(new DefaultCompletionProvider());
+    this.completionProvider = new CCompletionProvider();
 
     AutoCompletion ac = new AutoCompletion(this.completionProvider);
     ac.setDescriptionWindowSize(300, 200);
