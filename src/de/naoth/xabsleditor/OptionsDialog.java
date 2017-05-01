@@ -35,6 +35,7 @@ public class OptionsDialog extends javax.swing.JDialog
   public static final String OPEN_LAST_AGENT = "openLastAgent";
 
   public static final String EDITOR_TAB_SIZE = "editorTabSize";
+  public static final String EDITOR_TAB_CLOSE_BTN = "editorTabCloseButton";
   
   private Properties configuration;
 
@@ -83,6 +84,7 @@ public class OptionsDialog extends javax.swing.JDialog
       this.spTabSize.setValue(n);
     }
     
+    this.cbTabCloseBtn.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_TAB_CLOSE_BTN)));
     this.cbOpenLastAgent.setSelected(Boolean.parseBoolean(configuration.getProperty(OPEN_LAST_AGENT)));
   }//end loadOptions
 
@@ -109,6 +111,7 @@ public class OptionsDialog extends javax.swing.JDialog
         jpEditor = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         spTabSize = new javax.swing.JSpinner();
+        cbTabCloseBtn = new javax.swing.JCheckBox();
         cbOpenLastAgent = new javax.swing.JCheckBox();
 
         fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
@@ -162,12 +165,9 @@ public class OptionsDialog extends javax.swing.JDialog
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btBrowseCompilation))
                     .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
-                        .addGroup(jpCompilerLayout.createSequentialGroup()
-                            .addGroup(jpCompilerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel3)
-                                .addComponent(cbUseRuby))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))))
+                        .addComponent(txtXabslCompilerCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                        .addComponent(jLabel3)
+                        .addComponent(cbUseRuby)))
                 .addGap(20, 20, 20))
         );
         jpCompilerLayout.setVerticalGroup(
@@ -194,6 +194,10 @@ public class OptionsDialog extends javax.swing.JDialog
 
         spTabSize.setModel(new javax.swing.SpinnerNumberModel(2, 0, 13, 1));
 
+        cbTabCloseBtn.setText("Show close button");
+        cbTabCloseBtn.setToolTipText("Whether or not the close button for an editor tab should be shown.");
+        cbTabCloseBtn.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+
         cbOpenLastAgent.setText("Open last agent on start");
         cbOpenLastAgent.setToolTipText("Always opens the last agent, when program starts.");
         cbOpenLastAgent.setActionCommand("lastAgent");
@@ -210,8 +214,9 @@ public class OptionsDialog extends javax.swing.JDialog
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbTabCloseBtn)
                     .addComponent(cbOpenLastAgent))
-                .addContainerGap(361, Short.MAX_VALUE))
+                .addContainerGap(340, Short.MAX_VALUE))
         );
         jpEditorLayout.setVerticalGroup(
             jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -220,6 +225,8 @@ public class OptionsDialog extends javax.swing.JDialog
                 .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbTabCloseBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbOpenLastAgent)
                 .addContainerGap(85, Short.MAX_VALUE))
@@ -235,9 +242,9 @@ public class OptionsDialog extends javax.swing.JDialog
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(239, 239, 239)
-                        .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                        .addComponent(jButtonOK, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonCancel, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE))
+                        .addComponent(jButtonCancel, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(optionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -285,6 +292,7 @@ public class OptionsDialog extends javax.swing.JDialog
       configuration.setProperty(OPEN_LAST_AGENT, Boolean.toString(this.cbOpenLastAgent.isSelected()));
 
       configuration.setProperty(EDITOR_TAB_SIZE, this.spTabSize.getValue().toString());
+      configuration.setProperty(EDITOR_TAB_CLOSE_BTN, Boolean.toString(this.cbTabCloseBtn.isSelected()));
 
       this.setVisible(false);
       this.dispose();
@@ -316,6 +324,7 @@ public class OptionsDialog extends javax.swing.JDialog
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btBrowseCompilation;
     private javax.swing.JCheckBox cbOpenLastAgent;
+    private javax.swing.JCheckBox cbTabCloseBtn;
     private javax.swing.JCheckBox cbUseRuby;
     private javax.swing.JFileChooser fileChooserCompilationPath;
     private javax.swing.JButton jButtonCancel;

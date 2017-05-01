@@ -15,10 +15,12 @@
  */
 package de.naoth.xabsleditor.editorpanel;
 
+import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.parser.XTokenMaker;
+import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
@@ -27,9 +29,13 @@ import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -458,6 +464,67 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     this.textArea.setTabSize(size);
   }
+  
+  /**
+   * Checks whether the tab/editor can be closed savely - without data loss.
+   * @return true, if tab/editor can be closed without data loss, false otherwise
+   */
+    public boolean close() {
+        if (this.isChanged()) {
+            // something changed ...
+            int result = JOptionPane.showConfirmDialog(this, "Save changes?", "File was modified.", JOptionPane.YES_NO_CANCEL_OPTION);
+            // cancel or try to save
+            if (result == JOptionPane.CANCEL_OPTION || (result == JOptionPane.YES_OPTION && !this.save())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean save() {
+        // save as a new file
+        if(this.file == null)
+        {
+            // set up file chooser
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setFileFilter(new XABSLFileFilter());
+            fileChooser.setAcceptAllFileFilterUsed(true);
+            // get new file
+            int result = fileChooser.showSaveDialog(this);
+            if (result != JFileChooser.APPROVE_OPTION) {
+                this.file = null;
+            } else {
+                this.file = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
+            }
+        }
+        // only if we have a valid file
+        if(this.file != null) {
+            try {
+                // write data
+                FileWriter writer = new FileWriter(this.file);
+                writer.write(this.getText());
+                writer.close();
+                this.setChanged(false);
+
+                // change UI (title, tooltip) of tab
+                if(this.getParent() instanceof JTabbedPane) {
+                    JTabbedPane pane = (JTabbedPane)this.getParent();
+                    int idx = pane.indexOfComponent(this);
+                    pane.setTitleAt(idx, this.file.getName());
+                    pane.setToolTipTextAt(idx, file.getAbsolutePath());
+                }
+                // data saved
+                return true;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, e.toString(), "The file could not be written.", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
+            }//end catch
+        }
+        // ... otherwise we're wasn't able to save!!
+        return false;
+    }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private de.naoth.xabsleditor.editorpanel.SearchPanel searchPanel;
