@@ -281,6 +281,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     agentVisualizer.setGraphMouseListener(mouseListener);
     panelAgent.add(agentVisualizer, BorderLayout.CENTER);
 
+    // open the last agent, if it still exits and appropiate config was set.
+    String lastAgentFile;
+    if(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.OPEN_LAST_AGENT)) 
+        && (lastAgentFile = configuration.getProperty("lastOpenedAgent", null)) != null
+    ) {
+        File laf = new File(lastAgentFile);
+        if(laf.exists()) {
+            openFile(laf);
+        }
+    }
   }//end Main
 
   private void refreshGraph()
@@ -1229,7 +1239,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     configuration.setProperty("lastOpenedFolder",
       fileChooser.getCurrentDirectory().getAbsolutePath());
-    saveConfiguration();
 
     File agentsFile = Tools.getAgentFileForOption(selectedFile);
 
@@ -1239,7 +1248,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       file2Agent.put(selectedFile, agentsFile);
       newContext = loadXABSLContext(agentsFile.getParentFile(), null);
+      
+      if(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.OPEN_LAST_AGENT))) {
+          configuration.setProperty("lastOpenedAgent", agentsFile.getAbsolutePath());
+      }
     }
+    
+    // in the end, save configuration ...
+    saveConfiguration();
     
     return createDocumentTab(selectedFile, newContext);
   }//end openFile
