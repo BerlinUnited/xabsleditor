@@ -40,6 +40,7 @@ import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -184,6 +185,15 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             }
           }
         }//end for
+        
+        // the last position 6 size of the main window should be saved.
+        if(OptionsDialog.START_POSITION_OPTIONS[1].equals(configuration.getProperty(OptionsDialog.START_POSITION,""))) {
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()));       // x coordinate
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY()));       // y coordinate
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(getWidth()));   // window width
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(getHeight()));  // window height
+            saveConfiguration();
+        }
 
         System.exit(0);
       }
@@ -293,6 +303,23 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         if(laf.exists()) {
             openFile(laf);
         }
+    }
+    
+    String start = configuration.getProperty(OptionsDialog.START_POSITION,"");
+    if(start.equals(OptionsDialog.START_POSITION_OPTIONS[1])) {
+        // open window with last postion and size
+        Dimension s = getPreferredSize();
+        setLocation(
+            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()))),
+            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY())))
+        );
+        setSize(
+            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(s.width))),
+            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(s.height)))
+        );
+    } else if(start.equals(OptionsDialog.START_POSITION_OPTIONS[2])) {
+        // open window maximized
+        setExtendedState(getExtendedState() | javax.swing.JFrame.MAXIMIZED_BOTH);
     }
   }//end Main
 

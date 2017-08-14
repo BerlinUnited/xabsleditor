@@ -17,7 +17,9 @@ package de.naoth.xabsleditor;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.Properties;
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
@@ -33,6 +35,9 @@ public class OptionsDialog extends javax.swing.JDialog
   public static final String XABSL_COMPILER_COMMAND = "xabslCompilerCommand";
   public static final String USE_INSTALLED_RUBY = "useInstalledRuby";
   public static final String OPEN_LAST_AGENT = "openLastAgent";
+  public static final String START_POSITION = "startPosition";
+  public static final String[] START_POSITION_OPTIONS = { "default", "last", "maximized" };
+  public static final String[] START_POSITION_VALUE = { "startPositionX", "startPositionY", "startPositionWidth", "startPositionHeight" };
 
   public static final String EDITOR_TAB_SIZE = "editorTabSize";
   public static final String EDITOR_TAB_CLOSE_BTN = "editorTabCloseButton";
@@ -86,6 +91,18 @@ public class OptionsDialog extends javax.swing.JDialog
     
     this.cbTabCloseBtn.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_TAB_CLOSE_BTN)));
     this.cbOpenLastAgent.setSelected(Boolean.parseBoolean(configuration.getProperty(OPEN_LAST_AGENT)));
+    //
+    
+    String startPosition = configuration.getProperty(START_POSITION, "");
+    Enumeration<AbstractButton> items = this.bgStartBehavior.getElements();
+    while(items.hasMoreElements()){
+        AbstractButton btn = items.nextElement();
+        if(startPosition.equals(btn.getActionCommand())) {
+            this.bgStartBehavior.setSelected(btn.getModel(), true);
+        }
+    }
+      //System.out.println(this.bgStartBehavior.getSelection());
+//    /this.cbStartMaximized.setSelected(Boolean.parseBoolean(configuration.getProperty(START_MAXIMIZED)));
   }//end loadOptions
 
   /** This method is called from within the constructor to
@@ -98,6 +115,7 @@ public class OptionsDialog extends javax.swing.JDialog
     private void initComponents() {
 
         fileChooserCompilationPath = new javax.swing.JFileChooser();
+        bgStartBehavior = new javax.swing.ButtonGroup();
         jButtonOK = new javax.swing.JButton();
         jButtonCancel = new javax.swing.JButton();
         optionPanel = new javax.swing.JTabbedPane();
@@ -113,12 +131,15 @@ public class OptionsDialog extends javax.swing.JDialog
         spTabSize = new javax.swing.JSpinner();
         cbTabCloseBtn = new javax.swing.JCheckBox();
         cbOpenLastAgent = new javax.swing.JCheckBox();
+        jpStartBehavior = new javax.swing.JPanel();
+        startPosition_default = new javax.swing.JRadioButton();
+        startPosition_last = new javax.swing.JRadioButton();
+        startPosition_maximized = new javax.swing.JRadioButton();
 
         fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Preferences");
-        setLocationByPlatform(true);
         setModal(true);
         setName("Preferences"); // NOI18N
         setResizable(false);
@@ -203,6 +224,25 @@ public class OptionsDialog extends javax.swing.JDialog
         cbOpenLastAgent.setActionCommand("lastAgent");
         cbOpenLastAgent.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
 
+        jpStartBehavior.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Positioning on startup"));
+        jpStartBehavior.setLayout(new javax.swing.BoxLayout(jpStartBehavior, javax.swing.BoxLayout.Y_AXIS));
+
+        bgStartBehavior.add(startPosition_default);
+        startPosition_default.setSelected(true);
+        startPosition_default.setText("Default");
+        startPosition_default.setActionCommand(START_POSITION_OPTIONS[0]);
+        jpStartBehavior.add(startPosition_default);
+
+        bgStartBehavior.add(startPosition_last);
+        startPosition_last.setText("Remember last position & size");
+        startPosition_last.setActionCommand(START_POSITION_OPTIONS[1]);
+        jpStartBehavior.add(startPosition_last);
+
+        bgStartBehavior.add(startPosition_maximized);
+        startPosition_maximized.setText("Start maximized");
+        startPosition_maximized.setActionCommand(START_POSITION_OPTIONS[2]);
+        jpStartBehavior.add(startPosition_maximized);
+
         javax.swing.GroupLayout jpEditorLayout = new javax.swing.GroupLayout(jpEditor);
         jpEditor.setLayout(jpEditorLayout);
         jpEditorLayout.setHorizontalGroup(
@@ -217,6 +257,9 @@ public class OptionsDialog extends javax.swing.JDialog
                     .addComponent(cbTabCloseBtn)
                     .addComponent(cbOpenLastAgent))
                 .addContainerGap(340, Short.MAX_VALUE))
+            .addGroup(jpEditorLayout.createSequentialGroup()
+                .addComponent(jpStartBehavior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jpEditorLayout.setVerticalGroup(
             jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -229,7 +272,9 @@ public class OptionsDialog extends javax.swing.JDialog
                 .addComponent(cbTabCloseBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbOpenLastAgent)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jpStartBehavior, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(34, 34, 34))
         );
 
         optionPanel.addTab("Editor", jpEditor);
@@ -294,6 +339,8 @@ public class OptionsDialog extends javax.swing.JDialog
       configuration.setProperty(EDITOR_TAB_SIZE, this.spTabSize.getValue().toString());
       configuration.setProperty(EDITOR_TAB_CLOSE_BTN, Boolean.toString(this.cbTabCloseBtn.isSelected()));
 
+      configuration.setProperty(START_POSITION, this.bgStartBehavior.getSelection().getActionCommand());
+      
       this.setVisible(false);
       this.dispose();
     }//GEN-LAST:event_jButtonOKActionPerformed
@@ -322,6 +369,7 @@ public class OptionsDialog extends javax.swing.JDialog
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup bgStartBehavior;
     private javax.swing.JButton btBrowseCompilation;
     private javax.swing.JCheckBox cbOpenLastAgent;
     private javax.swing.JCheckBox cbTabCloseBtn;
@@ -334,8 +382,12 @@ public class OptionsDialog extends javax.swing.JDialog
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jpCompiler;
     private javax.swing.JPanel jpEditor;
+    private javax.swing.JPanel jpStartBehavior;
     private javax.swing.JTabbedPane optionPanel;
     private javax.swing.JSpinner spTabSize;
+    private javax.swing.JRadioButton startPosition_default;
+    private javax.swing.JRadioButton startPosition_last;
+    private javax.swing.JRadioButton startPosition_maximized;
     private javax.swing.JTextField txtDefaultCompilationPath;
     private javax.swing.JTextField txtXabslCompilerCommand;
     // End of variables declaration//GEN-END:variables
