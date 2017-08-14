@@ -289,6 +289,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         // open window maximized
         setExtendedState(getExtendedState() | javax.swing.JFrame.MAXIMIZED_BOTH);
     }
+    // set the divider location from the config
+    if(configuration.getProperty("dividerPostionOne")!=null) {
+        jSplitPaneMain.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionOne")));
+    }
+    if(configuration.getProperty("dividerPostionTwo")!=null) {
+        jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
+    }
   }//end Main
 
   private void refreshGraph()
@@ -1634,8 +1641,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             configuration.setProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY()));       // y coordinate
             configuration.setProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(getWidth()));   // window width
             configuration.setProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(getHeight()));  // window height
-            saveConfiguration();
         }
+        
+        // save divider position
+        configuration.setProperty("dividerPostionOne", String.valueOf(jSplitPaneMain.getDividerLocation()));
+        configuration.setProperty("dividerPostionTwo", String.valueOf(jSplitPane.getDividerLocation()));
+        
+        saveConfiguration();
 
         System.exit(0);
       }
