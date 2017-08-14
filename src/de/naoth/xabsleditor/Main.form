@@ -359,6 +359,7 @@
     <Container class="javax.swing.JSplitPane" name="jSplitPaneMain">
       <Properties>
         <Property name="dividerLocation" type="int" value="200"/>
+        <Property name="oneTouchExpandable" type="boolean" value="true"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -397,6 +398,7 @@
         <Container class="javax.swing.JSplitPane" name="jSplitPane">
           <Properties>
             <Property name="dividerLocation" type="int" value="450"/>
+            <Property name="oneTouchExpandable" type="boolean" value="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[750, 600]"/>
             </Property>

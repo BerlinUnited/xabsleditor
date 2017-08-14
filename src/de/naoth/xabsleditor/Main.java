@@ -820,6 +820,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         getContentPane().add(toolbarMain, java.awt.BorderLayout.PAGE_START);
 
         jSplitPaneMain.setDividerLocation(200);
+        jSplitPaneMain.setOneTouchExpandable(true);
 
         jScrollPaneFileTree.setPreferredSize(new java.awt.Dimension(300, 322));
 
@@ -830,6 +831,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         jSplitPaneMain.setLeftComponent(jScrollPaneFileTree);
 
         jSplitPane.setDividerLocation(450);
+        jSplitPane.setOneTouchExpandable(true);
         jSplitPane.setPreferredSize(new java.awt.Dimension(750, 600));
         jSplitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
