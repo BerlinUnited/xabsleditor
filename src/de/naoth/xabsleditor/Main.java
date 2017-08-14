@@ -401,6 +401,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       if (file.isDirectory())
       {
         JMenu miChild = new JMenu(file.getName());
+        addFilesToMenu(miChild, file, context);
         if(miChild.getMenuComponentCount() > 0) {
           miParent.add(miChild);
         }
@@ -516,6 +517,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private void updateProjectDirectoryMenu()
   {
     mProject.removeAll();
+    foundAgents.clear();
     
     // get all opened agents
     //TreeSet<File> foundAgents = new TreeSet<File>();
