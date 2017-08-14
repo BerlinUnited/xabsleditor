@@ -63,6 +63,7 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -158,47 +159,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     //fileDrop.install(this.tabbedPanelEditor);
     //fileDrop.setBorderHighlightingEnabled(true);
 
-    addWindowListener(new WindowAdapter()
-    {
-
-      @Override
-      public void windowClosing(WindowEvent e)
-      {
-        // check if there are unsaved files
-        for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
-        {
-          XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getComponentAt(i));
-          String tabName = tabbedPanelEditor.getTitleAt(i);
-          
-          if(editor.isChanged())
-          {
-            tabbedPanelEditor.setSelectedComponent(editor);
-            
-            int result = JOptionPane.showConfirmDialog(tabbedPanelEditor.getParent(),
-              "The file " + tabName + " is modified. Close anyway?",
-              "File Not Saved", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-
-            // TODO: try to close the tabs
-            if(result != JOptionPane.YES_OPTION)
-            {
-              return;
-            }
-          }
-        }//end for
-        
-        // the last position 6 size of the main window should be saved.
-        if(OptionsDialog.START_POSITION_OPTIONS[1].equals(configuration.getProperty(OptionsDialog.START_POSITION,""))) {
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()));       // x coordinate
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY()));       // y coordinate
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(getWidth()));   // window width
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(getHeight()));  // window height
-            saveConfiguration();
-        }
-
-        System.exit(0);
-      }
-    });
-
+    addWindowListener(new ShutdownHook());
 
     // icon
     Image icon = Toolkit.getDefaultToolkit().getImage(
@@ -294,14 +255,21 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     agentVisualizer.setGraphMouseListener(mouseListener);
     panelAgent.add(agentVisualizer, BorderLayout.CENTER);
 
-    // open the last agent, if it still exits and appropiate config was set.
-    String lastAgentFile;
-    if(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.OPEN_LAST_AGENT)) 
-        && (lastAgentFile = configuration.getProperty("lastOpenedAgent", null)) != null
-    ) {
-        File laf = new File(lastAgentFile);
+    String open = configuration.getProperty(OptionsDialog.OPEN_LAST,"");
+    if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[1])) {
+        // try to open last agent
+        File laf = new File(configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[0], ""));
         if(laf.exists()) {
             openFile(laf);
+        }
+    } else if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[2])) {
+        // try to open the last opened files
+        String[] strFiles = configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[1], "").split("\\|");
+        for (String strFile : strFiles) {
+            File f = new File(strFile);
+            if(f.exists()) {
+                openFile(f);
+            }
         }
     }
     
@@ -1194,10 +1162,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       file2Agent.put(selectedFile, agentsFile);
       newContext = loadXABSLContext(agentsFile.getParentFile(), null);
-      
-      if(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.OPEN_LAST_AGENT))) {
-          configuration.setProperty("lastOpenedAgent", agentsFile.getAbsolutePath());
-      }
     }
     
     // in the end, save configuration ...
@@ -1621,5 +1585,56 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }//end if
     }//end parseMessage
   }//end class XABSLErrorOutputStream
+  
+  class ShutdownHook extends WindowAdapter
+  {
+      @Override
+      public void windowClosing(WindowEvent e)
+      {
+        // save "last" opened agent file
+        try {
+            configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[0], file2Agent.values().stream().distinct().findFirst().get().getAbsolutePath());
+        } catch(Exception ex) { /* ignore exceptions! */ }
+        
+        ArrayList<String> openedFiles = new ArrayList<>();
+        // check if there are unsaved files
+        for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
+        {
+          XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getComponentAt(i));
+          String tabName = tabbedPanelEditor.getTitleAt(i);
+          
+          if(editor.isChanged())
+          {
+            tabbedPanelEditor.setSelectedComponent(editor);
+            
+            int result = JOptionPane.showConfirmDialog(tabbedPanelEditor.getParent(),
+              "The file " + tabName + " is modified. Close anyway?",
+              "File Not Saved", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            // TODO: try to close the tabs
+            if(result != JOptionPane.YES_OPTION)
+            {
+              return;
+            }
+          }
+          // collect opened files
+          openedFiles.add(editor.getFile().getAbsolutePath());
+        }//end for
+        
+        // save opened files to configuration
+        configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[1], openedFiles.stream().collect(Collectors.joining("|")));
+        
+        // the last position 6 size of the main window should be saved.
+        if(OptionsDialog.START_POSITION_OPTIONS[1].equals(configuration.getProperty(OptionsDialog.START_POSITION,""))) {
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()));       // x coordinate
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY()));       // y coordinate
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(getWidth()));   // window width
+            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(getHeight()));  // window height
+            saveConfiguration();
+        }
+
+        System.exit(0);
+      }
+  }
 }//end class Main
 

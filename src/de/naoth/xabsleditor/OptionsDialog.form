@@ -9,6 +9,8 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="bgStartBehavior">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="bgOpenLast">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
@@ -187,7 +189,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
@@ -196,12 +198,14 @@
                               <Component id="spTabSize" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="cbTabCloseBtn" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cbOpenLastAgent" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace pref="340" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jpStartBehavior" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jpStartOpen" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jpStartBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -216,11 +220,11 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="cbTabCloseBtn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="cbOpenLastAgent" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jpStartBehavior" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+                      <Component id="jpStartOpen" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jpStartBehavior" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="19" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -242,14 +246,6 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Show close button"/>
                 <Property name="toolTipText" type="java.lang.String" value="Whether or not the close button for an editor tab should be shown."/>
-                <Property name="horizontalTextPosition" type="int" value="10"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="cbOpenLastAgent">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Open last agent on start"/>
-                <Property name="toolTipText" type="java.lang.String" value="Always opens the last agent, when program starts."/>
-                <Property name="actionCommand" type="java.lang.String" value="lastAgent"/>
                 <Property name="horizontalTextPosition" type="int" value="10"/>
               </Properties>
             </Component>
@@ -301,6 +297,59 @@
                     <Property name="text" type="java.lang.String" value="Start maximized"/>
                     <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                       <Connection code="START_POSITION_OPTIONS[2]" type="code"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="jpStartOpen">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Open on startup ...">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
+                <Property name="axis" type="int" value="1"/>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JRadioButton" name="startOpen_nothing">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="bgOpenLast"/>
+                    </Property>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="nothing"/>
+                    <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="OPEN_LAST_OPTIONS[0]" type="code"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="startOpen_agent">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="bgOpenLast"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="last agent only"/>
+                    <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="OPEN_LAST_OPTIONS[1]" type="code"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="startOpen_lastFiles">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="bgOpenLast"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="last opened files"/>
+                    <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="OPEN_LAST_OPTIONS[2]" type="code"/>
                     </Property>
                   </Properties>
                 </Component>
