@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -113,6 +114,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   
   private HelpDialog helpDialog = null;
 
+  private int activeTabIndex = -1;
 
   // xabsl files icons
   private final ImageIcon icon_xabsl_agent =
@@ -247,6 +249,34 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       {
         refreshGraph();
       }
+    });
+    
+    // add right-click-behavior of the tabs
+    tabbedPanelEditor.addMouseListener(new MouseListener() {
+        @Override
+        public void mouseClicked(MouseEvent e) {}
+
+        @Override
+        public void mousePressed(MouseEvent e) {}
+
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+
+        @Override
+        public void mouseExited(MouseEvent e) {}
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            // right-click only
+            if(e.getButton() == MouseEvent.BUTTON3) {
+                activeTabIndex = tabbedPanelEditor.getUI().tabForCoordinate(tabbedPanelEditor, e.getX(), e.getY());
+                if(activeTabIndex >= 0) {
+                    tabbedPanelEditor.setSelectedIndex(activeTabIndex);
+                    tabPopupMenu.show(tabbedPanelEditor, e.getX(), e.getY());
+                }
+            }
+            
+        }
     });
 
     panelOption.add(optionVisualizer, BorderLayout.CENTER);
@@ -722,6 +752,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        tabPopupMenu = new javax.swing.JPopupMenu();
+        tabPopupMenu_Close = new javax.swing.JMenuItem();
+        tabPopupMenu_CloseAll = new javax.swing.JMenuItem();
+        tabPopupMenu_CloseOthers = new javax.swing.JMenuItem();
         toolbarMain = new javax.swing.JToolBar();
         btNew = new javax.swing.JButton();
         btOpen = new javax.swing.JButton();
@@ -761,6 +795,35 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mHelp = new javax.swing.JMenu();
         miHelp = new javax.swing.JMenuItem();
         miInfo = new javax.swing.JMenuItem();
+
+        tabPopupMenu_Close.setText("Close");
+        tabPopupMenu_Close.setToolTipText("Closes active the tab");
+        tabPopupMenu_Close.setFocusPainted(true);
+        tabPopupMenu_Close.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tabPopupMenu_CloseActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(tabPopupMenu_Close);
+
+        tabPopupMenu_CloseAll.setText("Close all");
+        tabPopupMenu_CloseAll.setToolTipText("Closes all opened tabs.");
+        tabPopupMenu_CloseAll.setFocusPainted(true);
+        tabPopupMenu_CloseAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tabPopupMenu_CloseAllActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(tabPopupMenu_CloseAll);
+
+        tabPopupMenu_CloseOthers.setText("Close others");
+        tabPopupMenu_CloseOthers.setToolTipText("Closes all opened tabs, except for the active one.");
+        tabPopupMenu_CloseOthers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tabPopupMenu_CloseOthersActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(tabPopupMenu_CloseOthers);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("XabslEditor");
@@ -1296,6 +1359,42 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
   }//GEN-LAST:event_miFindUnusedOptionsActionPerformed
 
+    private void tabPopupMenu_CloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tabPopupMenu_CloseActionPerformed
+        if(activeTabIndex >= 0) {
+            XEditorPanel editor = (XEditorPanel) tabbedPanelEditor.getComponentAt(activeTabIndex);
+            if(editor.close()) {
+                tabbedPanelEditor.remove(editor);
+            }
+        }
+    }//GEN-LAST:event_tabPopupMenu_CloseActionPerformed
+
+    private void tabPopupMenu_CloseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tabPopupMenu_CloseAllActionPerformed
+        // (try to) close all tabs
+        while (tabbedPanelEditor.getTabCount() > 0) {
+            XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
+            if (p.close()) {
+                tabbedPanelEditor.remove(p);
+            } else {
+                break;
+            }
+        }
+    }//GEN-LAST:event_tabPopupMenu_CloseAllActionPerformed
+
+    private void tabPopupMenu_CloseOthersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tabPopupMenu_CloseOthersActionPerformed
+        if (activeTabIndex >= 0) {
+            XEditorPanel activeEditor = (XEditorPanel) tabbedPanelEditor.getComponentAt(activeTabIndex);
+            Component[] t = tabbedPanelEditor.getComponents();
+            for (int i = 0; i < t.length; i++) {
+                Component component = t[i];
+                if(component instanceof XEditorPanel) {
+                    if(component!=activeEditor && ((XEditorPanel)component).close()) {
+                        tabbedPanelEditor.remove(component);
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_tabPopupMenu_CloseOthersActionPerformed
+
 
   /**
    * @param args the command line arguments
@@ -1387,7 +1486,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           }//end if
         }
       });
-
+      
       final XEditorPanel editorFinal = editor;
       editor.addHyperlinkListener(new HyperlinkListener()
       {
@@ -1450,7 +1549,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           //System.out.println(option);
         }
       });
-
+      
       return editor;
     }
     catch (Exception e)
@@ -1533,6 +1632,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JPanel panelAgent;
     private javax.swing.JPanel panelOption;
     private javax.swing.JToolBar.Separator seperator1;
+    private javax.swing.JPopupMenu tabPopupMenu;
+    private javax.swing.JMenuItem tabPopupMenu_Close;
+    private javax.swing.JMenuItem tabPopupMenu_CloseAll;
+    private javax.swing.JMenuItem tabPopupMenu_CloseOthers;
     private javax.swing.JTabbedPane tabbedPanelEditor;
     private javax.swing.JTabbedPane tabbedPanelView;
     private javax.swing.JToolBar toolbarMain;
