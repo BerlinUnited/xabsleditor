@@ -928,6 +928,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         });
 
         tabbedPanelEditor.setAutoscrolls(true);
+        tabbedPanelEditor.setFocusCycleRoot(true);
         jSplitPane.setLeftComponent(tabbedPanelEditor);
 
         panelOption.setLayout(new java.awt.BorderLayout());
