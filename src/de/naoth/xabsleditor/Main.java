@@ -39,6 +39,7 @@ import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -46,6 +47,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -70,6 +72,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
@@ -80,6 +83,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -326,6 +330,24 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     if(configuration.getProperty("dividerPostionTwo")!=null) {
         jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
     }
+    
+    // set the cell renderer for the projects treeview
+    fileTree.setCellRenderer(new DefaultTreeCellRenderer(){
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            if(value instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode)value).getUserObject() instanceof File) {
+                File file = (File)((DefaultMutableTreeNode)value).getUserObject();
+                if(file.isDirectory()) {
+                    value = file.getName();
+                } else {
+                    value = file.getName().substring(0, file.getName().length()-6);
+                }
+            }
+            Component c = super.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
+            c.setForeground(Color.BLACK);
+            return c;
+        }
+    });
   }//end Main
 
   private void refreshGraph()
@@ -499,7 +521,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       if (file.isDirectory())
       {
-        DefaultMutableTreeNode nodeDirectory = new DefaultMutableTreeNode(file.getName());
+        DefaultMutableTreeNode nodeDirectory = new DefaultMutableTreeNode(file);
         addFilesToTree(nodeDirectory, file, context);
 
         if(nodeDirectory.getChildCount() > 0) {
@@ -518,7 +540,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
 
         // create new item
-        DefaultMutableTreeNode nodeChild = new DefaultMutableTreeNode(name);
+        DefaultMutableTreeNode nodeChild = new DefaultMutableTreeNode(file);
         
         // agent, option or symbol file
         /*
@@ -579,16 +601,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2) {
                     TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                    if(selPath != null) {
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-                        if (node == null || !node.isLeaf()) { 
-                            return;
-                        }
-
-                        String name = (String)node.getUserObject();
-                        File f = context.getOptionPathMap().get(name);
-                        openFileDirectly(f);
-                    }
+                    openFileFromTree(selPath);
                 }
             }
         });
@@ -896,6 +909,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("<no project>");
         fileTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        fileTree.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                fileTreeKeyReleased(evt);
+            }
+        });
         jScrollPaneFileTree.setViewportView(fileTree);
 
         jSplitPaneMain.setLeftComponent(jScrollPaneFileTree);
@@ -1243,6 +1261,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
     return createDocumentTab(selectedFile, newContext);
   }//end openFile
+  
+  private void openFileFromTree(TreePath selPath) {
+        if (selPath != null) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+            if (node == null || !node.isLeaf()) {
+                return;
+            }
+
+            File f = (File) node.getUserObject();
+            openFileDirectly(f);
+        }
+    }
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
@@ -1394,6 +1424,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             }
         }
     }//GEN-LAST:event_tabPopupMenu_CloseOthersActionPerformed
+
+    private void fileTreeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileTreeKeyReleased
+        if(evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            openFileFromTree(fileTree.getSelectionPath());
+        }
+    }//GEN-LAST:event_fileTreeKeyReleased
 
 
   /**

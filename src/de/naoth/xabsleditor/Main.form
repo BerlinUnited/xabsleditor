@@ -429,6 +429,9 @@
                   <TreeModel code="&lt;no project&gt;"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="fileTreeKeyReleased"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
