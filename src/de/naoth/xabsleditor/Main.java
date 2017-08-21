@@ -105,9 +105,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private FileFilter xabslFilter = new XABSLFileFilter();
   private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
 
-  private OptionVisualizer optionVisualizer;
-  private AgentVisualizer agentVisualizer;
-
   private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
@@ -147,7 +144,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     initComponents();
 
-    this.compilerOutputPanel.addJumpListener(this);
+    graphPanel.addJumpListener(this);
 
     this.fileDrop = new FileDrop(this.tabbedPanelEditor, new FileDrop.Listener()
     {
@@ -198,53 +195,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     loadConfiguration();
 
-    optionVisualizer = new OptionVisualizer();
-
-    GraphMouseListener<XabslNode> mouseListener = new GraphMouseListener<XabslNode>()
-    {
-
-      @Override
-      public void graphClicked(XabslNode v, MouseEvent me)
-      {
-        XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-        if (editor != null && v.getType() == XabslNode.Type.State && v.getPosInText() > -1)
-        {
-          editor.setCarretPosition(v.getPosInText());
-        }
-        else if (v.getType() == XabslNode.Type.Option)
-        {
-          String option = v.getName();
-          File file = null;
-          if (editor.getXABSLContext() != null)
-          {
-            file = editor.getXABSLContext().getOptionPathMap().get(option);
-          }
-
-          if (file != null)
-          {
-            openFile(file);
-          }
-          else
-          {
-            JOptionPane.showMessageDialog(null, "Could not find the file for option "
-              + option, "Option not found", JOptionPane.WARNING_MESSAGE);
-          }
-        }
-      }
-
-      @Override
-      public void graphPressed(XabslNode v, MouseEvent me)
-      {
-      }
-
-      @Override
-      public void graphReleased(XabslNode v, MouseEvent me)
-      {
-      }
-    };
-
-    optionVisualizer.setGraphMouseListener(mouseListener);
-
     tabbedPanelEditor.addChangeListener(new ChangeListener()
     {
 
@@ -282,12 +232,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             
         }
     });
-
-    panelOption.add(optionVisualizer, BorderLayout.CENTER);
-
-    agentVisualizer = new AgentVisualizer();    
-    agentVisualizer.setGraphMouseListener(mouseListener);
-    panelAgent.add(agentVisualizer, BorderLayout.CENTER);
 
     String open = configuration.getProperty(OptionsDialog.OPEN_LAST,"");
     if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[1])) {
@@ -364,11 +308,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // Option
     XParser p = new XParser(selectedEditorPanel.getXABSLContext());
     p.parse(new StringReader(text));
-    optionVisualizer.setGraph(p.getOptionGraph());
+    graphPanel.updateOptionGraph(p.getOptionGraph());
 
     String optionName = tabbedPanelEditor.getTitleAt(tabbedPanelEditor.getSelectedIndex());
     optionName = optionName.replaceAll(".xabsl", "");
-    agentVisualizer.setContext(selectedEditorPanel.getXABSLContext(), optionName);
+    graphPanel.updateAgentContext(selectedEditorPanel.getXABSLContext(), optionName);
 
     // refresh autocompetion
     DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
@@ -780,10 +724,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         fileTree = new javax.swing.JTree();
         jSplitPane = new javax.swing.JSplitPane();
         tabbedPanelEditor = new javax.swing.JTabbedPane();
-        tabbedPanelView = new javax.swing.JTabbedPane();
-        panelOption = new javax.swing.JPanel();
-        panelAgent = new javax.swing.JPanel();
-        compilerOutputPanel = new de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel();
+        graphPanel = new de.naoth.xabsleditor.graphpanel.GraphPanel();
         mbMain = new javax.swing.JMenuBar();
         mFile = new javax.swing.JMenu();
         miNew = new javax.swing.JMenuItem();
@@ -930,17 +871,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         tabbedPanelEditor.setAutoscrolls(true);
         tabbedPanelEditor.setFocusCycleRoot(true);
         jSplitPane.setLeftComponent(tabbedPanelEditor);
-
-        panelOption.setLayout(new java.awt.BorderLayout());
-        tabbedPanelView.addTab("Option", panelOption);
-
-        panelAgent.setLayout(new java.awt.BorderLayout());
-        tabbedPanelView.addTab("Agent", panelAgent);
-        tabbedPanelView.addTab("Compiler", compilerOutputPanel);
-
-        tabbedPanelView.setSelectedComponent(panelOption);
-
-        jSplitPane.setRightComponent(tabbedPanelView);
+        jSplitPane.setRightComponent(graphPanel);
 
         jSplitPaneMain.setRightComponent(jSplitPane);
 
@@ -1637,8 +1568,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JButton btNew;
     private javax.swing.JButton btOpen;
     private javax.swing.JButton btSave;
-    private de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel compilerOutputPanel;
     private javax.swing.JTree fileTree;
+    private de.naoth.xabsleditor.graphpanel.GraphPanel graphPanel;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPaneFileTree;
     private javax.swing.JSeparator jSeparator1;
@@ -1666,15 +1597,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JMenuItem miSaveAs;
     private javax.swing.JMenuItem miSearch;
     private javax.swing.JMenuItem miSearchProject;
-    private javax.swing.JPanel panelAgent;
-    private javax.swing.JPanel panelOption;
     private javax.swing.JToolBar.Separator seperator1;
     private javax.swing.JPopupMenu tabPopupMenu;
     private javax.swing.JMenuItem tabPopupMenu_Close;
     private javax.swing.JMenuItem tabPopupMenu_CloseAll;
     private javax.swing.JMenuItem tabPopupMenu_CloseOthers;
     private javax.swing.JTabbedPane tabbedPanelEditor;
-    private javax.swing.JTabbedPane tabbedPanelView;
     private javax.swing.JToolBar toolbarMain;
     // End of variables declaration//GEN-END:variables
 
@@ -1682,10 +1610,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   public void compilationFinished(CompileResult result)
   {
     //txtCompilerOutput.setText(result.messages);
-    compilerOutputPanel.setCompilerResult(result);
+    graphPanel.updateCompilerResult(result);
     if (result.errors || result.warnings)
     {
-      tabbedPanelView.setSelectedIndex(tabbedPanelView.getTabCount() - 1);
+      graphPanel.selectTab("Compiler");
     }
   }//end compilationFinished
 
