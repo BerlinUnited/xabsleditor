@@ -2,8 +2,12 @@ package de.naoth.xabsleditor.graphpanel;
 
 import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
+import de.naoth.xabsleditor.editorpanel.EditorPanel;
+import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLOptionContext;
+import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.parser.XabslEdge;
 import de.naoth.xabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.graph.Graph;
@@ -11,7 +15,9 @@ import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.StringReader;
 import javax.swing.JOptionPane;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
 /**
  *
@@ -22,6 +28,7 @@ public class GraphPanel extends javax.swing.JPanel
 //    private final XabslGraphMouseListener mouseListener;
     private OptionVisualizer optionVisualizer;
     private AgentVisualizer agentVisualizer;
+    private EditorPanel editor;
   
     /**
      * Creates new form GraphPanel
@@ -77,6 +84,10 @@ public class GraphPanel extends javax.swing.JPanel
         panelCompiler.addJumpListener(j);
     }
     
+    public void setEditor(EditorPanel e) {
+        editor = e;
+    }
+    
     public void selectTab(String tab) {
         for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
             if(jTabbedPane1.getTitleAt(i).equals(tab)) {
@@ -100,6 +111,33 @@ public class GraphPanel extends javax.swing.JPanel
     public void updateCompilerResult(CompileResult result) {
         // TODO
         panelCompiler.setCompilerResult(result);
+    }
+    
+    public void refreshGraph() {
+        if (!editor.hasOpenFiles()) {
+            return;
+        }
+
+        String text = editor.getActiveContent();
+
+        // Option
+        XParser p = new XParser(editor.getActiveXABSLContext());
+        p.parse(new StringReader(text));
+        updateOptionGraph(p.getOptionGraph());
+
+        String optionName = editor.getActiveFile().getName();
+        optionName = optionName.replaceAll(".xabsl", "");
+        updateAgentContext(editor.getActiveXABSLContext(), optionName);
+
+        // refresh autocompetion
+        DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
+
+        for (XABSLOptionContext.State state : p.getStateMap().values()) {
+            completionProvider.addCompletion(
+                    new XABSLStateCompetion(completionProvider, state.name));
+        }//end for
+
+        editor.setActiveCompletionProvider(completionProvider);
     }
     
     class XabslGraphMouseListener implements GraphMouseListener<XabslNode>

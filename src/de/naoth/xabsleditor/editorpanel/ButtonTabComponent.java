@@ -75,7 +75,7 @@ public class ButtonTabComponent extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int i = pane.indexOfTabComponent(ButtonTabComponent.this);
             if (i != -1) {
-                if(((XEditorPanel)pane.getComponentAt(i)).close()) {
+                if(((EditorPanelTab)pane.getComponentAt(i)).close(false)) {
                     pane.remove(i);
                 }
             }
