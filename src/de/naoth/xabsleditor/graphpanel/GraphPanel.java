@@ -114,7 +114,7 @@ public class GraphPanel extends javax.swing.JPanel
     }
     
     public void refreshGraph() {
-        if (!editor.hasOpenFiles()) {
+        if (!editor.hasOpenFiles() || editor.getActiveFile() == null) {
             return;
         }
 

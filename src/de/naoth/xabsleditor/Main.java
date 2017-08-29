@@ -20,15 +20,9 @@ import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
+import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
-import de.naoth.xabsleditor.editorpanel.XABSLEnumCompletion;
-import de.naoth.xabsleditor.editorpanel.XABSLOptionCompletion;
-import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
-import de.naoth.xabsleditor.editorpanel.XABSLSymbolCompletion;
-import de.naoth.xabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.naoth.xabsleditor.parser.XABSLContext;
-import de.naoth.xabsleditor.parser.XABSLOptionContext.State;
-import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import java.awt.Color;
@@ -49,14 +43,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -72,8 +66,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
-import org.fife.ui.autocomplete.ShorthandCompletion;
 
 /**
  *
@@ -95,10 +87,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
-  /** Map from an file to it's agent file (means "project") */
-  private Map<File, File> file2Agent = new HashMap<File, File>();
-  private FileDrop fileDrop = null;
-  
   private HelpDialog helpDialog = null;
 
   // xabsl files icons
@@ -171,6 +159,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         File laf = new File(configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[0], ""));
         if(laf.exists()) {
             editorPanel.openFile(laf);
+            updateProjectDirectoryMenu();
         }
     } else if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[2])) {
         // try to open the last opened files
@@ -181,6 +170,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
                 editorPanel.openFile(f);
             }
         }
+        updateProjectDirectoryMenu();
     }
     
     String start = configuration.getProperty(OptionsDialog.START_POSITION,"");
@@ -424,7 +414,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // get all opened agents
     //TreeSet<File> foundAgents = new TreeSet<File>();
     for (EditorPanelTab tab : editorPanel) {
-      File agentFile = file2Agent.get(tab.getFile());
+      File agentFile = tab.getAgent();
       if (agentFile != null && !foundAgents.contains(agentFile))
       {
         JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
@@ -843,6 +833,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
     {//GEN-HEADEREND:event_saveFileAction
       editorPanel.save();
+      updateProjectDirectoryMenu();
 }//GEN-LAST:event_saveFileAction
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
@@ -1045,16 +1036,13 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     String name = target.getFileName().substring(0, dotIndex);
 
     editorPanel.openFile(getOptionPathMap().get(name));
-    // TODO
-    /*
-    if(editor != null)
-    {
-      editor.jumpToLine(target.getLineNumber());
-    }
-    else
-    {
+    updateProjectDirectoryMenu();
+
+    if(editorPanel.hasOpenFiles()) {
+        editorPanel.getActiveTab().jumpToLine(target.getLineNumber());
+    } else {
       System.err.println("Couldn't jump to taget " + target);
-    }*/
+    }
   }//end jumpTo
 
     public Map<String, File> getOptionPathMap() {
@@ -1063,6 +1051,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         } else {
             return null;
         }
+    }
+    
+    public EditorPanel getEditorPanel() {
+        return editorPanel;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1170,15 +1162,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       {
         // save "last" opened agent file
         try {
-            configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[0], file2Agent.values().stream().distinct().findFirst().get().getAbsolutePath());
+            configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[0], editorPanel.getActiveAgent().getAbsolutePath());
         } catch(Exception ex) { /* ignore exceptions! */ }
         
-        // TODO
-//        editorPanel.getOpenFiles();
-        editorPanel.closeAllTabs(true);
+        // retrieve all opened files and close tabs
+        List<String> openedFiles = editorPanel.closeAllTabs(true).stream().map((t) -> t.getAbsolutePath()).collect(Collectors.toList());
         
         // save opened files to configuration
-//        configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[1], openedFiles.stream().collect(Collectors.joining("|")));
+        configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[1], openedFiles.stream().collect(Collectors.joining("|")));
         
         // the last position 6 size of the main window should be saved.
         if(OptionsDialog.START_POSITION_OPTIONS[1].equals(configuration.getProperty(OptionsDialog.START_POSITION,""))) {

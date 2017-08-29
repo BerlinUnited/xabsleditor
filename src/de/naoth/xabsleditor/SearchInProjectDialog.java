@@ -15,12 +15,15 @@
  */
 package de.naoth.xabsleditor;
 
+import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -40,6 +43,11 @@ public class SearchInProjectDialog extends javax.swing.JDialog
 
     initComponents();
     resultList.setModel(new DefaultListModel());
+    
+    // hide dialog when pressing ESC
+    this.getRootPane().registerKeyboardAction(e -> {
+        setVisible(false);
+    }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
   }
 
   /** This method is called from within the constructor to
@@ -155,7 +163,8 @@ public class SearchInProjectDialog extends javax.swing.JDialog
   private void openFile()
   {
     String path = (String) resultList.getModel().getElementAt(resultList.getSelectedIndex());
-    XEditorPanel p = parent.openFile(new File(path));
+    parent.getEditorPanel().openFile(new File(path));
+    EditorPanelTab p = parent.getEditorPanel().getActiveTab();
     if(p != null)
     {
       p.search(txtSearch.getText());

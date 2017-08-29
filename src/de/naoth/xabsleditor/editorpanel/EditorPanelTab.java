@@ -1,8 +1,10 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import java.awt.BorderLayout;
 import java.io.File;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -16,6 +18,7 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
 public class EditorPanelTab extends JPanel
 {
     private XEditorPanel editor;
+    private File agent;
     
     public EditorPanelTab(File f) {
         // init editor
@@ -55,14 +58,11 @@ public class EditorPanelTab extends JPanel
                 }
             }//end if
             if (file == null) {
-                // TODO:
-                /*
-                XEditorPanel editor1 = (XEditorPanel) tabbedPanelEditor.getSelectedComponent();
-                XABSLOptionContext.State state = editor1.getStateMap().get(element);
+                XABSLOptionContext.State state = editor.getStateMap().get(element);
                 if (state != null) {
-                    editor1.setCarretPosition(state.offset);
+                    editor.setCarretPosition(state.offset);
                     symbolWasFound = true;
-                }*/
+                }
             } //end if
             if (file != null) {
                 ((EditorPanel)(getParent().getParent())).openFile(file, position);
@@ -83,6 +83,14 @@ public class EditorPanelTab extends JPanel
         return editor.getFile();
     }
     
+    public void setAgent(File f) {
+        agent = f;
+    }
+    
+    public File getAgent() {
+        return agent;
+    }
+    
     public XABSLContext getXabslContext() {
         return editor.getXABSLContext();
     }
@@ -97,6 +105,10 @@ public class EditorPanelTab extends JPanel
     
     public SearchPanel getSearchPanel() {
         return editor.getSearchPanel();
+    }
+    
+    public void search(String s) {
+        editor.search(s);
     }
     
     public void setXABSLContext(XABSLContext c) {
@@ -142,5 +154,9 @@ public class EditorPanelTab extends JPanel
     
     public void setCarretPosition(int pos) {
         editor.setCarretPosition(pos);
+    }
+    
+    public void jumpToLine(int line) {
+        editor.jumpToLine(line);
     }
 }

@@ -4,14 +4,16 @@ import de.naoth.xabsleditor.FileDrop;
 import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.function.Consumer;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -24,7 +26,6 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
     private GraphPanel graph;
-    private final HashMap<String, EditorPanelTab> openFiles = new HashMap<>();
     private EditorPanelTab activeTab = null;
     
     private int tabSize = 2;
@@ -47,7 +48,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
-//            System.out.println(activeTab.getFile());
             graph.refreshGraph();
         });
         
@@ -167,29 +167,30 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public void openFile(File f) {
         // TODO
         if (f == null) {
-            // TODO: open new/empty tab
+            createDocumentTab(null, null, null);
         } else {
-            if (openFiles.containsKey(f.getAbsolutePath())) {
-                // file already open -> select tab
-                tabs.setSelectedComponent(openFiles.get(f.getAbsolutePath()));
-            } else {
-                File agentsFile = Tools.getAgentFileForOption(f);
-                XABSLContext newContext = null;
-
-                if (agentsFile != null) {
-                    // TODO
-//              file2Agent.put(selectedFile, agentsFile);
-                    newContext = loadXABSLContext(agentsFile.getParentFile(), null);
+            // find and select already opened file
+            for (EditorPanelTab tab : this) {
+                if(tab.getFile().equals(f)) {
+                    tabs.setSelectedComponent(tab);
+                    return;
                 }
-
-                createDocumentTab(f, newContext);
             }
+            // ... otherwise create new tab
+            File agentsFile = Tools.getAgentFileForOption(f);
+            XABSLContext newContext = null;
+
+            if (agentsFile != null) {
+                newContext = loadXABSLContext(agentsFile.getParentFile(), null);
+            }
+
+            createDocumentTab(f, newContext, agentsFile);
         }
     }
     
     public void openFile(File f, int position) {
         openFile(f);
-        openFiles.get(f.getAbsolutePath()).setCarretPosition(position);
+        activeTab.setCarretPosition(position);
     }
 
     private XABSLContext loadXABSLContext(File folder, XABSLContext context) {
@@ -226,11 +227,12 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return context;
     }//end loadXABSLContext
 
-    private EditorPanelTab createDocumentTab(File file, XABSLContext context) {
+    private EditorPanelTab createDocumentTab(File file, XABSLContext context, File agentsFile) {
         try {
             // create new document
             EditorPanelTab tab = new EditorPanelTab(file);
             tab.setXABSLContext(context);
+            tab.setAgent(agentsFile);
             tab.setTabSize(tabSize);
             tab.setCompletionProvider(createCompletitionProvider(context));
             if (file == null) {
@@ -314,15 +316,21 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }
     
-    public void closeAllTabs(boolean force) {
-        for (EditorPanelTab tab : this) {
+    public ArrayList<File> closeAllTabs(boolean force) {
+        ArrayList<File> closedFiles = new ArrayList<>();
+        for (Iterator<EditorPanelTab> it = this.iterator(); it.hasNext();) {
+            EditorPanelTab tab = it.next();
             if(tab.close(force) || force) {
+                if(tab.getFile() != null) {
+                    closedFiles.add(tab.getFile());
+                }
                 tabs.remove(tab);
             } else {
                 tabs.setSelectedComponent(tab);
                 break;
             }
         }
+        return closedFiles;
     }
     
     public void closeTabsExcept(EditorPanelTab t, boolean force) {
@@ -345,16 +353,27 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
 
     public void saveAs() {
-        // TODO
+        if(activeTab != null) {
+            File old = activeTab.getFile();
+            activeTab.setFile(null);
+            if(activeTab.save()) {
+                graph.refreshGraph();
+            } else {
+                activeTab.setFile(old);
+            }
+        }
     }
     
     public boolean hasOpenFiles() {
         return tabs.getTabCount() > 0;
     }
     
-    public File[] getOpenFiles() {
-        //TODO!
-        return null;
+    public ArrayList<File> getOpenFiles() {
+        ArrayList<File> files = new ArrayList<>();
+        for (EditorPanelTab tab : this) {
+            files.add(tab.getFile());
+        }
+        return files;
     }
     
     public File getActiveFile() {
@@ -369,8 +388,18 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return activeTab == null ? null : activeTab.getXabslContext();
     }
     
+    public File getActiveAgent() {
+        return activeTab == null ? null : activeTab.getAgent();
+    }
+    
     public void setActiveCompletionProvider(DefaultCompletionProvider completionProvider) {
-        
+        if(activeTab != null) {
+            activeTab.setCompletionProvider(completionProvider);
+        }
+    }
+    
+    public EditorPanelTab getActiveTab() {
+        return activeTab;
     }
     
     public void searchInActiveTab() {
@@ -393,30 +422,16 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
 
     @Override
     public Iterator<EditorPanelTab> iterator() {
-        Iterator<EditorPanelTab> it = new Iterator<EditorPanelTab>() {
-
-            private int currentIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return currentIndex < tabs.getTabCount() && tabs.getComponentAt(currentIndex) != null;
+        // get components
+        Component[] t = this.tabs.getComponents();
+        // filter for tabs
+        ArrayList<EditorPanelTab> it_tabs = new ArrayList<>();
+        for (int i = 0; i < t.length; i++) {
+            if(t[i] instanceof EditorPanelTab) {
+                it_tabs.add((EditorPanelTab) t[i]);
             }
-
-            @Override
-            public EditorPanelTab next() {
-                return (EditorPanelTab) tabs.getComponentAt(currentIndex++);
-            }
-
-            @Override
-            public void remove() {
-                tabs.remove(currentIndex);
-            }
-        };
-        return it;
-    }
-
-    @Override
-    public void forEach(Consumer<? super EditorPanelTab> action) {
-        Iterable.super.forEach(action); //To change body of generated methods, choose Tools | Templates.
+        }
+        // use arraylist-iterator
+        return it_tabs.iterator();
     }
 }

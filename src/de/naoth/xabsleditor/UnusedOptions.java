@@ -6,10 +6,13 @@ package de.naoth.xabsleditor;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.HashSet;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -33,6 +36,11 @@ public class UnusedOptions extends javax.swing.JDialog
     initComponents();
 
     update(context);
+    
+    // hide dialog when pressing ESC
+    this.getRootPane().registerKeyboardAction(e -> {
+        setVisible(false);
+    }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
   }
 
   private void update(XABSLContext context)
@@ -75,8 +83,8 @@ public class UnusedOptions extends javax.swing.JDialog
 
   private void openFile()
   {
-    String path = (String) lstUnused.getModel().getElementAt(lstUnused.getSelectedIndex());
-    parent.openFile(new File(path));
+      File f = (File) lstUnused.getModel().getElementAt(lstUnused.getSelectedIndex());
+    parent.getEditorPanel().openFile(f);
   }
   
   /**
