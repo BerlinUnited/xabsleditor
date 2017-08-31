@@ -39,6 +39,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -524,6 +525,12 @@ public class XEditorPanel extends javax.swing.JPanel
         }
         // ... otherwise we're wasn't able to save!!
         return false;
+    }
+
+    @Override
+    public void setTransferHandler(TransferHandler newHandler) {
+        super.setTransferHandler(newHandler);
+        textArea.setTransferHandler(newHandler);
     }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

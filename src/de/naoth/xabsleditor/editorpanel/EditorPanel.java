@@ -1,10 +1,8 @@
 package de.naoth.xabsleditor.editorpanel;
 
-import de.naoth.xabsleditor.FileDrop;
 import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
-import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
@@ -13,7 +11,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -36,15 +33,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
      */
     public EditorPanel() {
         initComponents();
-        // add file drop
-        new FileDrop(tabs, (File[] files) -> {
-            // open all the droppt files
-            for (File file : files) {
-                System.out.println(file.getAbsolutePath());
-                // TODO: check if xabsl file
-                openFile(file);
-            }
-        });
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
@@ -235,6 +223,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             tab.setAgent(agentsFile);
             tab.setTabSize(tabSize);
             tab.setCompletionProvider(createCompletitionProvider(context));
+            tab.setTransferHandler(getTransferHandler());
             if (file == null) {
                 tabs.addTab("New " + tabs.getTabCount(), null, tab, "New xabsl file");
             } else {
@@ -408,10 +397,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }
     
-    // TODO: search ?
-    // TODO: unused option ?
-    // TODO: file drop on whole app
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPopupMenu tabPopupMenu;
     private javax.swing.JMenuItem tabPopupMenu_Close;

@@ -4,10 +4,10 @@ import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import java.awt.BorderLayout;
 import java.io.File;
-import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.TransferHandler;
 import javax.swing.event.HyperlinkEvent;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
@@ -158,5 +158,11 @@ public class EditorPanelTab extends JPanel
     
     public void jumpToLine(int line) {
         editor.jumpToLine(line);
+    }
+
+    @Override
+    public void setTransferHandler(TransferHandler newHandler) {
+        super.setTransferHandler(newHandler);
+        editor.setTransferHandler(newHandler);
     }
 }

@@ -31,6 +31,9 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -57,6 +60,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
@@ -97,6 +101,51 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private final ImageIcon icon_xabsl_symbol =
       new ImageIcon(this.getClass().getResource("res/xabsl_symbols_file.png"));
   
+  public final String XABSL_FILE_ENDING = ".xabsl";
+  
+  public TransferHandler dropHandler = new TransferHandler() {
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport support) {
+            return support.isDrop() && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
+
+        @Override
+        public boolean importData(TransferHandler.TransferSupport support) {
+            if (!canImport(support)) {
+                return false;
+            }
+            
+            Transferable t = support.getTransferable();
+
+            try {
+                ArrayList<String> notaXabslFile = new ArrayList<>();
+                java.util.List<File> l = (java.util.List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
+                // iterate through dropped files and open them - if their xabsl files
+                l.forEach((f) -> {
+                    if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
+                        getEditorPanel().openFile(f);
+                        updateProjectDirectoryMenu();
+                    } else {
+                        notaXabslFile.add(f.getAbsolutePath());
+                    }
+                });
+                // check if a file couldn't be opened
+                if(!notaXabslFile.isEmpty()) {
+                    JOptionPane.showMessageDialog(rootPane,
+                              "The File(s):\n" + notaXabslFile.stream().collect(Collectors.joining(",\n")) + "\naren't XABSL-files.", "Error",
+                              JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (UnsupportedFlavorException e) {
+                System.out.println(e);
+                return false;
+            } catch (IOException e) {
+                System.out.println(e);
+                return false;
+            }
+
+            return true;
+        }
+    };
 
   /** Creates new form Main */
   public Main(String file)
@@ -113,6 +162,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
     }
+    
+    // add file drop
+    setTransferHandler(dropHandler);
 
     initComponents();
 
@@ -285,8 +337,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   {
     if(miParent == null || folder == null || context == null)
         return;
-
-    final String XABSL_FILE_ENDING = ".xabsl";
 
     File[] fileList = folder.listFiles();
     for (final File file : fileList)
