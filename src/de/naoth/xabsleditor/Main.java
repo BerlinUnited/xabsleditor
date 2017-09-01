@@ -541,7 +541,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
     // set tab size from configuration
     editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
-    // TODO: if tab-size changes, update in the editorpanel! (property/bean?!?)
     
     // set, if the tab close button should be shown or not
     editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));

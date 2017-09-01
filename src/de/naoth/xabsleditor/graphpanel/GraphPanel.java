@@ -67,14 +67,12 @@ public class GraphPanel extends javax.swing.JPanel
     }// </editor-fold>//GEN-END:initComponents
 
     private void initAgentTab(XabslGraphMouseListener mouseListener) {
-        // TODO        
         agentVisualizer = new AgentVisualizer();    
         agentVisualizer.setGraphMouseListener(mouseListener);
         panelAgent.add(agentVisualizer, BorderLayout.CENTER);
     }
     
     private void initOptionTab(XabslGraphMouseListener mouseListener) {
-        // TODO
         optionVisualizer = new OptionVisualizer();
         optionVisualizer.setGraphMouseListener(mouseListener);
         panelOption.add(optionVisualizer, BorderLayout.CENTER);
@@ -99,17 +97,14 @@ public class GraphPanel extends javax.swing.JPanel
     }
     
     public void updateAgentContext(XABSLContext context, String selectedNodeName) {
-        // TODO
         agentVisualizer.setContext(context, selectedNodeName);
     }
     
     public void updateOptionGraph(Graph<XabslNode, XabslEdge> g) {
-        // TODO
         optionVisualizer.setGraph(g);
     }
     
     public void updateCompilerResult(CompileResult result) {
-        // TODO
         panelCompiler.setCompilerResult(result);
     }
     
@@ -144,26 +139,22 @@ public class GraphPanel extends javax.swing.JPanel
     {
         @Override
         public void graphClicked(XabslNode v, MouseEvent me) {
-            System.out.println("Open file and/or jump to position");
-            /*
-            XEditorPanel editor = ((XEditorPanel) tabbedPanelEditor.getSelectedComponent());
-            if (editor != null && v.getType() == XabslNode.Type.State && v.getPosInText() > -1) {
-                editor.setCarretPosition(v.getPosInText());
+            if (editor.hasOpenFiles() && v.getType() == XabslNode.Type.State && v.getPosInText() > -1) {
+                editor.getActiveTab().setCarretPosition(v.getPosInText());
             } else if (v.getType() == XabslNode.Type.Option) {
                 String option = v.getName();
                 File file = null;
-                if (editor.getXABSLContext() != null) {
-                    file = editor.getXABSLContext().getOptionPathMap().get(option);
+                if (editor.getActiveXABSLContext() != null) {
+                    file = editor.getActiveXABSLContext().getOptionPathMap().get(option);
                 }
 
                 if (file != null) {
-                    openFile(file);
+                    editor.openFile(file);
                 } else {
                     JOptionPane.showMessageDialog(null, "Could not find the file for option "
                             + option, "Option not found", JOptionPane.WARNING_MESSAGE);
                 }
             }
-            */
         }
 
         @Override

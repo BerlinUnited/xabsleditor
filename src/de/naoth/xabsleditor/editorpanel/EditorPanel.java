@@ -135,8 +135,10 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public void setTabSize(int size) {
-        // TODO: on change, update all editors
         tabSize = size;
+        for (EditorPanelTab tab : this) {
+            tab.setTabSize(size);
+        }
     }
     
     public int getTabSize() {
@@ -144,8 +146,13 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public void setShowCloseButtons(boolean b) {
-        // TODO: if change, update UI?!
         showCloseButtons = b;
+        for (EditorPanelTab tab : this) {
+            Component cbtn = tabs.getTabComponentAt(tabs.indexOfComponent(tab));
+            if(cbtn instanceof ButtonTabComponent) {
+                ((ButtonTabComponent)cbtn).setVisible(b);
+            }
+        }
     }
     
     public boolean getShowCloseButtons() {
@@ -153,7 +160,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public void openFile(File f) {
-        // TODO
         if (f == null) {
             createDocumentTab(null, null, null);
         } else {

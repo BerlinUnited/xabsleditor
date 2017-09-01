@@ -16,7 +16,7 @@ import java.awt.event.*;
  */
 public class ButtonTabComponent extends JPanel {
     private final JTabbedPane pane;
-    private final boolean showCloseBtn;
+    private final JButton button;
  
     public ButtonTabComponent(final JTabbedPane pane, boolean showBtn) {
         //unset default FlowLayout' gaps
@@ -25,7 +25,6 @@ public class ButtonTabComponent extends JPanel {
             throw new NullPointerException("TabbedPane is null");
         }
         this.pane = pane;
-        this.showCloseBtn = showBtn;
         setOpaque(false);
          
         //make JLabel read titles from JTabbedPane
@@ -40,13 +39,14 @@ public class ButtonTabComponent extends JPanel {
         };
          
         add(label);
-        if(this.showCloseBtn) {
-            //add more space between the label and the button
-            label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-            //tab button
-            JButton button = new TabButton();
-            add(button);
-        }
+        
+        //add more space between the label and the button
+        label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        //tab button
+        button = new TabButton();
+        button.setVisible(showBtn);
+        add(button);
+        
         //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     }
@@ -122,4 +122,10 @@ public class ButtonTabComponent extends JPanel {
             }
         }
     };
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        button.setVisible(aFlag);
+        button.revalidate();
+    }
 }
