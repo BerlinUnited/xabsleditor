@@ -2,11 +2,14 @@ package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
+import de.naoth.xabsleditor.utils.FileWatcherListener;
 import java.awt.BorderLayout;
 import java.io.File;
+import java.nio.file.WatchEvent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.HyperlinkEvent;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -15,10 +18,12 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
  *
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
-public class EditorPanelTab extends JPanel
+public class EditorPanelTab extends JPanel implements FileWatcherListener
 {
     private XEditorPanel editor;
     private File agent;
+    private boolean externalChange = false;
+    private boolean saving = false;
     
     public EditorPanelTab(File f) {
         // init editor
@@ -27,15 +32,24 @@ public class EditorPanelTab extends JPanel
         } else {
             editor = new XEditorPanel();
         }
+        editor.setCarretPosition(0);
         // setup ui
         setLayout(new BorderLayout());
         add(editor, BorderLayout.CENTER);
         // change tab title to indicate the modified content
         editor.addDocumentChangedListener((XEditorPanel document) -> {
-            if (document.isChanged()) {
-                JTabbedPane p = (JTabbedPane)getParent();
+            JTabbedPane p = (JTabbedPane)getParent();
+            if(p != null) {
                 int idx = p.indexOfComponent(this);
-                p.setTitleAt(idx, p.getTitleAt(idx) + " *");
+                String title = p.getTitleAt(idx);
+                String suffix = " *";
+                if (document.isChanged() && !title.endsWith(suffix)) {
+                    p.setTitleAt(idx, title + suffix);
+                    p.getTabComponentAt(idx).revalidate();
+                } else if(!document.isChanged() && title.endsWith(suffix)) {
+                    p.setTitleAt(idx, p.getTitleAt(idx).substring(0, title.length()-2));
+                    p.getTabComponentAt(idx).revalidate();
+                }
             }
         });
         
@@ -100,6 +114,7 @@ public class EditorPanelTab extends JPanel
     }
     
     public boolean save() {
+        saving = true;
         return editor.save();
     }
     
@@ -164,5 +179,67 @@ public class EditorPanelTab extends JPanel
     public void setTransferHandler(TransferHandler newHandler) {
         super.setTransferHandler(newHandler);
         editor.setTransferHandler(newHandler);
+    }
+    
+    private boolean isSelected() {
+        return ((JTabbedPane)getParent()).getSelectedComponent().equals(this);
+    }
+
+    @Override
+    public void xabslFileChanged(File toFile, WatchEvent.Kind kind) {
+        // if we already had an external-change-notification, it doesn't need to be notified again
+        synchronized(this) {
+            if(!externalChange) {
+                if(saving) {
+                    saving = false;
+                    return;
+                }
+                externalChange = true;
+                editor.setChanged(true);
+                if(isSelected()) { externalChangeDialog(); }
+            }
+        }
+    }
+    
+    public void resetExternalChangeFlag() {
+        externalChange = false;
+    }
+    
+    public void select() {
+        externalChangeDialog();
+    }
+    
+    private void externalChangeDialog() {
+        // show dialog only if there were external changes
+        if(externalChange) {
+            // run in seperate thread
+            // this has an advantage, that following external modification doesn't trigger additional dialogs
+            // (before the first one isn't closed)
+            SwingUtilities.invokeLater(() -> {
+                int caret = editor.getCarretPosition();
+                int result;
+                if (getFile().exists()) {
+                    result = JOptionPane.showConfirmDialog(getParent(),
+                            "The file " + getFile().getName() + " was modified externally. Reload?\nAll (other) changes are lost!",
+                            "External modification", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
+                        editor.loadFromFile(getFile());
+                        editor.setChanged(false);
+                    }
+                } else {
+                    result = JOptionPane.showConfirmDialog(getParent(),
+                            "The file " + getFile().getName() + " was removed. Close tab?\nAll (other) changes are lost!",
+                            "External deletion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
+                        editor.setChanged(false);
+                        ((JTabbedPane) getParent()).setSelectedComponent(this);
+                        ((EditorPanel) (getParent().getParent())).closeActiveTab(true);
+                    }
+                }
+
+                resetExternalChangeFlag();
+                editor.setCarretPosition(caret);
+            });
+        }
     }
 }

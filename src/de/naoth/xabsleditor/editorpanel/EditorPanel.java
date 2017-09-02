@@ -4,7 +4,12 @@ import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
+import de.naoth.xabsleditor.utils.FileWatcher;
 import java.awt.Component;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -23,6 +28,7 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
     private GraphPanel graph;
+    private FileWatcher watcher;
     private EditorPanelTab activeTab = null;
     
     private int tabSize = 2;
@@ -36,7 +42,26 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
+            if(activeTab != null) {
+                activeTab.select();
+            }
             graph.refreshGraph();
+        });
+        // add/remove file watch listener
+        tabs.addContainerListener(new ContainerListener() {
+            @Override
+            public void componentAdded(ContainerEvent e) {
+                if(watcher != null && e.getChild() instanceof EditorPanelTab) {
+                    watcher.addListener((EditorPanelTab)e.getChild());
+                }
+            }
+
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                if(watcher != null && e.getChild() instanceof EditorPanelTab) {
+                    watcher.removeListener((EditorPanelTab)e.getChild());
+                }
+            }
         });
         
         // add right-click-behavior of the tabs
@@ -400,6 +425,23 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public void searchInActiveTab() {
         if(activeTab != null) {
             activeTab.getSearchPanel().setVisible(true);
+        }
+    }
+    
+    public void setFileWatcher(FileWatcher w) {
+        // remove filelisteners from old watcher
+        if(watcher != null) {
+            for (EditorPanelTab tab : this) {
+                watcher.removeListener(tab);
+            }
+        }
+        // it's possible that we get a "null" watcher
+        if(w != null) {
+            // add opened files to new watcher
+            watcher = w;
+            for (EditorPanelTab tab : this) {
+                watcher.addListener(tab);
+            }
         }
     }
     

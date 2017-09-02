@@ -291,6 +291,10 @@ public class XEditorPanel extends javax.swing.JPanel
 
     this.textArea.revalidate();
   }//end setCarretPosition
+  
+  public int getCarretPosition() {
+      return this.textArea.getCaretPosition();
+  }
 
   public void jumpToLine(int line)
   {

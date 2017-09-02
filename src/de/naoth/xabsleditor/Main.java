@@ -24,6 +24,7 @@ import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.utils.DotFileFilter;
+import de.naoth.xabsleditor.utils.FileWatcher;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import java.awt.Color;
 import java.awt.Component;
@@ -146,6 +147,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             return true;
         }
     };
+  
+  private FileWatcher watcher = null;
 
   /** Creates new form Main */
   public Main(String file)
@@ -165,12 +168,21 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
     // add file drop
     setTransferHandler(dropHandler);
+    
+    // start the file watcher service
+    try {
+        watcher = new FileWatcher();
+        watcher.start();
+    } catch (IOException ex) {
+        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+    }
 
     initComponents();
 
     graphPanel.addJumpListener(this);
     graphPanel.setEditor(editorPanel);
     editorPanel.setGraph(graphPanel);
+    editorPanel.setFileWatcher(watcher);
     
     addWindowListener(new ShutdownHook());
 
@@ -1233,6 +1245,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         configuration.setProperty("dividerPostionTwo", String.valueOf(jSplitPane.getDividerLocation()));
         
         saveConfiguration();
+        
+        if(watcher != null) {
+            try {
+                watcher.running.set(false);
+                watcher.interrupt();
+                watcher.join();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
 
         System.exit(0);
       }
