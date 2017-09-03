@@ -2,6 +2,7 @@ package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
+import de.naoth.xabsleditor.utils.FileWatcher;
 import de.naoth.xabsleditor.utils.FileWatcherListener;
 import java.awt.BorderLayout;
 import java.io.File;
@@ -22,8 +23,8 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
 {
     private XEditorPanel editor;
     private File agent;
+    FileWatcher watcher;
     private boolean externalChange = false;
-    private boolean saving = false;
     
     public EditorPanelTab(File f) {
         // init editor
@@ -90,11 +91,31 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
     }
     
     public void setFile(File f) {
+        fileWatcherUnregister();
         editor.setFile(f);
+        fileWatcherRegister();
     }
     
     public File getFile() {
         return editor.getFile();
+    }
+    
+    public void setFileWatcher(FileWatcher w) {
+        fileWatcherUnregister();
+        watcher = w;
+        fileWatcherRegister();
+    }
+    
+    private void fileWatcherRegister() {
+        if(watcher != null && getFile() != null) {
+            watcher.addListener(this);
+        }
+    }
+    
+    private void fileWatcherUnregister() {
+        if(watcher != null && getFile() != null) {
+            watcher.removeListener(this);
+        }
     }
     
     public void setAgent(File f) {
@@ -114,8 +135,12 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
     }
     
     public boolean save() {
-        saving = true;
-        return editor.save();
+        // unregister filewatcher - the file could be saved with a new name!
+        fileWatcherUnregister();
+        boolean result = editor.save();
+        // register filewatcher with the "new" name
+        fileWatcherRegister();
+        return result;
     }
     
     public SearchPanel getSearchPanel() {
@@ -190,10 +215,6 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
         // if we already had an external-change-notification, it doesn't need to be notified again
         synchronized(this) {
             if(!externalChange) {
-                if(saving) {
-                    saving = false;
-                    return;
-                }
                 externalChange = true;
                 editor.setChanged(true);
                 if(isSelected()) { externalChangeDialog(); }

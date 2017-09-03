@@ -129,7 +129,7 @@ public class FileWatcher extends Thread
         return (WatchEvent<T>)event;
     }
     
-    public void addListener(FileWatcherListener l) {
+    public synchronized void addListener(FileWatcherListener l) {
         // add the file listener itself
         if(!this.listener.containsKey(l.getFile())) {
             this.listener.put(l.getFile(), new Entry(l.getFile().lastModified()));
@@ -143,7 +143,7 @@ public class FileWatcher extends Thread
         }
     }
     
-    public void removeListener(FileWatcherListener l) {
+    public synchronized void removeListener(FileWatcherListener l) {
         if(this.listener.containsKey(l.getFile())) {
             this.listener.get(l.getFile()).remove(l);
         }

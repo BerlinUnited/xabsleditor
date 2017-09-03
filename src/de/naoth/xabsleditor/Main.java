@@ -476,15 +476,14 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // get all opened agents
     //TreeSet<File> foundAgents = new TreeSet<File>();
     for (EditorPanelTab tab : editorPanel) {
-      File agentFile = tab.getAgent();
-      if (agentFile != null && !foundAgents.contains(agentFile))
+      final File agentFile = tab.getAgent();
+      final XABSLContext context = tab.getXabslContext();
+      if (agentFile != null && !foundAgents.contains(agentFile) && context !=null)
       {
         JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        final XABSLContext context = tab.getXabslContext();
 
         addFilesToMenu(miAgent, agentFile.getParentFile(), context);
         mProject.add(miAgent);
-        
         
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(agentFile.getParentFile().getName() + "/" + agentFile.getName());
         addFilesToTree(root, agentFile.getParentFile(), context);

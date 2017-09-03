@@ -6,10 +6,6 @@ import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.FileWatcher;
 import java.awt.Component;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -47,23 +43,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             }
             graph.refreshGraph();
         });
-        // add/remove file watch listener
-        tabs.addContainerListener(new ContainerListener() {
-            @Override
-            public void componentAdded(ContainerEvent e) {
-                if(watcher != null && e.getChild() instanceof EditorPanelTab) {
-                    watcher.addListener((EditorPanelTab)e.getChild());
-                }
-            }
 
-            @Override
-            public void componentRemoved(ContainerEvent e) {
-                if(watcher != null && e.getChild() instanceof EditorPanelTab) {
-                    watcher.removeListener((EditorPanelTab)e.getChild());
-                }
-            }
-        });
-        
         // add right-click-behavior of the tabs
         tabs.addMouseListener(new MouseListener() {
             @Override
@@ -255,6 +235,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             tab.setTabSize(tabSize);
             tab.setCompletionProvider(createCompletitionProvider(context));
             tab.setTransferHandler(getTransferHandler());
+            tab.setFileWatcher(watcher);
             if (file == null) {
                 tabs.addTab("New " + tabs.getTabCount(), null, tab, "New xabsl file");
             } else {
@@ -429,19 +410,9 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public void setFileWatcher(FileWatcher w) {
-        // remove filelisteners from old watcher
-        if(watcher != null) {
-            for (EditorPanelTab tab : this) {
-                watcher.removeListener(tab);
-            }
-        }
-        // it's possible that we get a "null" watcher
-        if(w != null) {
-            // add opened files to new watcher
-            watcher = w;
-            for (EditorPanelTab tab : this) {
-                watcher.addListener(tab);
-            }
+        watcher = w;
+        for (EditorPanelTab tab : this) {
+            tab.setFileWatcher(w);
         }
     }
     
