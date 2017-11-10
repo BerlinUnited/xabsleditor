@@ -43,8 +43,10 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.undo.UndoManager;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CCompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -78,6 +80,7 @@ public class XEditorPanel extends javax.swing.JPanel
     initComponents();
     InitTextArea(null);
     changed = false;
+    resetUndos();
   }
 
   public XEditorPanel(String str)
@@ -85,6 +88,7 @@ public class XEditorPanel extends javax.swing.JPanel
     initComponents();
     InitTextArea(str);
     changed = false;
+    resetUndos();
   }
 
   // create new panel and read text from file
@@ -97,6 +101,7 @@ public class XEditorPanel extends javax.swing.JPanel
     loadFromFile(file);
     setFile(file);
     changed = false;
+    resetUndos();
   }
 
   private void InitTextArea(String str)
@@ -192,6 +197,17 @@ public class XEditorPanel extends javax.swing.JPanel
 
     searchPanel.setVisible(false);
   }//end InitTextArea
+  
+  private void resetUndos() {
+    if(textArea.getDocument() instanceof RSyntaxDocument) {
+        UndoableEditListener[] mgr = ((RSyntaxDocument)textArea.getDocument()).getUndoableEditListeners();
+        for (UndoableEditListener undoers : mgr) {
+            if(undoers instanceof UndoManager) {
+                ((UndoManager)undoers).discardAllEdits();
+            }
+        }
+    }
+  }
 
   /** This method is called from within the constructor to
    * initialize the form.
