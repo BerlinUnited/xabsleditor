@@ -32,9 +32,6 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -61,7 +58,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
-import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
@@ -104,50 +100,25 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   
   public final String XABSL_FILE_ENDING = ".xabsl";
   
-  public TransferHandler dropHandler = new TransferHandler() {
-        @Override
-        public boolean canImport(TransferHandler.TransferSupport support) {
-            return support.isDrop() && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
-        }
-
-        @Override
-        public boolean importData(TransferHandler.TransferSupport support) {
-            if (!canImport(support)) {
-                return false;
+    public FileDrop.Listener dropHandler = (File[] files) -> {
+        ArrayList<String> notaXabslFile = new ArrayList<>();
+        // iterate through dropped files and open them - if their xabsl files
+        for (File f : files) {
+            if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
+                getEditorPanel().openFile(f);
+                updateProjectDirectoryMenu();
+            } else {
+                notaXabslFile.add(f.getAbsolutePath());
             }
-            
-            Transferable t = support.getTransferable();
-
-            try {
-                ArrayList<String> notaXabslFile = new ArrayList<>();
-                java.util.List<File> l = (java.util.List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
-                // iterate through dropped files and open them - if their xabsl files
-                l.forEach((f) -> {
-                    if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
-                        getEditorPanel().openFile(f);
-                        updateProjectDirectoryMenu();
-                    } else {
-                        notaXabslFile.add(f.getAbsolutePath());
-                    }
-                });
-                // check if a file couldn't be opened
-                if(!notaXabslFile.isEmpty()) {
-                    JOptionPane.showMessageDialog(rootPane,
-                              "The File(s):\n" + notaXabslFile.stream().collect(Collectors.joining(",\n")) + "\naren't XABSL-files.", "Error",
-                              JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (UnsupportedFlavorException e) {
-                System.out.println(e);
-                return false;
-            } catch (IOException e) {
-                System.out.println(e);
-                return false;
-            }
-
-            return true;
         }
-    };
-  
+        // check if a file couldn't be opened
+        if (!notaXabslFile.isEmpty()) {
+            JOptionPane.showMessageDialog(rootPane,
+                    "The File(s):\n" + notaXabslFile.stream().collect(Collectors.joining(",\n")) + "\naren't XABSL-files.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+  };
+
   private FileWatcher watcher = null;
 
   /** Creates new form Main */
@@ -167,7 +138,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     }
     
     // add file drop
-    setTransferHandler(dropHandler);
+    new FileDrop(this, dropHandler);
     
     // start the file watcher service
     try {
@@ -692,7 +663,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
                 jSplitPanePropertyChange(evt);
             }
         });
+
+        editorPanel.setFocusCycleRoot(true);
         jSplitPane.setLeftComponent(editorPanel);
+
+        graphPanel.setFocusCycleRoot(true);
         jSplitPane.setRightComponent(graphPanel);
 
         jSplitPaneMain.setRightComponent(jSplitPane);

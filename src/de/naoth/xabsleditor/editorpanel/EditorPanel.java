@@ -1,11 +1,14 @@
 package de.naoth.xabsleditor.editorpanel;
 
+import de.naoth.xabsleditor.FileDrop;
+import de.naoth.xabsleditor.Main;
 import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.FileWatcher;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -234,14 +237,20 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             tab.setAgent(agentsFile);
             tab.setTabSize(tabSize);
             tab.setCompletionProvider(createCompletitionProvider(context));
-            tab.setTransferHandler(getTransferHandler());
             tab.setFileWatcher(watcher);
             if (file == null) {
                 tabs.addTab("New " + tabs.getTabCount(), null, tab, "New xabsl file");
             } else {
                 tabs.addTab(file.getName(), null, tab, file.getAbsolutePath());
             }
-
+            
+            // install file drop on this tab
+            Container frame = getTopLevelAncestor();
+            if(frame != null && frame instanceof Main) {
+                // don't show any "special" component border
+                new FileDrop(tab, tab.getBorder(), true, ((Main)frame).dropHandler);
+            }
+            
             // NOTE: 'cause we're adding the close button, the tabpane has the double amount of components than tabs.
             //        To get the correct tab count, use "getTabCount()"!
             // adds the close button" to the tab

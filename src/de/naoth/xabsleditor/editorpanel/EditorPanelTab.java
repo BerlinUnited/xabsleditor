@@ -11,7 +11,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import javax.swing.event.HyperlinkEvent;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
@@ -200,12 +199,6 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
         editor.jumpToLine(line);
     }
 
-    @Override
-    public void setTransferHandler(TransferHandler newHandler) {
-        super.setTransferHandler(newHandler);
-        editor.setTransferHandler(newHandler);
-    }
-    
     private boolean isSelected() {
         return ((JTabbedPane)getParent()).getSelectedComponent().equals(this);
     }
