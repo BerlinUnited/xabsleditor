@@ -209,7 +209,6 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
         synchronized(this) {
             if(!externalChange) {
                 externalChange = true;
-                editor.setChanged(true);
                 if(isSelected()) { externalChangeDialog(); }
             }
         }
@@ -236,18 +235,18 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
                     result = JOptionPane.showConfirmDialog(getParent(),
                             "The file " + getFile().getName() + " was modified externally. Reload?\nAll (other) changes are lost!",
                             "External modification", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                    if (result == JOptionPane.YES_OPTION) {
-                        editor.loadFromFile(getFile());
-                        editor.setChanged(false);
-                    }
+                    // reload file if requested
+                    editor.reloadFromFile(result == JOptionPane.YES_OPTION);
                 } else {
                     result = JOptionPane.showConfirmDialog(getParent(),
                             "The file " + getFile().getName() + " was removed. Close tab?\nAll (other) changes are lost!",
                             "External deletion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (result == JOptionPane.YES_OPTION) {
-                        editor.setChanged(false);
+                        editor.renewHashCode();
                         ((JTabbedPane) getParent()).setSelectedComponent(this);
                         ((EditorPanel) (getParent().getParent())).closeActiveTab(true);
+                    } else {
+                        editor.renewHashCode("");
                     }
                 }
 

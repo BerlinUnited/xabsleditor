@@ -26,11 +26,10 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.JFileChooser;
@@ -39,7 +38,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
@@ -70,38 +68,31 @@ public class XEditorPanel extends javax.swing.JPanel
 
   private File file;
   private XABSLContext context;
-  private boolean changed;
+  private int hashCode;
   private int searchOffset;
   private String lastSearch;
 
   /** Creates new form XEditorPanel */
   public XEditorPanel()
   {
-    initComponents();
-    InitTextArea(null);
-    changed = false;
-    resetUndos();
+      this((String)null);
   }
 
+  /** Create new panel and read text from file */
+  public XEditorPanel(File file)
+  {
+    this(loadFromFile(file));
+    setFile(file);
+    
+  }
+
+  /** Create new panel and with the given text */
   public XEditorPanel(String str)
   {
     initComponents();
     InitTextArea(str);
-    changed = false;
     resetUndos();
-  }
-
-  // create new panel and read text from file
-  public XEditorPanel(File file)
-  {
-    initComponents();
-    InitTextArea(null);
-
-
-    loadFromFile(file);
-    setFile(file);
-    changed = false;
-    resetUndos();
+    hashCode = textArea.getText().hashCode();
   }
 
   private void InitTextArea(String str)
@@ -176,19 +167,19 @@ public class XEditorPanel extends javax.swing.JPanel
       @Override
       public void insertUpdate(DocumentEvent e)
       {
-        setChanged(true);
+        fireDocumentChangedEvent();
       }
 
       @Override
       public void removeUpdate(DocumentEvent e)
       {
-        setChanged(true);
+        fireDocumentChangedEvent();
       }
 
       @Override
       public void changedUpdate(DocumentEvent e)
       {
-        setChanged(true);
+        fireDocumentChangedEvent();
       }
     });
 
@@ -241,18 +232,8 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public boolean isChanged()
   {
-    return changed;
+    return hashCode != textArea.getText().hashCode();
   }
-
-  public void setChanged(boolean changed)
-  {
-    if(changed == this.changed)
-    {
-      return;
-    }
-    this.changed = changed;
-    fireDocumentChangedEvent();
-  }//end setChanged
 
   public File getFile()
   {
@@ -322,20 +303,42 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end jumpToLine
 
-  public void loadFromFile(File file)
-  {
-    try
-    {
-      BufferedReader r = new BufferedReader(new FileReader(file));
-      textArea.read(r, null);
-      r.close();
+    private static String loadFromFile(File file) {
+        try {
+            return new String(Files.readAllBytes(file.toPath()));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            JOptionPane.showMessageDialog(null, ioe.toString(), "Can't load file", JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }//end loadFromFile
+
+    public void reloadFromFile() {
+        reloadFromFile(true);
     }
-    catch(IOException ioe)
-    {
-      ioe.printStackTrace();
-      UIManager.getLookAndFeel().provideErrorFeedback(textArea);
+    
+    public void reloadFromFile(boolean updateTextArea) {
+        if (this.file != null && this.file.exists()) {
+            
+            String content = loadFromFile(file);
+            if(updateTextArea) {
+                textArea.setText(content);
+            }
+            renewHashCode(content);
+        }
     }
-  }//end loadFromFile
+    public void renewHashCode() {
+        renewHashCode(null);
+    }
+    
+    public void renewHashCode(String content) {
+        if(content == null) {
+            hashCode = textArea.getText().hashCode();
+        } else {
+            hashCode = content.hashCode();
+        }
+        fireDocumentChangedEvent();
+    }
 
   public void addHyperlinkListener(HyperlinkListener listener)
   {
@@ -525,7 +528,7 @@ public class XEditorPanel extends javax.swing.JPanel
                 FileWriter writer = new FileWriter(this.file);
                 writer.write(this.getText());
                 writer.close();
-                this.setChanged(false);
+                renewHashCode();
 
                 // change UI (title, tooltip) of tab
                 if(this.getParent() instanceof JTabbedPane) {
