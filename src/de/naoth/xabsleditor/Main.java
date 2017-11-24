@@ -59,6 +59,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
@@ -258,6 +259,12 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             if(e.getClickCount() == 2) {
                 TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
                 openFileFromTree(selPath);
+            } else if (SwingUtilities.isRightMouseButton(e)) {
+                TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
+                if(selPath != null && !fileTree.getModel().isLeaf(selPath.getLastPathComponent())) {
+                    fileTree.setSelectionPath(selPath);
+                    fileTreePopup.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
     });
@@ -569,6 +576,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fileTreePopup = new javax.swing.JPopupMenu();
+        fileTreePopupRefresh = new javax.swing.JMenuItem();
+        fileTreePopupNewFile = new javax.swing.JMenuItem();
         toolbarMain = new javax.swing.JToolBar();
         btNew = new javax.swing.JButton();
         btOpen = new javax.swing.JButton();
@@ -605,6 +615,26 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mHelp = new javax.swing.JMenu();
         miHelp = new javax.swing.JMenuItem();
         miInfo = new javax.swing.JMenuItem();
+
+        fileTreePopupRefresh.setMnemonic('R');
+        fileTreePopupRefresh.setText("Refresh (F5)");
+        fileTreePopupRefresh.setToolTipText("Reloads the project file tree.");
+        fileTreePopupRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileTreePopupRefreshActionPerformed(evt);
+            }
+        });
+        fileTreePopup.add(fileTreePopupRefresh);
+
+        fileTreePopupNewFile.setMnemonic('N');
+        fileTreePopupNewFile.setText("New File");
+        fileTreePopupNewFile.setToolTipText("Add a new xabsl file");
+        fileTreePopupNewFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileTreePopupNewFileActionPerformed(evt);
+            }
+        });
+        fileTreePopup.add(fileTreePopupNewFile);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("XabslEditor");
@@ -1078,6 +1108,31 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
     }//GEN-LAST:event_fileTreeKeyReleased
 
+    private void fileTreePopupRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupRefreshActionPerformed
+        updateProjectDirectoryMenu();
+    }//GEN-LAST:event_fileTreePopupRefreshActionPerformed
+
+    private void fileTreePopupNewFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupNewFileActionPerformed
+        // reset filechooser config
+        fileChooser.setCurrentDirectory(new File(fileTree.getSelectionPath().getLastPathComponent().toString()));
+        fileChooser.resetChoosableFileFilters();
+        fileChooser.setSelectedFile(new File(""));
+        fileChooser.setFileFilter(xabslFilter);
+        // show save dialog
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
+            if(f != null) {
+                try {
+                    f.createNewFile();
+                } catch (IOException ex) {}
+                editorPanel.openFile(f);
+                editorPanel.getActiveTab().setFile(f);
+            } else {
+                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_fileTreePopupNewFileActionPerformed
+
 
   /**
    * @param args the command line arguments
@@ -1132,6 +1187,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JButton btSave;
     private de.naoth.xabsleditor.editorpanel.EditorPanel editorPanel;
     private javax.swing.JTree fileTree;
+    private javax.swing.JPopupMenu fileTreePopup;
+    private javax.swing.JMenuItem fileTreePopupNewFile;
+    private javax.swing.JMenuItem fileTreePopupRefresh;
     private de.naoth.xabsleditor.graphpanel.GraphPanel graphPanel;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPaneFileTree;

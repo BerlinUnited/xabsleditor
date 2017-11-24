@@ -2,6 +2,34 @@
 
 <Form version="1.7" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
+    <Container class="javax.swing.JPopupMenu" name="fileTreePopup">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="fileTreePopupRefresh">
+          <Properties>
+            <Property name="mnemonic" type="int" value="82"/>
+            <Property name="text" type="java.lang.String" value="Refresh (F5)"/>
+            <Property name="toolTipText" type="java.lang.String" value="Reloads the project file tree."/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileTreePopupRefreshActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="fileTreePopupNewFile">
+          <Properties>
+            <Property name="mnemonic" type="int" value="78"/>
+            <Property name="text" type="java.lang.String" value="New File"/>
+            <Property name="toolTipText" type="java.lang.String" value="Add a new xabsl file"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileTreePopupNewFileActionPerformed"/>
+          </Events>
+        </MenuItem>
+      </SubComponents>
+    </Container>
     <Menu class="javax.swing.JMenuBar" name="mbMain">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="mFile">
