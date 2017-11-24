@@ -1073,6 +1073,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private void fileTreeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileTreeKeyReleased
         if(evt.getKeyCode() == KeyEvent.VK_ENTER) {
             openFileFromTree(fileTree.getSelectionPath());
+        } else if(evt.getKeyCode() == KeyEvent.VK_F5) {
+            updateProjectDirectoryMenu();
         }
     }//GEN-LAST:event_fileTreeKeyReleased
 
