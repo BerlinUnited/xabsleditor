@@ -45,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -66,6 +67,7 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
@@ -247,6 +249,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             Component c = super.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
             c.setForeground(Color.BLACK);
             return c;
+        }
+    });
+    // add mouse listener for selecting element in tree
+    fileTree.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2) {
+                TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
+                openFileFromTree(selPath);
+            }
         }
     });
   }//end Main
@@ -439,6 +451,22 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   /** Reconstruct the Projects menu entry */
   TreeSet<File> foundAgents = new TreeSet<File>();
+
+  private void nodeExpander(TreeNode node, String val) {
+      // we're only expanding nodes
+      if(!node.isLeaf()) {
+          // matching?
+          if(node.toString().equals(val)) {
+              fileTree.expandPath(new TreePath(((DefaultMutableTreeNode)node).getPath()));
+          }
+          // iterate through childs
+          Enumeration childs = node.children();
+          while(childs.hasMoreElements()) {
+              nodeExpander((TreeNode)childs.nextElement(), val);
+          }
+      }
+  }
+
   private void updateProjectDirectoryMenu()
   {
     mProject.removeAll();
@@ -455,19 +483,22 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
         addFilesToMenu(miAgent, agentFile.getParentFile(), context);
         mProject.add(miAgent);
-        
+
+        // get expanded nodes
+        Enumeration<TreePath> expendedNodes = fileTree.getExpandedDescendants(new TreePath(((DefaultMutableTreeNode) fileTree.getModel().getRoot()).getPath()));
+
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(agentFile.getParentFile().getName() + "/" + agentFile.getName());
         addFilesToTree(root, agentFile.getParentFile(), context);
         fileTree.setModel(new DefaultTreeModel(root));
-        fileTree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount() == 2) {
-                    TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                    openFileFromTree(selPath);
-                }
+        
+        // previously expended nodes ...
+        if (expendedNodes != null) {
+            // get "restored"
+            while (expendedNodes.hasMoreElements()) {
+                TreePath param = expendedNodes.nextElement();
+                nodeExpander(root, param.getLastPathComponent().toString());
             }
-        });
+        }
         /*
         fileTree.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
