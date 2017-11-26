@@ -928,7 +928,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
     {//GEN-HEADEREND:event_saveFileAction
-      editorPanel.save();
+      editorPanel.save(configuration.getProperty("lastOpenedFolder"));
       updateProjectDirectoryMenu();
 }//GEN-LAST:event_saveFileAction
 
@@ -939,7 +939,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void miSaveAsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveAsActionPerformed
     {//GEN-HEADEREND:event_miSaveAsActionPerformed
-      editorPanel.saveAs();
+      if(editorPanel.getActiveTab() != null && editorPanel.getActiveTab().getFile() != null) {
+          editorPanel.saveAs(editorPanel.getActiveTab().getFile().getParent());
+      } else {
+        editorPanel.saveAs();
+      }
 }//GEN-LAST:event_miSaveAsActionPerformed
 
     private void miOptionActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOptionActionPerformed

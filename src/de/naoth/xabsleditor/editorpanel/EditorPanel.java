@@ -357,16 +357,24 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public void save() {
-        if(activeTab != null && activeTab.save()) {
+        save(System.getProperty("user.home"));
+    }
+    
+    public void save(String defaultDirectory) {
+        if(activeTab != null && activeTab.save(defaultDirectory)) {
             graph.refreshGraph();
         }
     }
 
     public void saveAs() {
+        saveAs(System.getProperty("user.home"));
+    }
+    
+    public void saveAs(String defaultDirectory) {
         if(activeTab != null) {
             File old = activeTab.getFile();
             activeTab.setFile(null);
-            if(activeTab.save()) {
+            if(activeTab.save(defaultDirectory)) {
                 graph.refreshGraph();
             } else {
                 activeTab.setFile(old);

@@ -134,9 +134,12 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
     }
     
     public boolean save() {
+        return save(System.getProperty("user.home"));
+    }
+    public boolean save(String defaultDirectory) {
         // unregister filewatcher - the file could be saved with a new name!
         fileWatcherUnregister();
-        boolean result = editor.save();
+        boolean result = editor.save(defaultDirectory);
         // register filewatcher with the "new" name
         fileWatcherRegister();
         return result;

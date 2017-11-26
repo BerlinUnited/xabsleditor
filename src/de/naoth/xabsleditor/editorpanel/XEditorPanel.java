@@ -505,6 +505,10 @@ public class XEditorPanel extends javax.swing.JPanel
     }
 
     public boolean save() {
+        return save(System.getProperty("user.home"));
+    }
+    
+    public boolean save(String defaultDirectory) {
         // save as a new file
         if(this.file == null)
         {
@@ -513,6 +517,7 @@ public class XEditorPanel extends javax.swing.JPanel
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileChooser.setFileFilter(new XABSLFileFilter());
             fileChooser.setAcceptAllFileFilterUsed(true);
+            fileChooser.setCurrentDirectory(new File(defaultDirectory));
             // get new file
             int result = fileChooser.showSaveDialog(this);
             if (result != JFileChooser.APPROVE_OPTION) {
