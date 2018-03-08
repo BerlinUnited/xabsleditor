@@ -203,7 +203,9 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
     }
 
     private boolean isSelected() {
-        return ((JTabbedPane)getParent()).getSelectedComponent().equals(this);
+        return getParent() != null 
+               && ((JTabbedPane)getParent()).getSelectedComponent() != null
+               && ((JTabbedPane)getParent()).getSelectedComponent().equals(this);
     }
 
     @Override
