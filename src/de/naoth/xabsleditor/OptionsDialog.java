@@ -252,7 +252,7 @@ public class OptionsDialog extends javax.swing.JDialog
         startPosition_maximized.setActionCommand(START_POSITION_OPTIONS[2]);
         jpStartBehavior.add(startPosition_maximized);
 
-        jpStartOpen.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Open on startup ..."));
+        jpStartOpen.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Open on startup"));
         jpStartOpen.setLayout(new javax.swing.BoxLayout(jpStartOpen, javax.swing.BoxLayout.Y_AXIS));
 
         bgOpenLast.add(startOpen_nothing);
@@ -285,9 +285,9 @@ public class OptionsDialog extends javax.swing.JDialog
                     .addComponent(cbTabCloseBtn))
                 .addContainerGap(340, Short.MAX_VALUE))
             .addGroup(jpEditorLayout.createSequentialGroup()
-                .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jpStartOpen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jpStartBehavior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jpStartBehavior, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jpStartOpen, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jpEditorLayout.setVerticalGroup(

@@ -7,15 +7,24 @@ import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.FileWatcher;
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
@@ -74,6 +83,14 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
 
             }
         });
+        
+        // disable default traveral keys and setup "correct" ctrl-tab behavior
+        tabs.setFocusTraversalKeysEnabled(false);
+
+        // Add keys to the tab's input map
+        InputMap inputMap = tabs.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke("ctrl TAB"), "navigateNext");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift TAB"), "navigatePrevious");
     }
 
     /**

@@ -93,6 +93,8 @@ public class XEditorPanel extends javax.swing.JPanel
     InitTextArea(str);
     resetUndos();
     hashCode = textArea.getText().hashCode();
+    // disable traversal keys; the tab panel should handle it
+    textArea.setFocusTraversalKeysEnabled(false);
   }
 
   private void InitTextArea(String str)
