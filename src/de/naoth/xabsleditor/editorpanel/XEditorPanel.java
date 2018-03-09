@@ -257,7 +257,8 @@ public class XEditorPanel extends javax.swing.JPanel
   public static void centerLineInScrollPane(JTextComponent component) {
     Container container = SwingUtilities.getAncestorOfClass(JViewport.class, component);
 
-    if (container == null) {
+    // empty container or 'invalid' component size -> can not center on a 0,0 component!
+    if (container == null || (component.getSize().getWidth() == 0 && component.getSize().getHeight() == 0)) {
       return;
     }
 

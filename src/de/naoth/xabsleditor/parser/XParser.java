@@ -161,7 +161,10 @@ public class XParser extends AbstractParser
         }
       }
 
-      this.parser.parse();
+      // new files doesn't have any character/token -> can't be parsed!
+      if(this.parser != null) {
+        this.parser.parse();
+      }
 
       if(currentToken != null && currentToken.type != Token.NULL)
       {
