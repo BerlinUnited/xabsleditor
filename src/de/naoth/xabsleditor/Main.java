@@ -487,6 +487,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       if (agentFile != null && !foundAgents.contains(agentFile) && context !=null)
       {
         JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
+        // HACK: 're-load' xabsl context, otherwise new files wouldn't get added to tree/menu!
+        editorPanel.loadXABSLContext(agentFile.getParentFile(), context);
 
         addFilesToMenu(miAgent, agentFile.getParentFile(), context);
         mProject.add(miAgent);

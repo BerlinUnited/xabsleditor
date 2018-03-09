@@ -212,7 +212,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         activeTab.setCarretPosition(position);
     }
 
-    private XABSLContext loadXABSLContext(File folder, XABSLContext context) {
+    public XABSLContext loadXABSLContext(File folder, XABSLContext context) {
         if (context == null) {
             context = new XABSLContext();
         }
