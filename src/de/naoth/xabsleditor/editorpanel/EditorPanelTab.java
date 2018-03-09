@@ -136,13 +136,32 @@ public class EditorPanelTab extends JPanel implements FileWatcherListener
     public boolean save() {
         return save(System.getProperty("user.home"));
     }
+
     public boolean save(String defaultDirectory) {
         // unregister filewatcher - the file could be saved with a new name!
         fileWatcherUnregister();
         boolean result = editor.save(defaultDirectory);
+        // only if saveing was successfull, update tab title/tooltip
+        if(result) {
+            updateTabTitle();
+        }
         // register filewatcher with the "new" name
         fileWatcherRegister();
         return result;
+    }
+    
+    /**
+     * Updates the title and tooltip of the parent JTabbedPane.
+     */
+    protected void updateTabTitle() {
+        JTabbedPane p = (JTabbedPane)getParent();
+        if(p != null) {
+            int idx = p.indexOfComponent(this);
+            if(idx != -1) {
+                p.setTitleAt(idx, this.getFile().getName());
+                p.setToolTipTextAt(idx, this.getFile().getAbsolutePath());
+            }
+        }
     }
     
     public SearchPanel getSearchPanel() {

@@ -946,6 +946,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       } else {
         editorPanel.saveAs();
       }
+      updateProjectDirectoryMenu();
 }//GEN-LAST:event_miSaveAsActionPerformed
 
     private void miOptionActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOptionActionPerformed

@@ -278,8 +278,9 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             tabs.setSelectedComponent(tab);
 
             // update the other openend editors
+            // TODO: distinguish between different projects!?
             for (EditorPanelTab t : this) {
-                if (t != tab) {
+                if (t != tab && context != null) {
                     t.setXABSLContext(context);
                 }
             }
