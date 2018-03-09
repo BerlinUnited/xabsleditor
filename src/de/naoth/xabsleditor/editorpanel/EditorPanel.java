@@ -190,7 +190,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         } else {
             // find and select already opened file
             for (EditorPanelTab tab : this) {
-                if(tab.getFile().equals(f)) {
+                if(tab.getFile() != null && tab.getFile().equals(f)) {
                     tabs.setSelectedComponent(tab);
                     return;
                 }
