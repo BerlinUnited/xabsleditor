@@ -45,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -341,6 +342,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         return;
 
     File[] fileList = folder.listFiles();
+    // sort entries alphabetically, with directory first
+    Arrays.sort(fileList, (File f1, File f2)->{
+        if(f1.isDirectory() && !f2.isDirectory()) {
+            return -1;
+        } else if(!f1.isDirectory() && f2.isDirectory()) {
+            return 1;
+        }
+        return f1.getName().compareTo(f2.getName());
+    });
+    // iterate through files and add them to menu
     for (final File file : fileList)
     {
       if (file.isDirectory())
@@ -447,13 +458,18 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       }
     }//end for
     
-    // added directories first
-    for(DefaultMutableTreeNode n: childDirectories) {
+    // added directories sorted, first
+    childDirectories.stream().sorted((d1, d2) -> {
+        return d1.toString().compareTo(d2.toString());
+    }).forEachOrdered((d) -> {
+        nodeParent.add(d);
+    });
+    // add files sorted
+    childFiles.stream().sorted((n1, n2) -> {
+        return n1.toString().compareTo(n2.toString());
+    }).forEachOrdered((n) -> {
         nodeParent.add(n);
-    }
-    for(DefaultMutableTreeNode n: childFiles) {
-        nodeParent.add(n);
-    }
+    });
   }
 
   /** Reconstruct the Projects menu entry */
