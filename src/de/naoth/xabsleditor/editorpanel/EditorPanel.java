@@ -170,6 +170,17 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return tabSize;
     }
     
+    public void setFontSize(int size) {
+        tabSize = size;
+        for (EditorPanelTab tab : this) {
+            tab.setTabSize(size);
+        }
+    }
+    
+    public int getFontSize() {
+        return tabSize;
+    }
+    
     public void setShowCloseButtons(boolean b) {
         showCloseButtons = b;
         for (EditorPanelTab tab : this) {
@@ -421,7 +432,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public XABSLContext getActiveXABSLContext() {
-        return activeTab == null ? null : activeTab.getXabslContext();
+        return activeTab == null ? null : activeTab.getXABSLContext();
     }
     
     public File getActiveAgent() {

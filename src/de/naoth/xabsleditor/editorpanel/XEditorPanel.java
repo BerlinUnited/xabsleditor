@@ -135,7 +135,9 @@ public class XEditorPanel extends javax.swing.JPanel
     textArea.requestFocusInWindow();
 
 
-    textArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+    //textArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+    // HACK: set a font, so that the default font is not null
+    textArea.setFont(RSyntaxTextArea.getDefaultFont());
 
     // replace tabs with spaces
     textArea.setTabsEmulated(true);
@@ -220,7 +222,7 @@ public class XEditorPanel extends javax.swing.JPanel
   public String getText()
   {
     return this.textArea.getText();
-  }//end getText
+  }
 
   public void setText(String text)
   {
@@ -230,7 +232,15 @@ public class XEditorPanel extends javax.swing.JPanel
 
     this.textArea.setText(text);
     this.textArea.revalidate();
-  }//end getText
+  }
+  
+  public void setContent(String s) {
+    setText(s);
+  }
+
+  public String getContent() {
+    return getText();
+  }
 
   public boolean isChanged()
   {
@@ -245,7 +255,7 @@ public class XEditorPanel extends javax.swing.JPanel
   public void setFile(File file)
   {
     this.file = file;
-  }//end setFile
+  }
 
 
   /*
@@ -276,7 +286,7 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end centerLineInScrollPane
 
-  public void setCarretPosition(int pos)
+  final public void setCarretPosition(int pos)
   {
     this.textArea.setCaretPosition(pos);
 
@@ -489,6 +499,12 @@ public class XEditorPanel extends javax.swing.JPanel
   public void setTabSize(int size)
   {
     this.textArea.setTabSize(size);
+  }
+  
+  public void setFontSize(float size)
+  {
+    // update all the fonts with the new fonsize
+    textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
   }
   
   /**
