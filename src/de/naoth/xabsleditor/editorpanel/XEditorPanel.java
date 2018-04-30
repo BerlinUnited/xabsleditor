@@ -509,7 +509,8 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     // update all the fonts with the new fonsize
     this.textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
-    this.textArea.revalidate();
+    
+    scrolPane.getGutter().setLineNumberFont(scrolPane.getGutter().getLineNumberFont().deriveFont(size));
   }
   
   /**
