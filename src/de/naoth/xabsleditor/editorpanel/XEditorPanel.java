@@ -359,7 +359,8 @@ public class XEditorPanel extends javax.swing.JPanel
   public void addHyperlinkListener(HyperlinkListener listener)
   {
     textArea.addHyperlinkListener(listener);
-  }//end addHyperlinkListener
+  }
+  
   ArrayList<DocumentChangedListener> documentChangedListeners = new ArrayList<DocumentChangedListener>();
 
   public void addDocumentChangedListener(DocumentChangedListener listener)
@@ -507,7 +508,8 @@ public class XEditorPanel extends javax.swing.JPanel
   public void setFontSize(float size)
   {
     // update all the fonts with the new fonsize
-    textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
+    this.textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
+    this.textArea.revalidate();
   }
   
   /**

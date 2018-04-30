@@ -42,6 +42,7 @@ public class OptionsDialog extends javax.swing.JDialog
   public static final String[] START_POSITION_VALUE = { "startPositionX", "startPositionY", "startPositionWidth", "startPositionHeight" };
 
   public static final String EDITOR_TAB_SIZE = "editorTabSize";
+  public static final String EDITOR_FONT_SIZE = "fontSize";
   public static final String EDITOR_TAB_CLOSE_BTN = "editorTabCloseButton";
   
   private Properties configuration;
@@ -89,6 +90,11 @@ public class OptionsDialog extends javax.swing.JDialog
     {
       int n = Integer.parseInt(configuration.getProperty(EDITOR_TAB_SIZE));
       this.spTabSize.setValue(n);
+    }
+    
+    if(configuration.containsKey(EDITOR_FONT_SIZE))
+    {
+      this.spFontSize.setValue(Integer.parseInt(configuration.getProperty(EDITOR_FONT_SIZE)));
     }
     
     this.cbTabCloseBtn.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_TAB_CLOSE_BTN)));
@@ -148,6 +154,8 @@ public class OptionsDialog extends javax.swing.JDialog
         startOpen_nothing = new javax.swing.JRadioButton();
         startOpen_agent = new javax.swing.JRadioButton();
         startOpen_lastFiles = new javax.swing.JRadioButton();
+        jLabel1 = new javax.swing.JLabel();
+        spFontSize = new javax.swing.JSpinner();
 
         fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
@@ -228,6 +236,7 @@ public class OptionsDialog extends javax.swing.JDialog
         jLabel4.setText("Tab Size");
 
         spTabSize.setModel(new javax.swing.SpinnerNumberModel(2, 0, 13, 1));
+        spTabSize.setToolTipText("");
 
         cbTabCloseBtn.setText("Show close button");
         cbTabCloseBtn.setToolTipText("Whether or not the close button for an editor tab should be shown.");
@@ -271,24 +280,33 @@ public class OptionsDialog extends javax.swing.JDialog
         startOpen_lastFiles.setActionCommand(OPEN_LAST_OPTIONS[2]);
         jpStartOpen.add(startOpen_lastFiles);
 
+        jLabel1.setText("Font Size");
+
+        spFontSize.setModel(new javax.swing.SpinnerNumberModel(14, 8, 120, 1));
+
         javax.swing.GroupLayout jpEditorLayout = new javax.swing.GroupLayout(jpEditor);
         jpEditor.setLayout(jpEditorLayout);
         jpEditorLayout.setHorizontalGroup(
             jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jpEditorLayout.createSequentialGroup()
+                .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jpStartBehavior, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jpStartOpen, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(cbTabCloseBtn))
+                .addGap(0, 299, Short.MAX_VALUE))
+            .addGroup(jpEditorLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jpEditorLayout.createSequentialGroup()
                         .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jpEditorLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(cbTabCloseBtn))
-                .addContainerGap(340, Short.MAX_VALUE))
-            .addGroup(jpEditorLayout.createSequentialGroup()
-                .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jpStartBehavior, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jpStartOpen, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(spFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jpEditorLayout.setVerticalGroup(
             jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -298,12 +316,15 @@ public class OptionsDialog extends javax.swing.JDialog
                     .addComponent(jLabel4)
                     .addComponent(spTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(spFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
                 .addComponent(cbTabCloseBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jpStartOpen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jpStartBehavior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addComponent(jpStartBehavior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         optionPanel.addTab("Editor", jpEditor);
@@ -366,6 +387,7 @@ public class OptionsDialog extends javax.swing.JDialog
       configuration.setProperty(OPEN_LAST, this.bgOpenLast.getSelection().getActionCommand());
 
       configuration.setProperty(EDITOR_TAB_SIZE, this.spTabSize.getValue().toString());
+      configuration.setProperty(EDITOR_FONT_SIZE, this.spFontSize.getValue().toString());
       configuration.setProperty(EDITOR_TAB_CLOSE_BTN, Boolean.toString(this.cbTabCloseBtn.isSelected()));
 
       configuration.setProperty(START_POSITION, this.bgStartBehavior.getSelection().getActionCommand());
@@ -406,6 +428,7 @@ public class OptionsDialog extends javax.swing.JDialog
     private javax.swing.JFileChooser fileChooserCompilationPath;
     private javax.swing.JButton jButtonCancel;
     private javax.swing.JButton jButtonOK;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -414,6 +437,7 @@ public class OptionsDialog extends javax.swing.JDialog
     private javax.swing.JPanel jpStartBehavior;
     private javax.swing.JPanel jpStartOpen;
     private javax.swing.JTabbedPane optionPanel;
+    private javax.swing.JSpinner spFontSize;
     private javax.swing.JSpinner spTabSize;
     private javax.swing.JRadioButton startOpen_agent;
     private javax.swing.JRadioButton startOpen_lastFiles;
