@@ -83,7 +83,6 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     this(loadFromFile(file));
     setFile(file);
-    
   }
 
   /** Create new panel and with the given text */
@@ -317,6 +316,10 @@ public class XEditorPanel extends javax.swing.JPanel
   }//end jumpToLine
 
     private static String loadFromFile(File file) {
+        if(file == null) {
+            return null;
+        }
+        
         try {
             return new String(Files.readAllBytes(file.toPath()));
         } catch (IOException ioe) {
