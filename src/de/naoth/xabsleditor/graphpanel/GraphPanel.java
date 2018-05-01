@@ -4,7 +4,6 @@ import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
-import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;

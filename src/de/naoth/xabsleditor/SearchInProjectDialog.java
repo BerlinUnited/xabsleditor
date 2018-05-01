@@ -16,7 +16,6 @@
 package de.naoth.xabsleditor;
 
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
-import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
 import java.awt.event.KeyEvent;

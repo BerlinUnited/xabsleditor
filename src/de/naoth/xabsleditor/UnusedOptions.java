@@ -23,8 +23,6 @@ import javax.swing.KeyStroke;
 public class UnusedOptions extends javax.swing.JDialog
 {
   private final EventManager evtManager = EventManager.getInstance();
-  private Main parent;
-  private XABSLContext context;
 
   /**
    * Creates new form UnusedOptions
@@ -32,8 +30,6 @@ public class UnusedOptions extends javax.swing.JDialog
   public UnusedOptions(Main parent, XABSLContext context)
   {
     super(parent, true);
-    this.parent = parent;
-    this.context = context;
     
     initComponents();
 
