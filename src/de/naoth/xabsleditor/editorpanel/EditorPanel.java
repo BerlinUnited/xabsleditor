@@ -46,6 +46,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     private EditorPanelTab activeTab = null;
     
     private int tabSize = 2;
+    private float fontSize = 14;
     private boolean showCloseButtons = false;
 
     /**
@@ -197,6 +198,17 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return tabSize;
     }
     
+    public void setFontSize(float size) {
+        fontSize = size;
+        for (EditorPanelTab tab : this) {
+            tab.setFontSize(size);
+        }
+    }
+    
+    public float getFontSize() {
+        return fontSize;
+    }
+    
     public void setShowCloseButtons(boolean b) {
         showCloseButtons = b;
         for (EditorPanelTab tab : this) {
@@ -280,6 +292,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             tab.setXABSLContext(context);
             tab.setAgent(agentsFile);
             tab.setTabSize(tabSize);
+            tab.setFontSize(fontSize);
             tab.setCompletionProvider(createCompletitionProvider(context));
             tab.setFileWatcher(watcher);
             if (file == null) {
@@ -478,7 +491,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public XABSLContext getActiveXABSLContext() {
-        return activeTab == null ? null : activeTab.getXabslContext();
+        return activeTab == null ? null : activeTab.getXABSLContext();
     }
     
     public File getActiveAgent() {

@@ -461,7 +461,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     //TreeSet<File> foundAgents = new TreeSet<File>();
     for (EditorPanelTab tab : editorPanel) {
       final File agentFile = tab.getAgent();
-      final XABSLContext context = tab.getXabslContext();
+      final XABSLContext context = tab.getXABSLContext();
       if (agentFile != null && !foundAgents.contains(agentFile) && context !=null)
       {
         JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
@@ -543,6 +543,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
     // set tab size from configuration
     editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
+    editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
     
     // set, if the tab close button should be shown or not
     editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
