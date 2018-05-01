@@ -3,6 +3,8 @@ package de.naoth.xabsleditor.editorpanel;
 import de.naoth.xabsleditor.FileDrop;
 import de.naoth.xabsleditor.Main;
 import de.naoth.xabsleditor.Tools;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.LocateFileEvent;
 import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -39,9 +41,9 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
  */
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
+    EventManager evtManager = EventManager.getInstance();
     // a bit hacky, not a good architecture design :P
     private GraphPanel graph;
-    private JTree projectTree;
     private FileWatcher watcher;
     private EditorPanelTab activeTab = null;
     
@@ -182,11 +184,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public void setGraph(GraphPanel g) {
         graph = g;
     }
-    
-    public void setProjectTree(JTree t) {
-        projectTree = t;
-    }
-    
+
     public void setTabSize(int size) {
         tabSize = size;
         for (EditorPanelTab tab : this) {
@@ -415,23 +413,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
     
     public void locateTabInProjectTree(EditorPanelTab t) {
-        System.out.println(t.getFile());
-        if(projectTree != null) {
-//            for (DefaultMutableTreeNode searchNode : getSearchNodes((DefaultMutableTreeNode) projectTree.getModel().getRoot())) {
-//                System.out.println(searchNode.);
-//            }
-            Enumeration e = ((DefaultMutableTreeNode) projectTree.getModel().getRoot()).breadthFirstEnumeration();
-            while (e.hasMoreElements()) {
-                DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
-                if(n.getUserObject() instanceof File && n.getUserObject().equals(t.getFile())) {
-//                    projectTree.
-                }
-                
-                
-            }
-//            Object m = projectTree.getModel().getRoot();
-//            projectTree.getModel().
-        }
+        evtManager.publish(new LocateFileEvent(this, t.getFile()));
     }
     
     private final List<DefaultMutableTreeNode> getSearchNodes(DefaultMutableTreeNode root) {

@@ -24,6 +24,7 @@ import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.ReloadProjectEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.utils.DotFileFilter;
@@ -114,7 +115,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         for (File f : files) {
             if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
                 getEditorPanel().openFile(f);
-                updateProjectDirectoryMenu();
+                evtManager.publish(new ReloadProjectEvent(this));
             } else {
                 notaXabslFile.add(f.getAbsolutePath());
             }
@@ -132,7 +133,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   /** Creates new form Main */
   public Main(String file)
   {
-    
     // no bold fonts please
     UIManager.put("swing.boldMetal", Boolean.FALSE);
     try
@@ -144,6 +144,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {
       Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
     }
+    
+    // register event handler
+    evtManager.add(this);
     
     // add file drop
     new FileDrop(this, dropHandler);
@@ -162,7 +165,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     graphPanel.setEditor(editorPanel);
     editorPanel.setGraph(graphPanel);
     editorPanel.setFileWatcher(watcher);
-//    editorPanel.setProjectTree(fileTree);
     
     addWindowListener(new ShutdownHook());
 
@@ -203,7 +205,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         File laf = new File(configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[0], ""));
         if(laf.exists()) {
             editorPanel.openFile(laf);
-            updateProjectDirectoryMenu();
         }
     } else if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[2])) {
         // try to open the last opened files
@@ -214,8 +215,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
                 editorPanel.openFile(f);
             }
         }
-        updateProjectDirectoryMenu();
     }
+    evtManager.publish(new ReloadProjectEvent(this));
     
     String start = configuration.getProperty(OptionsDialog.START_POSITION,"");
     if(start.equals(OptionsDialog.START_POSITION_OPTIONS[1])) {
@@ -240,7 +241,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     if(configuration.getProperty("dividerPostionTwo")!=null) {
         jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
     }
-    
   }//end Main
 
   /** Reconstruct the Projects menu entry */
@@ -447,71 +447,39 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   /** Reconstruct the Projects menu entry */
   TreeSet<File> foundAgents = new TreeSet<File>();
 
-  @EventListener
-  private void updateProject(UpdateProjectEvent e) {
-      System.out.println("update Project!");
-  }
-  
-  private void updateProjectDirectoryMenu()
-  {
-    mProject.removeAll();
-    foundAgents.clear();
-    
-    // get all opened agents
-    //TreeSet<File> foundAgents = new TreeSet<File>();
-    for (EditorPanelTab tab : editorPanel) {
-      final File agentFile = tab.getAgent();
-      final XABSLContext context = tab.getXABSLContext();
-      if (agentFile != null && !foundAgents.contains(agentFile) && context !=null)
-      {
-        JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        // HACK: 're-load' xabsl context, otherwise new files wouldn't get added to tree/menu!
-        editorPanel.loadXABSLContext(agentFile.getParentFile(), context);
-
-        addFilesToMenu(miAgent, agentFile.getParentFile(), context);
-        mProject.add(miAgent);
-        /*
-        // TODO: !!!
-        // get expanded nodes
-        Enumeration<TreePath> expendedNodes = fileTree.getExpandedDescendants(new TreePath(((DefaultMutableTreeNode) fileTree.getModel().getRoot()).getPath()));
-
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        addFilesToTree(root, agentFile.getParentFile(), context);
-        fileTree.setModel(new DefaultTreeModel(root));
+    @EventListener
+    public void updateProject(ReloadProjectEvent e) {
+        mProject.removeAll();
+        foundAgents.clear();
         
-        // previously expended nodes ...
-        if (expendedNodes != null) {
-            // get "restored"
-            while (expendedNodes.hasMoreElements()) {
-                TreePath param = expendedNodes.nextElement();
-                nodeExpander(root, param.getLastPathComponent().toString());
-            }
-        }
-        */
-        /*
-        fileTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent tse) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) fileTree.getLastSelectedPathComponent();
-                if (node == null || !node.isLeaf()) { 
-                    return;
-                }
-                
-                String name = (String)node.getUserObject();
-                File f = context.getOptionPathMap().get(name);
-                openFileDirectly(f);
-            }
-        });
-*/
-        foundAgents.add(agentFile);
-      }
-    }//end for
+        ArrayList<DefaultMutableTreeNode> projectRoots = new ArrayList<>();
 
-    if(mProject.getMenuComponentCount() == 0)
-    {
-      mProject.add(setJMenuItemXabslFont(new JMenuItem("empty")));
-    }
-  }//end updateProjectMenu
+        // get all opened agents
+        for (EditorPanelTab tab : editorPanel) {
+            final File agentFile = tab.getAgent();
+            final XABSLContext context = tab.getXABSLContext();
+            if (agentFile != null && !foundAgents.contains(agentFile) && context != null) {
+                JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
+                // HACK: 're-load' xabsl context, otherwise new files wouldn't get added to tree/menu!
+                editorPanel.loadXABSLContext(agentFile.getParentFile(), context);
+
+                addFilesToMenu(miAgent, agentFile.getParentFile(), context);
+                mProject.add(miAgent);
+
+                DefaultMutableTreeNode root = new DefaultMutableTreeNode(agentFile.getParentFile().getName() + "/" + agentFile.getName());
+                addFilesToTree(root, agentFile.getParentFile(), context);
+                projectRoots.add(root);
+
+                foundAgents.add(agentFile);
+            }
+        }//end for
+        
+        evtManager.publish(new UpdateProjectEvent(e, projectRoots));
+
+        if (mProject.getMenuComponentCount() == 0) {
+            mProject.add(setJMenuItemXabslFont(new JMenuItem("empty")));
+        }
+    } // END updateProject()
 
   private JMenuItem setJMenuItemXabslFont(JMenuItem jMenuItem)
   {
@@ -678,11 +646,9 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         jSplitPane.setRightComponent(graphPanel);
 
         jSplitPaneMain.setRightComponent(jSplitPane);
-
-        projectTree1.setMinimumSize(new java.awt.Dimension(200, 22));
         jSplitPaneMain.setLeftComponent(projectTree1);
 
-        getContentPane().add(jSplitPaneMain, java.awt.BorderLayout.LINE_START);
+        getContentPane().add(jSplitPaneMain, java.awt.BorderLayout.CENTER);
 
         mFile.setMnemonic('F');
         mFile.setText("File");
@@ -878,7 +844,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
     {//GEN-HEADEREND:event_saveFileAction
       editorPanel.save(configuration.getProperty("lastOpenedFolder"));
-      updateProjectDirectoryMenu();
+      evtManager.publish(new ReloadProjectEvent(this));
 }//GEN-LAST:event_saveFileAction
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
@@ -893,7 +859,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       } else {
         editorPanel.saveAs();
       }
-      updateProjectDirectoryMenu();
+      evtManager.publish(new ReloadProjectEvent(this));
 }//GEN-LAST:event_miSaveAsActionPerformed
 
     private void miOptionActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOptionActionPerformed
@@ -930,7 +896,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile != null && selectedFile.exists()) {
                 editorPanel.openFile(selectedFile);
-                updateProjectDirectoryMenu();
+                evtManager.publish(new ReloadProjectEvent(this));
                 // update and save configuration
                 configuration.setProperty("lastOpenedFolder", fileChooser.getCurrentDirectory().getAbsolutePath());
                 saveConfiguration();
@@ -1079,7 +1045,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     String name = target.getFileName().substring(0, dotIndex);
 
     editorPanel.openFile(getOptionPathMap().get(name));
-    updateProjectDirectoryMenu();
+    evtManager.publish(new ReloadProjectEvent(this));
 
     if(editorPanel.hasOpenFiles()) {
         editorPanel.getActiveTab().jumpToLine(target.getLineNumber());
