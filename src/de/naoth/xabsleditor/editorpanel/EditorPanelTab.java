@@ -1,5 +1,7 @@
 package de.naoth.xabsleditor.editorpanel;
 
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.utils.FileWatcher;
@@ -17,6 +19,7 @@ import javax.swing.event.HyperlinkEvent;
  */
 public class EditorPanelTab extends XEditorPanel implements FileWatcherListener
 {
+    private final EventManager evtManager = EventManager.getInstance();
     private File agent;
     FileWatcher watcher;
     private boolean externalChange = false;
@@ -69,7 +72,7 @@ public class EditorPanelTab extends XEditorPanel implements FileWatcherListener
                 }
             } //end if
             if (file != null) {
-                ((EditorPanel)(getParent().getParent())).openFile(file, position);
+                evtManager.publish(new OpenFileEvent(this, file, position));
             }
             if (file == null && !symbolWasFound) {
                 JOptionPane.showMessageDialog(null, "Could not find the file for option, symbol or state",

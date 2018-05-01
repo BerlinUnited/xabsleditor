@@ -3,8 +3,10 @@ package de.naoth.xabsleditor.editorpanel;
 import de.naoth.xabsleditor.FileDrop;
 import de.naoth.xabsleditor.Main;
 import de.naoth.xabsleditor.Tools;
+import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.LocateFileEvent;
+import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.graphpanel.GraphPanel;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -56,6 +58,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
      */
     public EditorPanel() {
         initComponents();
+        // register event handler
+        evtManager.add(this);
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
@@ -221,34 +225,33 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return showCloseButtons;
     }
     
-    public void openFile(File f) {
-        if (f == null) {
+        
+    @EventListener
+    public void openFile(OpenFileEvent evt) {
+        if (evt.file == null) {
             createDocumentTab(null, null, null);
         } else {
             // find and select already opened file
             for (EditorPanelTab tab : this) {
-                if(tab.getFile() != null && tab.getFile().equals(f)) {
+                if(tab.getFile() != null && tab.getFile().equals(evt.file)) {
                     tabs.setSelectedComponent(tab);
                     return;
                 }
             }
             // ... otherwise create new tab
-            File agentsFile = Tools.getAgentFileForOption(f);
+            File agentsFile = Tools.getAgentFileForOption(evt.file);
             XABSLContext newContext = null;
 
             if (agentsFile != null) {
                 newContext = loadXABSLContext(agentsFile.getParentFile(), null);
             }
 
-            createDocumentTab(f, newContext, agentsFile);
+            createDocumentTab(evt.file, newContext, agentsFile);
+            
+            activeTab.setCarretPosition(evt.carretPosition);
         }
     }
     
-    public void openFile(File f, int position) {
-        openFile(f);
-        activeTab.setCarretPosition(position);
-    }
-
     public XABSLContext loadXABSLContext(File folder, XABSLContext context) {
         if (context == null) {
             context = new XABSLContext();

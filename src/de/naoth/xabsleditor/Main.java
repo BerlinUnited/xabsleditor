@@ -24,6 +24,7 @@ import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
 import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
@@ -115,7 +116,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         // iterate through dropped files and open them - if their xabsl files
         for (File f : files) {
             if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
-                getEditorPanel().openFile(f);
+                evtManager.publish(new OpenFileEvent(this, f));
                 evtManager.publish(new ReloadProjectEvent(this));
             } else {
                 notaXabslFile.add(f.getAbsolutePath());
@@ -205,7 +206,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         // try to open last agent
         File laf = new File(configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[0], ""));
         if(laf.exists()) {
-            editorPanel.openFile(laf);
+            evtManager.publish(new OpenFileEvent(this, laf));
         }
     } else if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[2])) {
         // try to open the last opened files
@@ -213,7 +214,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         for (String strFile : strFiles) {
             File f = new File(strFile);
             if(f.exists()) {
-                editorPanel.openFile(f);
+                evtManager.publish(new OpenFileEvent(this, f));
             }
         }
     }
@@ -366,7 +367,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           @Override
           public void actionPerformed(ActionEvent e)
           {
-            editorPanel.openFile(context.getOptionPathMap().get(name));
+            evtManager.publish(new OpenFileEvent(this, context.getOptionPathMap().get(name)));
           }
         });
         miParent.add(miOptionOpener);
@@ -911,7 +912,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile != null && selectedFile.exists()) {
-                editorPanel.openFile(selectedFile);
+                evtManager.publish(new OpenFileEvent(this, selectedFile));
                 evtManager.publish(new ReloadProjectEvent(this));
                 // update and save configuration
                 configuration.setProperty("lastOpenedFolder", fileChooser.getCurrentDirectory().getAbsolutePath());
@@ -923,16 +924,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             }
         }
     }//GEN-LAST:event_openFileAction
-
-  private void openFileFromTree(TreePath selPath) {
-        if (selPath != null) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-            if (node == null || !node.isLeaf()) {
-                return;
-            }
-            editorPanel.openFile((File) node.getUserObject());
-        }
-    }
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
@@ -1060,7 +1051,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     int dotIndex = target.getFileName().length() - XABSL_FILE_ENDING.length();
     String name = target.getFileName().substring(0, dotIndex);
 
-    editorPanel.openFile(getOptionPathMap().get(name));
+    evtManager.publish(new OpenFileEvent(this, getOptionPathMap().get(name)));
     evtManager.publish(new ReloadProjectEvent(this));
 
     if(editorPanel.hasOpenFiles()) {

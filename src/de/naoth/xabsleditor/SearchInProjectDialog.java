@@ -17,6 +17,8 @@ package de.naoth.xabsleditor;
 
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +33,7 @@ import javax.swing.KeyStroke;
  */
 public class SearchInProjectDialog extends javax.swing.JDialog
 {
-
+  private final EventManager evtManager = EventManager.getInstance();
   private Main parent;
 
   /** Creates new form SearchInProjectDialog */
@@ -163,7 +165,7 @@ public class SearchInProjectDialog extends javax.swing.JDialog
   private void openFile()
   {
     String path = (String) resultList.getModel().getElementAt(resultList.getSelectedIndex());
-    parent.getEditorPanel().openFile(new File(path));
+    evtManager.publish(new OpenFileEvent(this, new File(path)));
     EditorPanelTab p = parent.getEditorPanel().getActiveTab();
     if(p != null)
     {

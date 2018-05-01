@@ -5,6 +5,8 @@ import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -25,6 +27,7 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
  */
 public class GraphPanel extends javax.swing.JPanel
 {
+    private final EventManager evtManager = EventManager.getInstance();
 //    private final XabslGraphMouseListener mouseListener;
     private OptionVisualizer optionVisualizer;
     private AgentVisualizer agentVisualizer;
@@ -149,7 +152,7 @@ public class GraphPanel extends javax.swing.JPanel
                 }
 
                 if (file != null) {
-                    editor.openFile(file);
+                    evtManager.publish(new OpenFileEvent(this, file));
                 } else {
                     JOptionPane.showMessageDialog(null, "Could not find the file for option "
                             + option, "Option not found", JOptionPane.WARNING_MESSAGE);

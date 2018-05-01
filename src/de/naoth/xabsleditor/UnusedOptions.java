@@ -4,6 +4,8 @@
  */
 package de.naoth.xabsleditor;
 
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
 import java.awt.event.KeyEvent;
@@ -20,7 +22,7 @@ import javax.swing.KeyStroke;
  */
 public class UnusedOptions extends javax.swing.JDialog
 {
-  
+  private final EventManager evtManager = EventManager.getInstance();
   private Main parent;
   private XABSLContext context;
 
@@ -84,7 +86,7 @@ public class UnusedOptions extends javax.swing.JDialog
   private void openFile()
   {
       File f = (File) lstUnused.getModel().getElementAt(lstUnused.getSelectedIndex());
-    parent.getEditorPanel().openFile(f);
+      evtManager.publish(new OpenFileEvent(this, f));
   }
   
   /**
