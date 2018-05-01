@@ -28,6 +28,16 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileTreePopupNewFileActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="fileTreePopupRename">
+          <Properties>
+            <Property name="mnemonic" type="int" value="78"/>
+            <Property name="text" type="java.lang.String" value="Rename"/>
+            <Property name="toolTipText" type="java.lang.String" value="Renames selected file."/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileTreePopupRenameActionPerformed"/>
+          </Events>
+        </MenuItem>
       </SubComponents>
     </Container>
   </NonVisualComponents>

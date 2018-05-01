@@ -25,6 +25,7 @@ import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
+import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.utils.DotFileFilter;
@@ -480,6 +481,21 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
             mProject.add(setJMenuItemXabslFont(new JMenuItem("empty")));
         }
     } // END updateProject()
+
+    @EventListener
+    public void renameFile(RenameFileEvent evt) {
+        if(evt.file.exists()) {
+            String newName = JOptionPane.showInputDialog("Rename file '"+evt.file.getName()+"': ", evt.file.getName());
+            if(newName != null && !newName.trim().isEmpty()) {
+                // add extension, if not set
+                if(!newName.endsWith(".xabsl")) { newName += ".xabsl"; }
+                // rename
+                evt.file.renameTo(new File(evt.file.getParent(), newName));
+                // update project
+                evtManager.publish(new ReloadProjectEvent(this));
+            }
+        }
+    }
 
   private JMenuItem setJMenuItemXabslFont(JMenuItem jMenuItem)
   {

@@ -6,6 +6,7 @@ import de.naoth.xabsleditor.events.LocateFileEvent;
 import de.naoth.xabsleditor.events.NewFileEvent;
 import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
+import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
 import java.awt.Color;
 import java.awt.Component;
@@ -67,13 +68,18 @@ public class ProjectTree extends javax.swing.JPanel
                     openFileFromTree(selPath);
                 } else if (SwingUtilities.isRightMouseButton(e)) {
                     TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                    if(selPath != null && !fileTree.getModel().isLeaf(selPath.getLastPathComponent())) {
+                    if(selPath != null) {
                         fileTree.setSelectionPath(selPath);
                     }
-                    fileTreePopup.show(e.getComponent(), e.getX(), e.getY());
+                    showPopup(e.getX(), e.getY(), selPath != null);
                 }
             }
         });
+    }
+    
+    private void showPopup(int x, int y, boolean rename) {
+        fileTreePopupRename.setEnabled(rename);
+        fileTreePopup.show(fileTree, x, y);
     }
     
     private void openFileFromTree(TreePath selPath) {
@@ -150,6 +156,7 @@ public class ProjectTree extends javax.swing.JPanel
         fileTreePopup = new javax.swing.JPopupMenu();
         fileTreePopupRefresh = new javax.swing.JMenuItem();
         fileTreePopupNewFile = new javax.swing.JMenuItem();
+        fileTreePopupRename = new javax.swing.JMenuItem();
         jScrollPaneFileTree = new javax.swing.JScrollPane();
         fileTree = new javax.swing.JTree();
 
@@ -172,6 +179,16 @@ public class ProjectTree extends javax.swing.JPanel
             }
         });
         fileTreePopup.add(fileTreePopupNewFile);
+
+        fileTreePopupRename.setMnemonic('N');
+        fileTreePopupRename.setText("Rename");
+        fileTreePopupRename.setToolTipText("Renames selected file.");
+        fileTreePopupRename.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileTreePopupRenameActionPerformed(evt);
+            }
+        });
+        fileTreePopup.add(fileTreePopupRename);
 
         setMinimumSize(new java.awt.Dimension(200, 22));
         setLayout(new java.awt.BorderLayout());
@@ -211,11 +228,21 @@ public class ProjectTree extends javax.swing.JPanel
         }
     }//GEN-LAST:event_fileTreePopupNewFileActionPerformed
 
+    private void fileTreePopupRenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupRenameActionPerformed
+        if(fileTree.getSelectionPath() != null) {
+            DefaultMutableTreeNode n = (DefaultMutableTreeNode) fileTree.getSelectionPath().getLastPathComponent();
+            if(n.getUserObject() instanceof File) {
+                evtManager.publish(new RenameFileEvent(this, (File) n.getUserObject()));
+            }
+        }
+    }//GEN-LAST:event_fileTreePopupRenameActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree fileTree;
     private javax.swing.JPopupMenu fileTreePopup;
     private javax.swing.JMenuItem fileTreePopupNewFile;
     private javax.swing.JMenuItem fileTreePopupRefresh;
+    private javax.swing.JMenuItem fileTreePopupRename;
     private javax.swing.JScrollPane jScrollPaneFileTree;
     // End of variables declaration//GEN-END:variables
 }
