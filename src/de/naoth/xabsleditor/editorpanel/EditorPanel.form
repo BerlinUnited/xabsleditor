@@ -37,6 +37,16 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tabPopupMenu_CloseOthersActionPerformed"/>
           </Events>
         </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="tabPopupMenu_Sep">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="tabPopupMenu_Locate">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Locate file in project tree"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tabPopupMenu_LocateActionPerformed"/>
+          </Events>
+        </MenuItem>
       </SubComponents>
     </Container>
   </NonVisualComponents>

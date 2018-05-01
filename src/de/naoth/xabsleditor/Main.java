@@ -22,6 +22,9 @@ import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
+import de.naoth.xabsleditor.events.EventListener;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.UpdateProjectEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.FileWatcher;
@@ -78,7 +81,8 @@ import javax.swing.tree.TreePath;
  */
 public class Main extends javax.swing.JFrame implements CompilationFinishedReceiver, JumpListener
 {
-
+  private final EventManager evtManager = EventManager.getInstance();
+  
   private JFileChooser fileChooser = new JFileChooser();
   private SearchInProjectDialog searchInProjectDialog;
   
@@ -158,6 +162,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     graphPanel.setEditor(editorPanel);
     editorPanel.setGraph(graphPanel);
     editorPanel.setFileWatcher(watcher);
+//    editorPanel.setProjectTree(fileTree);
     
     addWindowListener(new ShutdownHook());
 
@@ -236,39 +241,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
     }
     
-    // set the cell renderer for the projects treeview
-    fileTree.setCellRenderer(new DefaultTreeCellRenderer(){
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            if(value instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode)value).getUserObject() instanceof File) {
-                File file = (File)((DefaultMutableTreeNode)value).getUserObject();
-                if(file.isDirectory()) {
-                    value = file.getName();
-                } else {
-                    value = file.getName().substring(0, file.getName().length()-6);
-                }
-            }
-            Component c = super.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
-            c.setForeground(Color.BLACK);
-            return c;
-        }
-    });
-    // add mouse listener for selecting element in tree
-    fileTree.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if(e.getClickCount() == 2) {
-                TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                openFileFromTree(selPath);
-            } else if (SwingUtilities.isRightMouseButton(e)) {
-                TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                if(selPath != null && !fileTree.getModel().isLeaf(selPath.getLastPathComponent())) {
-                    fileTree.setSelectionPath(selPath);
-                    fileTreePopup.show(e.getComponent(), e.getX(), e.getY());
-                }
-            }
-        }
-    });
   }//end Main
 
   /** Reconstruct the Projects menu entry */
@@ -475,21 +447,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   /** Reconstruct the Projects menu entry */
   TreeSet<File> foundAgents = new TreeSet<File>();
 
-  private void nodeExpander(TreeNode node, String val) {
-      // we're only expanding nodes
-      if(!node.isLeaf()) {
-          // matching?
-          if(node.toString().equals(val)) {
-              fileTree.expandPath(new TreePath(((DefaultMutableTreeNode)node).getPath()));
-          }
-          // iterate through childs
-          Enumeration childs = node.children();
-          while(childs.hasMoreElements()) {
-              nodeExpander((TreeNode)childs.nextElement(), val);
-          }
-      }
+  @EventListener
+  private void updateProject(UpdateProjectEvent e) {
+      System.out.println("update Project!");
   }
-
+  
   private void updateProjectDirectoryMenu()
   {
     mProject.removeAll();
@@ -508,7 +470,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
         addFilesToMenu(miAgent, agentFile.getParentFile(), context);
         mProject.add(miAgent);
-
+        /*
+        // TODO: !!!
         // get expanded nodes
         Enumeration<TreePath> expendedNodes = fileTree.getExpandedDescendants(new TreePath(((DefaultMutableTreeNode) fileTree.getModel().getRoot()).getPath()));
 
@@ -524,6 +487,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
                 nodeExpander(root, param.getLastPathComponent().toString());
             }
         }
+        */
         /*
         fileTree.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
@@ -594,9 +558,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fileTreePopup = new javax.swing.JPopupMenu();
-        fileTreePopupRefresh = new javax.swing.JMenuItem();
-        fileTreePopupNewFile = new javax.swing.JMenuItem();
         toolbarMain = new javax.swing.JToolBar();
         btNew = new javax.swing.JButton();
         btOpen = new javax.swing.JButton();
@@ -604,11 +565,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         seperator1 = new javax.swing.JToolBar.Separator();
         btCompile = new javax.swing.JButton();
         jSplitPaneMain = new javax.swing.JSplitPane();
-        jScrollPaneFileTree = new javax.swing.JScrollPane();
-        fileTree = new javax.swing.JTree();
         jSplitPane = new javax.swing.JSplitPane();
         editorPanel = new de.naoth.xabsleditor.editorpanel.EditorPanel();
         graphPanel = new de.naoth.xabsleditor.graphpanel.GraphPanel();
+        projectTree1 = new de.naoth.xabsleditor.utils.ProjectTree();
         mbMain = new javax.swing.JMenuBar();
         mFile = new javax.swing.JMenu();
         miNew = new javax.swing.JMenuItem();
@@ -633,26 +593,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         mHelp = new javax.swing.JMenu();
         miHelp = new javax.swing.JMenuItem();
         miInfo = new javax.swing.JMenuItem();
-
-        fileTreePopupRefresh.setMnemonic('R');
-        fileTreePopupRefresh.setText("Refresh (F5)");
-        fileTreePopupRefresh.setToolTipText("Reloads the project file tree.");
-        fileTreePopupRefresh.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileTreePopupRefreshActionPerformed(evt);
-            }
-        });
-        fileTreePopup.add(fileTreePopupRefresh);
-
-        fileTreePopupNewFile.setMnemonic('N');
-        fileTreePopupNewFile.setText("New File");
-        fileTreePopupNewFile.setToolTipText("Add a new xabsl file");
-        fileTreePopupNewFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileTreePopupNewFileActionPerformed(evt);
-            }
-        });
-        fileTreePopup.add(fileTreePopupNewFile);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("XabslEditor");
@@ -721,19 +661,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         jSplitPaneMain.setDividerLocation(200);
         jSplitPaneMain.setOneTouchExpandable(true);
 
-        jScrollPaneFileTree.setPreferredSize(new java.awt.Dimension(300, 322));
-
-        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("<no project>");
-        fileTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        fileTree.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                fileTreeKeyReleased(evt);
-            }
-        });
-        jScrollPaneFileTree.setViewportView(fileTree);
-
-        jSplitPaneMain.setLeftComponent(jScrollPaneFileTree);
-
         jSplitPane.setDividerLocation(450);
         jSplitPane.setOneTouchExpandable(true);
         jSplitPane.setPreferredSize(new java.awt.Dimension(750, 600));
@@ -751,7 +678,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
         jSplitPaneMain.setRightComponent(jSplitPane);
 
-        getContentPane().add(jSplitPaneMain, java.awt.BorderLayout.CENTER);
+        projectTree1.setMinimumSize(new java.awt.Dimension(200, 22));
+        jSplitPaneMain.setLeftComponent(projectTree1);
+
+        getContentPane().add(jSplitPaneMain, java.awt.BorderLayout.LINE_START);
 
         mFile.setMnemonic('F');
         mFile.setText("File");
@@ -1123,40 +1053,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
   }//GEN-LAST:event_miFindUnusedOptionsActionPerformed
 
-    private void fileTreeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileTreeKeyReleased
-        if(evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            openFileFromTree(fileTree.getSelectionPath());
-        } else if(evt.getKeyCode() == KeyEvent.VK_F5) {
-            updateProjectDirectoryMenu();
-        }
-    }//GEN-LAST:event_fileTreeKeyReleased
-
-    private void fileTreePopupRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupRefreshActionPerformed
-        updateProjectDirectoryMenu();
-    }//GEN-LAST:event_fileTreePopupRefreshActionPerformed
-
-    private void fileTreePopupNewFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupNewFileActionPerformed
-        // reset filechooser config
-        fileChooser.setCurrentDirectory(new File(fileTree.getSelectionPath().getLastPathComponent().toString()));
-        fileChooser.resetChoosableFileFilters();
-        fileChooser.setSelectedFile(new File(""));
-        fileChooser.setFileFilter(xabslFilter);
-        // show save dialog
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
-            if(f != null) {
-                try {
-                    f.createNewFile();
-                } catch (IOException ex) {}
-                editorPanel.openFile(f);
-                editorPanel.getActiveTab().setFile(f);
-            } else {
-                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-    }//GEN-LAST:event_fileTreePopupNewFileActionPerformed
-
-
   /**
    * @param args the command line arguments
    */
@@ -1209,13 +1105,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JButton btOpen;
     private javax.swing.JButton btSave;
     private de.naoth.xabsleditor.editorpanel.EditorPanel editorPanel;
-    private javax.swing.JTree fileTree;
-    private javax.swing.JPopupMenu fileTreePopup;
-    private javax.swing.JMenuItem fileTreePopupNewFile;
-    private javax.swing.JMenuItem fileTreePopupRefresh;
     private de.naoth.xabsleditor.graphpanel.GraphPanel graphPanel;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JScrollPane jScrollPaneFileTree;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -1241,6 +1132,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JMenuItem miSaveAs;
     private javax.swing.JMenuItem miSearch;
     private javax.swing.JMenuItem miSearchProject;
+    private de.naoth.xabsleditor.utils.ProjectTree projectTree1;
     private javax.swing.JToolBar.Separator seperator1;
     private javax.swing.JToolBar toolbarMain;
     // End of variables declaration//GEN-END:variables
@@ -1349,3 +1241,23 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   }
 }//end class Main
 
+/*
+        fileChooser.setCurrentDirectory();
+        fileChooser.resetChoosableFileFilters();
+        fileChooser.setSelectedFile(new File(""));
+        fileChooser.setFileFilter(xabslFilter);
+        // show save dialog
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
+            if(f != null) {
+                try {
+                    f.createNewFile();
+                } catch (IOException ex) {}
+                editorPanel.openFile(f);
+                editorPanel.getActiveTab().setFile(f);
+            } else {
+                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+*/

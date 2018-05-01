@@ -18,14 +18,18 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
 
@@ -35,7 +39,9 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
  */
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
+    // a bit hacky, not a good architecture design :P
     private GraphPanel graph;
+    private JTree projectTree;
     private FileWatcher watcher;
     private EditorPanelTab activeTab = null;
     
@@ -106,6 +112,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         tabPopupMenu_Close = new javax.swing.JMenuItem();
         tabPopupMenu_CloseAll = new javax.swing.JMenuItem();
         tabPopupMenu_CloseOthers = new javax.swing.JMenuItem();
+        tabPopupMenu_Sep = new javax.swing.JPopupMenu.Separator();
+        tabPopupMenu_Locate = new javax.swing.JMenuItem();
         tabs = new javax.swing.JTabbedPane();
 
         tabPopupMenu_Close.setText("Close");
@@ -136,6 +144,15 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             }
         });
         tabPopupMenu.add(tabPopupMenu_CloseOthers);
+        tabPopupMenu.add(tabPopupMenu_Sep);
+
+        tabPopupMenu_Locate.setText("Locate file in project tree");
+        tabPopupMenu_Locate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tabPopupMenu_LocateActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(tabPopupMenu_Locate);
 
         setLayout(new java.awt.BorderLayout());
         add(tabs, java.awt.BorderLayout.CENTER);
@@ -155,8 +172,18 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }//GEN-LAST:event_tabPopupMenu_CloseOthersActionPerformed
 
+    private void tabPopupMenu_LocateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tabPopupMenu_LocateActionPerformed
+        if(activeTab != null) {
+            locateTabInProjectTree(activeTab);
+        }
+    }//GEN-LAST:event_tabPopupMenu_LocateActionPerformed
+
     public void setGraph(GraphPanel g) {
         graph = g;
+    }
+    
+    public void setProjectTree(JTree t) {
+        projectTree = t;
     }
     
     public void setTabSize(int size) {
@@ -374,6 +401,36 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }
     
+    public void locateTabInProjectTree(EditorPanelTab t) {
+        System.out.println(t.getFile());
+        if(projectTree != null) {
+//            for (DefaultMutableTreeNode searchNode : getSearchNodes((DefaultMutableTreeNode) projectTree.getModel().getRoot())) {
+//                System.out.println(searchNode.);
+//            }
+            Enumeration e = ((DefaultMutableTreeNode) projectTree.getModel().getRoot()).breadthFirstEnumeration();
+            while (e.hasMoreElements()) {
+                DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
+                if(n.getUserObject() instanceof File && n.getUserObject().equals(t.getFile())) {
+//                    projectTree.
+                }
+                
+                
+            }
+//            Object m = projectTree.getModel().getRoot();
+//            projectTree.getModel().
+        }
+    }
+    
+    private final List<DefaultMutableTreeNode> getSearchNodes(DefaultMutableTreeNode root) {
+            List<DefaultMutableTreeNode> searchNodes = new ArrayList<DefaultMutableTreeNode>();
+
+            Enumeration<?> e = root.preorderEnumeration();
+            while(e.hasMoreElements()) {
+                searchNodes.add((DefaultMutableTreeNode)e.nextElement());
+            }
+            return searchNodes;
+        }
+    
     public void save() {
         save(System.getProperty("user.home"));
     }
@@ -456,6 +513,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     private javax.swing.JMenuItem tabPopupMenu_Close;
     private javax.swing.JMenuItem tabPopupMenu_CloseAll;
     private javax.swing.JMenuItem tabPopupMenu_CloseOthers;
+    private javax.swing.JMenuItem tabPopupMenu_Locate;
+    private javax.swing.JPopupMenu.Separator tabPopupMenu_Sep;
     private javax.swing.JTabbedPane tabs;
     // End of variables declaration//GEN-END:variables
 
