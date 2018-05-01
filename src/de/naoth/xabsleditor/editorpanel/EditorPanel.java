@@ -224,8 +224,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public boolean getShowCloseButtons() {
         return showCloseButtons;
     }
-    
-        
+
     @EventListener
     public void openFile(OpenFileEvent evt) {
         if (evt.file == null) {
@@ -457,6 +456,16 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public boolean hasOpenFiles() {
         return tabs.getTabCount() > 0;
+    }
+    
+    public ArrayList<EditorPanelTab> hasOpenUnsavedFiles() {
+        ArrayList<EditorPanelTab> unsavedtabs = new ArrayList<>();
+        for (EditorPanelTab tab : this) {
+            if(tab.isChanged() && tab.getFile() != null) {
+                unsavedtabs.add(tab);
+            }
+        }
+        return unsavedtabs;
     }
     
     public ArrayList<File> getOpenFiles() {

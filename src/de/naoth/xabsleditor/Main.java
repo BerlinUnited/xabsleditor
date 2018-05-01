@@ -526,6 +526,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       configuration.setProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN, Boolean.toString(true));
     }
     
+    // set "tab save before compile" default to false!
+    if(!configuration.containsKey(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE)) {
+      configuration.setProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE, Boolean.toString(false));
+    }
+    
     // set tab size from configuration
     editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
     editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
@@ -850,7 +855,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
     // create new tab
-    editorPanel.openFile(null);
+    evtManager.publish(new OpenFileEvent(this, null));
 }//GEN-LAST:event_newFileAction
   
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
@@ -890,19 +895,16 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void miQuitActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miQuitActionPerformed
     {//GEN-HEADEREND:event_miQuitActionPerformed
-
       System.exit(0);
     }//GEN-LAST:event_miQuitActionPerformed
 
     private void miInfoActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miInfoActionPerformed
     {//GEN-HEADEREND:event_miInfoActionPerformed
-
       AboutDialog dlg = new AboutDialog(this, true);
       Point location = this.getLocation();
       location.translate(100, 100);
       dlg.setLocation(location);
       dlg.setVisible(true);
-
     }//GEN-LAST:event_miInfoActionPerformed
 
     private void openFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openFileAction
@@ -929,6 +931,17 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     {//GEN-HEADEREND:event_compileAction
       if (editorPanel.hasOpenFiles()) {
         File optionFile = editorPanel.getActiveFile();
+        
+        // retrieve unsaved tabs
+        ArrayList<EditorPanelTab> unsaved = editorPanel.hasOpenUnsavedFiles();
+        if(!unsaved.isEmpty()) {
+            // if set via config, otherwise ask ...
+            if(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE))
+                    || JOptionPane.showConfirmDialog(this, "There are unsaved changes. Save files before compiling?", "Unsaved changes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                // save all changed tabs
+                unsaved.forEach((t) -> { t.save(configuration.getProperty("lastOpenedFolder")); });
+            }
+        }
 
         File fout = null;
 
