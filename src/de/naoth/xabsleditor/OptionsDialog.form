@@ -43,9 +43,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="239" max="-2" attributes="0"/>
-                      <Component id="jButtonOK" pref="150" max="32767" attributes="0"/>
+                      <Component id="jButtonOK" pref="154" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButtonCancel" pref="138" max="32767" attributes="0"/>
+                      <Component id="jButtonCancel" pref="142" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -116,7 +116,7 @@
                               <Component id="btBrowseCompilation" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                              <Component id="txtXabslCompilerCommand" alignment="0" pref="482" max="32767" attributes="1"/>
+                              <Component id="txtXabslCompilerCommand" alignment="0" pref="490" max="32767" attributes="1"/>
                               <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="1"/>
                               <Component id="cbUseRuby" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -192,7 +192,6 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbSaveBeforCompile" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="jLabel4" min="-2" max="-2" attributes="1"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -203,11 +202,13 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="spFontSize" min="-2" pref="47" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="cbTabCloseBtn" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jpStartOpen" alignment="0" min="-2" pref="211" max="-2" attributes="0"/>
                           <Component id="jpStartBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbTabLayout" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbTabCloseBtn" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbSaveBeforCompile" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="266" max="32767" attributes="0"/>
+                      <EmptySpace pref="274" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -227,8 +228,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbTabCloseBtn" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbSaveBeforCompile" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbTabLayout" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbSaveBeforCompile" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jpStartOpen" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jpStartBehavior" min="-2" max="-2" attributes="0"/>
@@ -255,14 +258,18 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Show close button"/>
                 <Property name="toolTipText" type="java.lang.String" value="Whether or not the close button for an editor tab should be shown."/>
-                <Property name="horizontalTextPosition" type="int" value="10"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbTabLayout">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Show tabs in multiple rows"/>
+                <Property name="toolTipText" type="java.lang.String" value="Shows opened tabs in multiple rows (instead of only one row)."/>
               </Properties>
             </Component>
             <Component class="javax.swing.JCheckBox" name="cbSaveBeforCompile">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Always save changes before compile"/>
-                <Property name="toolTipText" type="java.lang.String" value="Whether or not the close button for an editor tab should be shown."/>
-                <Property name="horizontalTextPosition" type="int" value="10"/>
+                <Property name="toolTipText" type="java.lang.String" value="Unsaved changes are saved before compiling."/>
               </Properties>
             </Component>
             <Container class="javax.swing.JPanel" name="jpStartBehavior">

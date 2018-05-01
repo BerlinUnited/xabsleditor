@@ -24,6 +24,7 @@ import java.util.List;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -61,6 +62,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             }
             graph.refreshGraph();
         });
+        tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
         // add right-click-behavior of the tabs
         tabs.addMouseListener(new MouseListener() {
@@ -191,6 +193,14 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public int getTabSize() {
         return tabSize;
+    }
+    
+    public void setTabLayout(int layout) {
+        tabs.setTabLayoutPolicy(layout);
+    }
+    
+    public int getTabLayout() {
+        return tabs.getTabLayoutPolicy();
     }
     
     public void setFontSize(float size) {

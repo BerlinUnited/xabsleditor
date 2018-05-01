@@ -59,6 +59,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
@@ -513,6 +514,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     if(!configuration.containsKey(OptionsDialog.EDITOR_TAB_CLOSE_BTN)) {
       configuration.setProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN, Boolean.toString(true));
     }
+        
+    // set "tab layout" default to true!
+    if(!configuration.containsKey(OptionsDialog.EDITOR_TAB_LAYOUT)) {
+      configuration.setProperty(OptionsDialog.EDITOR_TAB_LAYOUT, Boolean.toString(true));
+    }
     
     // set "tab save before compile" default to false!
     if(!configuration.containsKey(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE)) {
@@ -525,6 +531,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     
     // set, if the tab close button should be shown or not
     editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
+    editorPanel.setTabLayout(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAYOUT)) ? JTabbedPane.WRAP_TAB_LAYOUT : JTabbedPane.SCROLL_TAB_LAYOUT);
     
   }//end loadConfiguration
 
