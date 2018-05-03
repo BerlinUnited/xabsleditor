@@ -54,6 +54,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         initComponents();
         // register event handler
         evtManager.add(this);
+        // a custom ui manager is needed, in order to traverse tabs
+        tabs.setUI(new EditorPanelTabbedPaneUI());
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
