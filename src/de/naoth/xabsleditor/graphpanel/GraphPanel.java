@@ -4,8 +4,10 @@ import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
+import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
+import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -37,11 +39,13 @@ public class GraphPanel extends javax.swing.JPanel
      */
     public GraphPanel() {
         initComponents();
+        // register event handler
+        evtManager.add(this);
         XabslGraphMouseListener mouseListener = new XabslGraphMouseListener();
         initAgentTab(mouseListener);
         initOptionTab(mouseListener);
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -110,6 +114,11 @@ public class GraphPanel extends javax.swing.JPanel
         panelCompiler.setCompilerResult(result);
     }
     
+    @EventListener
+    public void refreshGraph(RefreshGraphEvent e) {
+        refreshGraph();
+    }
+
     public void refreshGraph() {
         if (!editor.hasOpenFiles() || editor.getActiveFile() == null) {
             return;

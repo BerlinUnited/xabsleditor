@@ -106,11 +106,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         for (File f : files) {
             if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
                 evtManager.publish(new OpenFileEvent(this, f));
-                evtManager.publish(new ReloadProjectEvent(this));
             } else {
                 notaXabslFile.add(f.getAbsolutePath());
             }
         }
+        evtManager.publish(new ReloadProjectEvent(this));
         // check if a file couldn't be opened
         if (!notaXabslFile.isEmpty()) {
             JOptionPane.showMessageDialog(rootPane,
@@ -154,7 +154,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     graphPanel.addJumpListener(this);
     graphPanel.setEditor(editorPanel);
-    editorPanel.setGraph(graphPanel);
     editorPanel.setFileWatcher(watcher);
     
     addWindowListener(new ShutdownHook());

@@ -7,7 +7,7 @@ import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.LocateFileEvent;
 import de.naoth.xabsleditor.events.OpenFileEvent;
-import de.naoth.xabsleditor.graphpanel.GraphPanel;
+import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.FileWatcher;
@@ -38,8 +38,7 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
     EventManager evtManager = EventManager.getInstance();
-    // a bit hacky, not a good architecture design :P
-    private GraphPanel graph;
+
     private FileWatcher watcher;
     private EditorPanelTab activeTab = null;
     
@@ -62,7 +61,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             if(activeTab != null) {
                 activeTab.select();
             }
-            graph.refreshGraph();
+            evtManager.publish(new RefreshGraphEvent(EditorPanel.this));
         });
         tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
@@ -181,10 +180,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             locateTabInProjectTree(activeTab);
         }
     }//GEN-LAST:event_tabPopupMenu_LocateActionPerformed
-
-    public void setGraph(GraphPanel g) {
-        graph = g;
-    }
 
     public void setTabSize(int size) {
         tabSize = size;
@@ -439,7 +434,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public void save(String defaultDirectory) {
         if(activeTab != null && activeTab.save(defaultDirectory)) {
-            graph.refreshGraph();
+            evtManager.publish(new RefreshGraphEvent(this));
         }
     }
 
@@ -452,7 +447,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             File old = activeTab.getFile();
             activeTab.setFile(null);
             if(activeTab.save(defaultDirectory)) {
-                graph.refreshGraph();
+                evtManager.publish(new RefreshGraphEvent(this));
             } else {
                 activeTab.setFile(old);
             }
