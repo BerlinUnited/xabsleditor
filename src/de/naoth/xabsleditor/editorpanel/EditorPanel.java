@@ -60,8 +60,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
             if(activeTab != null) {
                 activeTab.select();
+                evtManager.publish(new RefreshGraphEvent(activeTab));
             }
-            evtManager.publish(new RefreshGraphEvent(EditorPanel.this));
         });
         tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
@@ -434,7 +434,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public void save(String defaultDirectory) {
         if(activeTab != null && activeTab.save(defaultDirectory)) {
-            evtManager.publish(new RefreshGraphEvent(this));
+            evtManager.publish(new RefreshGraphEvent(activeTab));
         }
     }
 
@@ -447,7 +447,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             File old = activeTab.getFile();
             activeTab.setFile(null);
             if(activeTab.save(defaultDirectory)) {
-                evtManager.publish(new RefreshGraphEvent(this));
+                evtManager.publish(new RefreshGraphEvent(activeTab));
             } else {
                 activeTab.setFile(old);
             }

@@ -1,5 +1,6 @@
 package de.naoth.xabsleditor.events;
 
+import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import java.util.EventObject;
 
 /**
@@ -8,7 +9,7 @@ import java.util.EventObject;
  */
 public class RefreshGraphEvent extends EventObject
 {
-    public RefreshGraphEvent(Object source) {
+    public RefreshGraphEvent(XEditorPanel source) {
         super(source);
     }
 }

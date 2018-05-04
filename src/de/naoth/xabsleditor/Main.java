@@ -25,6 +25,7 @@ import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
+import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
 import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
@@ -153,7 +154,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     initComponents();
 
     graphPanel.addJumpListener(this);
-    graphPanel.setEditor(editorPanel);
+//    graphPanel.setEditor(editorPanel);
     editorPanel.setFileWatcher(watcher);
     
     addWindowListener(new ShutdownHook());
@@ -865,7 +866,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
     {//GEN-HEADEREND:event_miRefreshGraphActionPerformed
-      graphPanel.refreshGraph();
+      evtManager.publish(new RefreshGraphEvent(editorPanel.getActiveTab()));
 }//GEN-LAST:event_miRefreshGraphActionPerformed
 
     private void miSaveAsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveAsActionPerformed
