@@ -15,13 +15,11 @@
  */
 package de.naoth.xabsleditor;
 
-import de.naoth.xabsleditor.compilerconnection.CompilationFinishedReceiver;
-import de.naoth.xabsleditor.compilerconnection.CompileResult;
-import de.naoth.xabsleditor.compilerconnection.CompilerDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
+import de.naoth.xabsleditor.events.CompilationEvent;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
@@ -33,6 +31,7 @@ import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.FileWatcher;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
+import de.naoth.xabsleditor.utils.XabslCompiler;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
@@ -64,7 +63,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -72,7 +70,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  *
  * @author Heinrich Mellmann
  */
-public class Main extends javax.swing.JFrame implements CompilationFinishedReceiver, JumpListener
+public class Main extends javax.swing.JFrame implements JumpListener
 {
   private final EventManager evtManager = EventManager.getInstance();
   
@@ -83,21 +81,23 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
   private File fConfig;
   private FileFilter dotFilter = new DotFileFilter();
   private FileFilter xabslFilter = new XABSLFileFilter();
-  private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
 
-  private String defaultCompilationPath = null;
   private boolean splitterManuallySet = false;
   private boolean ignoreSplitterMovedEvent = false;
 
   private HelpDialog helpDialog = null;
 
+  private FileWatcher watcher = null;
+
+  /** Reconstruct the Projects menu entry */
+  TreeSet<File> foundAgents = new TreeSet<File>();
+  
+  private final XabslCompiler compiler = new XabslCompiler();
+
   // xabsl files icons
-  private final ImageIcon icon_xabsl_agent =
-      new ImageIcon(this.getClass().getResource("res/xabsl_agents_file.png"));
-  private final ImageIcon icon_xabsl_option =
-      new ImageIcon(this.getClass().getResource("res/xabsl_option_file.png"));
-  private final ImageIcon icon_xabsl_symbol =
-      new ImageIcon(this.getClass().getResource("res/xabsl_symbols_file.png"));
+  private final ImageIcon icon_xabsl_agent  = new ImageIcon(this.getClass().getResource("res/xabsl_agents_file.png"));
+  private final ImageIcon icon_xabsl_option = new ImageIcon(this.getClass().getResource("res/xabsl_option_file.png"));
+  private final ImageIcon icon_xabsl_symbol = new ImageIcon(this.getClass().getResource("res/xabsl_symbols_file.png"));
   
   public final String XABSL_FILE_ENDING = ".xabsl";
   
@@ -119,8 +119,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
                     JOptionPane.ERROR_MESSAGE);
         }
   };
-
-  private FileWatcher watcher = null;
 
   /** Creates new form Main */
   public Main(String file)
@@ -154,7 +152,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     initComponents();
 
     graphPanel.addJumpListener(this);
-//    graphPanel.setEditor(editorPanel);
     editorPanel.setFileWatcher(watcher);
     
     addWindowListener(new ShutdownHook());
@@ -183,7 +180,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     fileChooser = new JFileChooser();
     fileChooser.setFileFilter(xabslFilter);
-    fileChooser.setFileFilter(icFilter);
     fileChooser.setFileFilter(dotFilter);
     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     fileChooser.setAcceptAllFileFilterUsed(true);
@@ -435,9 +431,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     });
   }
 
-  /** Reconstruct the Projects menu entry */
-  TreeSet<File> foundAgents = new TreeSet<File>();
-
     @EventListener
     public void updateProject(ReloadProjectEvent e) {
         mProject.removeAll();
@@ -500,15 +493,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
       fileChooser.setCurrentDirectory(
         new File(configuration.getProperty("lastOpenedFolder")));
     }
-
-    if (configuration.containsKey(OptionsDialog.DEFAULT_COMPILATION_PATH))
-    {
-      String path = configuration.getProperty(OptionsDialog.DEFAULT_COMPILATION_PATH);
-      if (new File(path).exists())
-      {
-        this.defaultCompilationPath = path;
-      }
-    }
     
     // set "tab close button" default to true!
     if(!configuration.containsKey(OptionsDialog.EDITOR_TAB_CLOSE_BTN)) {
@@ -533,6 +517,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
     editorPanel.setTabLayout(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAYOUT)) ? JTabbedPane.WRAP_TAB_LAYOUT : JTabbedPane.SCROLL_TAB_LAYOUT);
     
+    // update configuration of the xabsl compiler
+    compiler.setConfiguration(configuration);
   }//end loadConfiguration
 
   /** This method is called from within the constructor to
@@ -924,62 +910,26 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
-      if (editorPanel.hasOpenFiles()) {
-        File optionFile = editorPanel.getActiveFile();
-        
-        // retrieve unsaved tabs
-        ArrayList<EditorPanelTab> unsaved = editorPanel.hasOpenUnsavedFiles();
-        if(!unsaved.isEmpty()) {
-            // if set via config, otherwise ask ...
-            if(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE))
-                    || JOptionPane.showConfirmDialog(this, "There are unsaved changes. Save files before compiling?", "Unsaved changes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                // save all changed tabs
-                unsaved.forEach((t) -> { t.save(configuration.getProperty("lastOpenedFolder")); });
+        if (editorPanel.hasOpenFiles()) {
+            // retrieve unsaved tabs
+            ArrayList<EditorPanelTab> unsaved = editorPanel.hasOpenUnsavedFiles();
+            if (!unsaved.isEmpty()) {
+                // if set via config, otherwise ask ...
+                if (Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE))
+                        || JOptionPane.showConfirmDialog(this, "There are unsaved changes. Save files before compiling?", "Unsaved changes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    // save all changed tabs
+                    unsaved.forEach((t) -> {
+                        t.save(configuration.getProperty("lastOpenedFolder"));
+                    });
+                }
             }
+            
+            evtManager.publish(new CompilationEvent(this, editorPanel.getActiveFile()));
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Please open an *.xabsl file first before compiling", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
-
-        File fout = null;
-
-        if (defaultCompilationPath == null)
-        {
-          fileChooser.setFileFilter(icFilter);
-          int result = fileChooser.showSaveDialog(this);
-          fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-          if (result == JFileChooser.APPROVE_OPTION)
-          {
-            fout = fileChooser.getSelectedFile();
-          }
-        }
-        else
-        {
-          fout = new File(defaultCompilationPath + "/behavior-ic.dat");
-        }
-
-        if (fout == null)
-        {
-          JOptionPane.showMessageDialog(this, "No file selected");
-          return;
-        }
-        else if (fout.exists())
-        {
-          if (!fout.delete())
-          {
-            JOptionPane.showMessageDialog(this, "Can not overwrite the file "
-              + fout.getAbsolutePath());
-            return;
-          }
-        }
-
-        CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout,
-          this, configuration);
-        frame.setVisible(true);
-      }
-      else
-      {
-        JOptionPane.showMessageDialog(this,
-          "Please open an *.xabsl file first before compiling", "Error",
-          JOptionPane.ERROR_MESSAGE);
-      }
     }//GEN-LAST:event_compileAction
 
     private void miSearchActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchActionPerformed
@@ -989,7 +939,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
     {//GEN-HEADEREND:event_formComponentResized
-
       if (!splitterManuallySet)
       {
         // position splitter in the middle
@@ -1001,7 +950,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void jSplitPanePropertyChange(java.beans.PropertyChangeEvent evt)//GEN-FIRST:event_jSplitPanePropertyChange
     {//GEN-HEADEREND:event_jSplitPanePropertyChange
-
       if (evt.getPropertyName().equals("dividerLocation"))
       {
         if (!ignoreSplitterMovedEvent)
@@ -1009,14 +957,11 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
           splitterManuallySet = true;
         }
       }
-
     }//GEN-LAST:event_jSplitPanePropertyChange
 
     private void miSearchProjectActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchProjectActionPerformed
     {//GEN-HEADEREND:event_miSearchProjectActionPerformed
-
       searchInProjectDialog.setVisible(true);
-
     }//GEN-LAST:event_miSearchProjectActionPerformed
 
     private void miHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miHelpActionPerformed
@@ -1032,7 +977,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     if (editorPanel.hasOpenFiles()) {
       new UnusedOptions(this, editorPanel.getActiveXABSLContext()).setVisible(true);
     }
-    
   }//GEN-LAST:event_miFindUnusedOptionsActionPerformed
 
   /**
@@ -1118,17 +1062,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JToolBar.Separator seperator1;
     private javax.swing.JToolBar toolbarMain;
     // End of variables declaration//GEN-END:variables
-
-  @Override
-  public void compilationFinished(CompileResult result)
-  {
-    //txtCompilerOutput.setText(result.messages);
-    graphPanel.updateCompilerResult(result);
-    if (result.errors || result.warnings)
-    {
-      graphPanel.selectTab("Compiler");
-    }
-  }//end compilationFinished
 
   private void saveConfiguration()
   {

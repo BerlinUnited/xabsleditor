@@ -4,6 +4,7 @@ import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
 import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
+import de.naoth.xabsleditor.events.CompilationFinishedEvent;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
@@ -107,6 +108,15 @@ public class GraphPanel extends javax.swing.JPanel
     
     public void updateCompilerResult(CompileResult result) {
         panelCompiler.setCompilerResult(result);
+    }
+    
+    @EventListener
+    public void compileResult(CompilationFinishedEvent e) {
+        
+        updateCompilerResult(e.result);
+        if (e.result.errors || e.result.warnings) {
+            selectTab("Compiler");
+        }
     }
     
     @EventListener
