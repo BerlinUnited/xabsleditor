@@ -7,6 +7,7 @@ import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.LocateFileEvent;
 import de.naoth.xabsleditor.events.OpenFileEvent;
+import de.naoth.xabsleditor.events.OpenTabEvent;
 import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -226,7 +227,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     }
 
     @EventListener
-    public void openFile(OpenFileEvent evt) {
+    public void openFile(OpenTabEvent evt) {
         if (evt.file == null) {
             createDocumentTab(null, null, null);
         } else {
@@ -238,52 +239,11 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
                 }
             }
             // ... otherwise create new tab
-            File agentsFile = Tools.getAgentFileForOption(evt.file);
-            XABSLContext newContext = null;
-
-            if (agentsFile != null) {
-                newContext = loadXABSLContext(agentsFile.getParentFile(), null);
-            }
-
-            createDocumentTab(evt.file, newContext, agentsFile);
+            createDocumentTab(evt.file, evt.project.context(), evt.project.agent());
             
             activeTab.setCarretPosition(evt.carretPosition);
         }
     }
-    
-    public XABSLContext loadXABSLContext(File folder, XABSLContext context) {
-        if (context == null) {
-            context = new XABSLContext();
-        }
-
-        final String XABSL_FILE_ENDING = ".xabsl";
-
-        File[] fileList = folder.listFiles();
-        for (File file : fileList) {
-            if (file.isDirectory()) {
-                loadXABSLContext(file, context);
-            } else if (file.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
-                // remove the file ending
-                int dotIndex = file.getName().length() - XABSL_FILE_ENDING.length();
-                String name = file.getName().substring(0, dotIndex);
-                context.getOptionPathMap().put(name, file);
-
-                // parse XABSL file
-                try {
-                    //System.out.println("parse: " + file.getName()); // debug stuff
-                    XParser p = new XParser(context);
-                    p.parse(new FileReader(file), file.getAbsolutePath());
-
-                    // HACK: problems with equal file names
-                    context.getFileTypeMap().put(name, p.getFileType());
-                } catch (Exception e) {
-                    System.err.println("Couldn't read the XABSL file " + file.getAbsolutePath());
-                }
-            }
-        }//end for
-
-        return context;
-    }//end loadXABSLContext
 
     private EditorPanelTab createDocumentTab(File file, XABSLContext context, File agentsFile) {
         try {

@@ -202,18 +202,9 @@
             <Property name="mnemonic" type="int" value="112"/>
             <Property name="text" type="java.lang.String" value="Project"/>
           </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
-              <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-                  <FontInfo relative="true">
-                    <Font component="jMenuItem1" italic="true" property="font" relativeSize="true" size="0"/>
-                  </FontInfo>
-                </Property>
-                <Property name="text" type="java.lang.String" value="empty"/>
-              </Properties>
-            </MenuItem>
-          </SubComponents>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ProjectMenu()"/>
+          </AuxValues>
         </Menu>
         <Menu class="javax.swing.JMenu" name="mHelp">
           <Properties>
@@ -388,16 +379,6 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
           <SubComponents>
-            <Component class="de.naoth.xabsleditor.editorpanel.EditorPanel" name="editorPanel">
-              <Properties>
-                <Property name="focusCycleRoot" type="boolean" value="true"/>
-              </Properties>
-              <Constraints>
-                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
-                  <JSplitPaneConstraints position="left"/>
-                </Constraint>
-              </Constraints>
-            </Component>
             <Component class="de.naoth.xabsleditor.graphpanel.GraphPanel" name="graphPanel">
               <Properties>
                 <Property name="focusCycleRoot" type="boolean" value="true"/>

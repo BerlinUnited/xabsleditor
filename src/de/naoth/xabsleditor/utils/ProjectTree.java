@@ -115,20 +115,26 @@ public class ProjectTree extends javax.swing.JPanel
             // if projects are empty, set default tree node
             DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("<no project>");
             fileTree.setModel(new DefaultTreeModel(treeNode1));
+            fileTree.setRootVisible(true);
         } else {
             // iterate through projects and append to project tree
-            for (DefaultMutableTreeNode project : e.projects) {
-                fileTree.setModel(new DefaultTreeModel(project));
+            fileTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
+            e.projects.values().forEach((project) -> {
+                ((DefaultMutableTreeNode)fileTree.getModel().getRoot()).add(project.tree());
 
                 // previously expended nodes ...
                 if (expendedNodes != null) {
                     // get "restored"
                     while (expendedNodes.hasMoreElements()) {
                         TreePath param = expendedNodes.nextElement();
-                        nodeExpander(project, param.getLastPathComponent().toString());
+                        nodeExpander(project.tree(), param.getLastPathComponent().toString());
                     }
                 }
-            }
+            });
+            
+            fileTree.expandRow(0);
+            fileTree.expandRow(1);
+            fileTree.setRootVisible(false);
         }
     }
 

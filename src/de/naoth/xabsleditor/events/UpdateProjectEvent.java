@@ -1,8 +1,8 @@
 package de.naoth.xabsleditor.events;
 
-import java.util.ArrayList;
+import de.naoth.xabsleditor.utils.Project;
 import java.util.EventObject;
-import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.Map;
 
 /**
  *
@@ -10,9 +10,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class UpdateProjectEvent extends EventObject
 {
-    public final ArrayList<DefaultMutableTreeNode> projects;
+    public final Map<String, Project> projects;
     
-    public UpdateProjectEvent(Object source, ArrayList<DefaultMutableTreeNode> projects) {
+    public UpdateProjectEvent(Object source, Map<String, Project> projects) {
         super(source);
         this.projects = projects;
     }
