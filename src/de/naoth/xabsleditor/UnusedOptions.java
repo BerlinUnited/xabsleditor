@@ -8,9 +8,11 @@ import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
+import de.naoth.xabsleditor.utils.Project;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.HashSet;
+import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
@@ -26,14 +28,16 @@ public class UnusedOptions extends javax.swing.JDialog
 
   /**
    * Creates new form UnusedOptions
+     * @param parent
+     * @param projects
    */
-  public UnusedOptions(Main parent, XABSLContext context)
+  public UnusedOptions(java.awt.Frame parent, Map<String, Project> projects)
   {
     super(parent, true);
     
     initComponents();
 
-    update(context);
+    update(projects);
     
     // hide dialog when pressing ESC
     this.getRootPane().registerKeyboardAction(e -> {
@@ -41,29 +45,30 @@ public class UnusedOptions extends javax.swing.JDialog
     }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
   }
 
-  private void update(XABSLContext context)
+  private void update(Map<String, Project> projects)
   {
-    HashSet<String> usedOptions = new HashSet<String>();
-    for (String rootOption : context.getAgentMap().values())
-    {
-      fillUsedActionList(usedOptions, context, rootOption);
-    }
-
     DefaultListModel m = new DefaultListModel();
-    for (XABSLOption o : context.getOptionMap().values())
-    {
-      if (!usedOptions.contains(o.getName()))
-      {
-        File path = context.getOptionPathMap().get(o.getName());
-        
-        if(path != null)
+    projects.forEach((i, p) -> {
+        HashSet<String> usedOptions = new HashSet<String>();
+        for (String rootOption : p.context().getAgentMap().values())
         {
-          m.addElement(path);
+          fillUsedActionList(usedOptions, p.context(), rootOption);
         }
-      }
-    }
+
+        for (XABSLOption o : p.context().getOptionMap().values())
+        {
+          if (!usedOptions.contains(o.getName()))
+          {
+            File path = p.context().getOptionPathMap().get(o.getName());
+
+            if(path != null)
+            {
+              m.addElement(path);
+            }
+          }
+        }
+    });
     lstUnused.setModel(m);
-    
   }
 
   private void fillUsedActionList(HashSet<String> usedOptions,

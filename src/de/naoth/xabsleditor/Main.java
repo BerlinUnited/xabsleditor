@@ -243,8 +243,8 @@ public class Main extends javax.swing.JFrame implements JumpListener
         if (evt.file.exists()) {
             String newName = JOptionPane.showInputDialog("Rename file '" + evt.file.getName() + "': ", evt.file.getName());
             if (newName != null && !newName.trim().isEmpty()) {
-                // add extension, if not set
-                if (!newName.endsWith(".xabsl")) {
+                // add extension, if not set and if its not a directory
+                if (!evt.file.isDirectory() && !newName.endsWith(".xabsl")) {
                     newName += ".xabsl";
                 }
                 // rename
@@ -756,7 +756,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
   {//GEN-HEADEREND:event_miFindUnusedOptionsActionPerformed
       // get selected tab
       if (editorPanel.hasOpenFiles()) {
-          new UnusedOptions(this, editorPanel.getActiveXABSLContext()).setVisible(true);
+          new UnusedOptions(this, projects).setVisible(true);
       }
   }//GEN-LAST:event_miFindUnusedOptionsActionPerformed
 
