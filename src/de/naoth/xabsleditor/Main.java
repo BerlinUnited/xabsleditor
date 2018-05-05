@@ -17,13 +17,12 @@ package de.naoth.xabsleditor;
 
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
-import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
 import de.naoth.xabsleditor.events.CompilationEvent;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.NewFileEvent;
 import de.naoth.xabsleditor.events.OpenFileEvent;
-import de.naoth.xabsleditor.events.OpenTabEvent;
 import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
 import de.naoth.xabsleditor.events.RenameFileEvent;
@@ -44,7 +43,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -229,7 +227,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
             projects.put(agent.getAbsolutePath(), p);
             evtManager.publish(new UpdateProjectEvent(this, projects));
         }
-        evtManager.publish(new OpenTabEvent(this, evt.file, p));
+        editorPanel.openFile(evt.file, p.agent(), p.context(), evt.carretPosition, evt.search);
     }
 
     @EventListener
@@ -253,6 +251,27 @@ public class Main extends javax.swing.JFrame implements JumpListener
                 evt.file.renameTo(new File(evt.file.getParent(), newName));
                 // update project
                 evtManager.publish(new ReloadProjectEvent(this));
+            }
+        }
+    }
+    
+    @EventListener
+    public void newFile(NewFileEvent e) {
+        fileChooser.setCurrentDirectory(e.startDirectory);
+        fileChooser.resetChoosableFileFilters();
+        fileChooser.setSelectedFile(new File(""));
+        fileChooser.setFileFilter(xabslFilter);
+        // show save dialog
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
+            if(f != null) {
+                try {
+                    f.createNewFile();
+                    evtManager.publish(new ReloadProjectEvent(this));
+                    evtManager.publish(new OpenFileEvent(this, f));
+                } catch (IOException ex) {}
+            } else {
+                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
@@ -599,7 +618,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
       // create new tab
-      evtManager.publish(new OpenTabEvent(this, null, null));
+      editorPanel.openFile(null, null, null, 0, null);
 }//GEN-LAST:event_newFileAction
 
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
@@ -721,6 +740,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
 
     private void miSearchProjectActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchProjectActionPerformed
     {//GEN-HEADEREND:event_miSearchProjectActionPerformed
+        searchInProjectDialog.setProjects(projects);
         searchInProjectDialog.setVisible(true);
     }//GEN-LAST:event_miSearchProjectActionPerformed
 
@@ -762,7 +782,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
         int dotIndex = target.getFileName().length() - XABSL_FILE_ENDING.length();
         String name = target.getFileName().substring(0, dotIndex);
 
-        evtManager.publish(new OpenFileEvent(this, getOptionPathMap().get(name)));
+        evtManager.publish(new OpenFileEvent(this, editorPanel.getActiveXABSLContext().getOptionPathMap().get(name)));
 
         if (editorPanel.hasOpenFiles()) {
             editorPanel.getActiveTab().jumpToLine(target.getLineNumber());
@@ -770,18 +790,6 @@ public class Main extends javax.swing.JFrame implements JumpListener
             System.err.println("Couldn't jump to taget " + target);
         }
     }//end jumpTo
-
-    public Map<String, File> getOptionPathMap() {
-        if (editorPanel.getActiveXABSLContext() != null) {
-            return editorPanel.getActiveXABSLContext().getOptionPathMap();
-        } else {
-            return null;
-        }
-    }
-
-    public EditorPanel getEditorPanel() {
-        return editorPanel;
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCompile;
@@ -828,37 +836,6 @@ public class Main extends javax.swing.JFrame implements JumpListener
         }
     }//end saveConfiguration
 
-    // NOTICE: do we need this?!?
-    class XABSLErrorOutputStream extends OutputStream {
-
-        private StringBuilder messageBuffer = new StringBuilder();
-
-        @Override
-        public void write(int b) throws IOException {
-            messageBuffer.append((char) b);
-        }
-
-        public String getMessage() {
-            return messageBuffer.toString();
-        }//end getMessage
-        public String fileName;
-        int row;
-        int col;
-        String message;
-
-        public void parseMessage() {
-            String str = messageBuffer.toString();
-            str = str.replaceAll("\\(|(\\) : )|,", ";");
-            String[] splStr = str.split(";");
-            if (splStr.length == 4) {
-                fileName = splStr[0];
-                row = Integer.parseInt(splStr[1]);
-                col = Integer.parseInt(splStr[2]);
-                message = splStr[3];
-            }//end if
-        }//end parseMessage
-    }//end class XABSLErrorOutputStream
-
     class ShutdownHook extends WindowAdapter {
 
         @Override
@@ -903,24 +880,3 @@ public class Main extends javax.swing.JFrame implements JumpListener
         }
     }
 }//end class Main
-
-/*
-        fileChooser.setCurrentDirectory();
-        fileChooser.resetChoosableFileFilters();
-        fileChooser.setSelectedFile(new File(""));
-        fileChooser.setFileFilter(xabslFilter);
-        // show save dialog
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
-            if(f != null) {
-                try {
-                    f.createNewFile();
-                } catch (IOException ex) {}
-                editorPanel.openFile(f);
-                editorPanel.getActiveTab().setFile(f);
-            } else {
-                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-
-*/

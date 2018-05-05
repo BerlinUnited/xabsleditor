@@ -2,22 +2,16 @@ package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.FileDrop;
 import de.naoth.xabsleditor.Main;
-import de.naoth.xabsleditor.Tools;
-import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.LocateFileEvent;
-import de.naoth.xabsleditor.events.OpenFileEvent;
-import de.naoth.xabsleditor.events.OpenTabEvent;
 import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
-import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.FileWatcher;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -226,22 +220,25 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return showCloseButtons;
     }
 
-    @EventListener
-    public void openFile(OpenTabEvent evt) {
-        if (evt.file == null) {
+    public void openFile(File file, File agent, XABSLContext context, int carret, String search) {
+        if (file == null) {
             createDocumentTab(null, null, null);
         } else {
             // find and select already opened file
             for (EditorPanelTab tab : this) {
-                if(tab.getFile() != null && tab.getFile().equals(evt.file)) {
+                if(tab.getFile() != null && tab.getFile().equals(file)) {
                     tabs.setSelectedComponent(tab);
                     return;
                 }
             }
             // ... otherwise create new tab
-            createDocumentTab(evt.file, evt.project.context(), evt.project.agent());
+            createDocumentTab(file, context, agent);
             
-            activeTab.setCarretPosition(evt.carretPosition);
+            if(search == null) {
+                activeTab.setCarretPosition(carret);
+            } else {
+                activeTab.search(search);
+            }
         }
     }
 
