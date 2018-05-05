@@ -121,7 +121,7 @@ public class GraphPanel extends javax.swing.JPanel
     
     @EventListener
     public void refreshGraph(RefreshGraphEvent e) {
-        if (e.getSource() == null || !(e.getSource() instanceof XEditorPanel)) {
+        if (e.getSource() == null || !(e.getSource() instanceof XEditorPanel) || ((XEditorPanel)e.getSource()).getFile() == null) {
             return;
         }
         currentEditor = (XEditorPanel)e.getSource();
