@@ -121,16 +121,16 @@ public class ProjectTree extends javax.swing.JPanel
             fileTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
             e.projects.values().forEach((project) -> {
                 ((DefaultMutableTreeNode)fileTree.getModel().getRoot()).add(project.tree());
-
-                // previously expended nodes ...
-                if (expendedNodes != null) {
-                    // get "restored"
-                    while (expendedNodes.hasMoreElements()) {
-                        TreePath param = expendedNodes.nextElement();
-                        nodeExpander(project.tree(), param.getLastPathComponent().toString());
-                    }
-                }
             });
+
+            // previously expended nodes ...
+            if (expendedNodes != null) {
+                // get "restored"
+                while (expendedNodes.hasMoreElements()) {
+                    TreePath param = expendedNodes.nextElement();
+                    nodeExpander(((DefaultMutableTreeNode)fileTree.getModel().getRoot()), param.getLastPathComponent().toString());
+                }
+            }
             
             fileTree.expandRow(0);
             fileTree.expandRow(1);
