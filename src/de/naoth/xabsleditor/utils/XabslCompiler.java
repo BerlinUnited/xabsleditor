@@ -4,10 +4,8 @@ import de.naoth.xabsleditor.OptionsDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilationFinishedReceiver;
 import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerDialog;
-import de.naoth.xabsleditor.events.CompilationEvent;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.CompilationFinishedEvent;
-import de.naoth.xabsleditor.events.EventListener;
 import java.io.File;
 import java.util.Properties;
 import javax.swing.JFileChooser;
@@ -45,8 +43,7 @@ public class XabslCompiler implements CompilationFinishedReceiver
         }
     }
     
-    @EventListener
-    public void compile(CompilationEvent evt) {
+    public void compile(File file) {
         File fout = null;
 
         if (defaultCompilationPath == null) {
@@ -68,17 +65,12 @@ public class XabslCompiler implements CompilationFinishedReceiver
             }
         }
 
-        CompilerDialog frame = new CompilerDialog(null, true, evt.file, fout, this, configuration);
+        CompilerDialog frame = new CompilerDialog(null, true, file, fout, this, configuration);
         frame.setVisible(true);
     }
 
     @Override
     public void compilationFinished(CompileResult result) {
-        //txtCompilerOutput.setText(result.messages);
-//        graphPanel.updateCompilerResult(result);
-//        if (result.errors || result.warnings) {
-//            graphPanel.selectTab("Compiler");
-//        }
         evtManager.publish(new CompilationFinishedEvent(this, result));
     }
 }

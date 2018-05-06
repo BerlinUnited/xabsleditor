@@ -18,7 +18,6 @@ package de.naoth.xabsleditor;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
-import de.naoth.xabsleditor.events.CompilationEvent;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.NewFileEvent;
@@ -706,7 +705,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
                 }
             }
 
-            evtManager.publish(new CompilationEvent(this, editorPanel.getActiveFile()));
+            compiler.compile(editorPanel.getActiveFile());
         } else {
             JOptionPane.showMessageDialog(this,
                     "Please open an *.xabsl file first before compiling", "Error",
