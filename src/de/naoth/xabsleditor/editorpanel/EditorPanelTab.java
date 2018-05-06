@@ -19,6 +19,7 @@ import javax.swing.event.HyperlinkEvent;
  */
 public class EditorPanelTab extends XEditorPanel implements FileWatcherListener
 {
+    /** Manager for distributing events. */
     private final EventManager evtManager = EventManager.getInstance();
     private File agent;
     FileWatcher watcher;

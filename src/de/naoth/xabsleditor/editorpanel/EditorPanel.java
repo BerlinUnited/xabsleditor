@@ -32,6 +32,7 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
  */
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
+    /** Manager for distributing events. */
     EventManager evtManager = EventManager.getInstance();
 
     private FileWatcher watcher;

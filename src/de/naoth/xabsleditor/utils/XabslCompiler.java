@@ -14,17 +14,25 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- *
+ * Wrapper for handling the compile process.
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class XabslCompiler implements CompilationFinishedReceiver
 {
+    /** Manager for distributing events. */
     private final EventManager evtManager = EventManager.getInstance();
+    /** The configuration of the editor. */
     private Properties configuration = new Properties();
+    /** The default path/file, where the compilation result should be stored */
     private String defaultCompilationPath = null;
+    /** A file chooser for selecting the file, where the compilation result is saved. */
     private final JFileChooser fileChooser = new JFileChooser();
+    /** The filter for the file chooser. */
     private final FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
 
+    /**
+     * Constructor, sets the default values for the file chooser.
+     */
     public XabslCompiler() {
         fileChooser.setFileFilter(icFilter);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -32,6 +40,11 @@ public class XabslCompiler implements CompilationFinishedReceiver
         evtManager.add(this);
     }
     
+    /**
+     * Updates the configuration and sets the default compilation path - if available.
+     * 
+     * @param c the new configuration
+     */
     public void setConfiguration(Properties c) {
         configuration = c;
         
@@ -43,6 +56,11 @@ public class XabslCompiler implements CompilationFinishedReceiver
         }
     }
     
+    /**
+     * Starts the compilation process.
+     * 
+     * @param file a file of the project which should be compiled
+     */
     public void compile(File file) {
         File fout = null;
 
@@ -69,6 +87,12 @@ public class XabslCompiler implements CompilationFinishedReceiver
         frame.setVisible(true);
     }
 
+    /**
+     * Event listener when the compilation finished.
+     * Schedules the CompilationFinishedEvent for interested other editor components.
+     * 
+     * @param result the result of the compilation
+     */
     @Override
     public void compilationFinished(CompileResult result) {
         evtManager.publish(new CompilationFinishedEvent(this, result));

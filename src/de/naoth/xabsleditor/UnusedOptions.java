@@ -24,6 +24,7 @@ import javax.swing.KeyStroke;
  */
 public class UnusedOptions extends javax.swing.JDialog
 {
+  /** Manager for distributing events. */
   private final EventManager evtManager = EventManager.getInstance();
 
   /**

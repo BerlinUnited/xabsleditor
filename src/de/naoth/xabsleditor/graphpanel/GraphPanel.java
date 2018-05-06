@@ -29,6 +29,7 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
  */
 public class GraphPanel extends javax.swing.JPanel
 {
+    /** Manager for distributing events. */
     private final EventManager evtManager = EventManager.getInstance();
     
     private OptionVisualizer optionVisualizer;

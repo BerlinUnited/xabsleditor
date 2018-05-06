@@ -29,6 +29,7 @@ import javax.swing.tree.TreePath;
  */
 public class ProjectTree extends javax.swing.JPanel
 {
+    /** Manager for distributing events. */
     private final EventManager evtManager = EventManager.getInstance();
     
     /**
@@ -38,13 +39,13 @@ public class ProjectTree extends javax.swing.JPanel
         initComponents();
         
         evtManager.add(this);
-        
 
         // set the cell renderer for the projects treeview
         fileTree.setCellRenderer(new DefaultTreeCellRenderer(){
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                 if(value instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode)value).getUserObject() instanceof File) {
+                    // leaf nodes (xabsl files) are shown without the '.xabsl' extension; directories are shonw as-is.
                     File file = (File)((DefaultMutableTreeNode)value).getUserObject();
                     if(file.isDirectory()) {
                         value = file.getName();
@@ -63,9 +64,11 @@ public class ProjectTree extends javax.swing.JPanel
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2) {
+                    // double click opens the selected file
                     TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
                     openFileFromTree(selPath);
                 } else if (SwingUtilities.isRightMouseButton(e)) {
+                    // right click shows a context menu of the file tree
                     TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
                     if(selPath != null) {
                         fileTree.setSelectionPath(selPath);
@@ -76,11 +79,23 @@ public class ProjectTree extends javax.swing.JPanel
         });
     }
     
+    /**
+     * Opens the context menu of the file tree.
+     * 
+     * @param x location on the screen
+     * @param y location on the screen
+     * @param rename whether or not the 'rename' entry of the menu should be enabled or not
+     */
     private void showPopup(int x, int y, boolean rename) {
         fileTreePopupRename.setEnabled(rename);
         fileTreePopup.show(fileTree, x, y);
     }
     
+    /**
+     * If the given tree path ends in a file node, a OpenFileEvent is scheduled.
+     * 
+     * @param selPath a tree path
+     */
     private void openFileFromTree(TreePath selPath) {
         if (selPath != null) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
@@ -91,6 +106,12 @@ public class ProjectTree extends javax.swing.JPanel
         }
     }
 
+    /**
+     * Expands all tree nodes on the given path.
+     * 
+     * @param node a node of the file tree
+     * @param val the node value to compare with
+     */
     private void nodeExpander(TreeNode node, String val) {
         // we're only expanding nodes
         if (!node.isLeaf()) {
@@ -106,6 +127,12 @@ public class ProjectTree extends javax.swing.JPanel
         }
     }
     
+    /**
+     * The event listener for the UpdateProjectEvent.
+     * If the project structure/hierarchy changes, the project tree gets updated.
+     * 
+     * @param e the event containing the projects
+     */
     @EventListener
     public void setProjectTreeItems(UpdateProjectEvent e) {
         // get expanded nodes
@@ -138,6 +165,13 @@ public class ProjectTree extends javax.swing.JPanel
         }
     }
 
+    /**
+     * Event listener for the LocateFileEvent.
+     * When a file location request was submitted, the given file is searched in
+     * the project file tree.
+     * 
+     * @param evt the event containing the file to search for
+     */
     @EventListener
     public void locateProjectFiles(LocateFileEvent evt) {
         Enumeration e = ((DefaultMutableTreeNode) fileTree.getModel().getRoot()).breadthFirstEnumeration();

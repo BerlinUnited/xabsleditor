@@ -64,32 +64,38 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
  */
 public class Main extends javax.swing.JFrame implements JumpListener
 {
+    /** Manager for distributing events. */
     private final EventManager evtManager = EventManager.getInstance();
-
-    private JFileChooser fileChooser = new JFileChooser();
+    /** The Xabsl file extension. */
+    public final String XABSL_FILE_ENDING = ".xabsl";
+    /** Dialog for searching all projects for a given string. */
     private SearchInProjectDialog searchInProjectDialog;
-
+    /** The user configuration for the editor */
     private Properties configuration = new Properties();
+    /** The file where the configuration is saved. */
     private File fConfig;
+    /** Default file chooser */
+    private JFileChooser fileChooser = new JFileChooser();
+    /** A filter for files ending with ".dot" for the file chooser. */
     private FileFilter dotFilter = new DotFileFilter();
+    /** A filter for files ending with ".xabsl" for the file chooser. */
     private FileFilter xabslFilter = new XABSLFileFilter();
-
+    /** */
     private boolean splitterManuallySet = false;
+    /** */
     private boolean ignoreSplitterMovedEvent = false;
-
+    /** The help dialog for the xabsl editor. */
     private HelpDialog helpDialog = null;
-
+    /** File change watcher */
     private FileWatcher watcher = null;
-
-    /**
-     * Reconstruct the Projects menu entry
-     */
+    /** Stores the currently opened projects. */
     HashMap<String, Project> projects = new HashMap<>();
-
+    /** The xabsl compiler. */
     private final XabslCompiler compiler = new XabslCompiler();
 
-    public final String XABSL_FILE_ENDING = ".xabsl";
-
+    /**
+     * Callback for drag'n'drop xabsl files on the editor.
+     */
     public FileDrop.Listener dropHandler = (File[] files) -> {
         ArrayList<String> notaXabslFile = new ArrayList<>();
         // iterate through dropped files and open them - if their xabsl files
@@ -211,6 +217,13 @@ public class Main extends javax.swing.JFrame implements JumpListener
         }
     }//end Main
 
+    /**
+     * Listener for the OpenFileEvent.
+     * If a (new) file should be opened, it is first search in the already opened projects.
+     * If not found, a new project is loaded.
+     * 
+     * @param evt 
+     */
     @EventListener
     public void openFile(OpenFileEvent evt) {
         Project p = null;
@@ -229,6 +242,14 @@ public class Main extends javax.swing.JFrame implements JumpListener
         editorPanel.openFile(evt.file, p.agent(), p.context(), evt.carretPosition, evt.search);
     }
 
+    /**
+     * Listener for the ReloadProjectEvent.
+     * If something changed in the project structure (file created/deleted/renamed ...)
+     * this method is called. It updates all currently opened projects and schedules the
+     * UpdateProjectEvent.
+     * 
+     * @param e 
+     */
     @EventListener
     public void updateProject(ReloadProjectEvent e) {
         projects.entrySet().forEach((entry) -> {
@@ -237,6 +258,13 @@ public class Main extends javax.swing.JFrame implements JumpListener
         evtManager.publish(new UpdateProjectEvent(this, projects));
     } // END updateProject()
 
+    /**
+     * Listener for the RenameFileEvent.
+     * Asks for a new file name and renames the selected file/directory. The xabsl
+     * extension is appended if necessary.
+     * 
+     * @param evt 
+     */
     @EventListener
     public void renameFile(RenameFileEvent evt) {
         if (evt.file.exists()) {
@@ -254,6 +282,12 @@ public class Main extends javax.swing.JFrame implements JumpListener
         }
     }
     
+    /**
+     * Listener for the NewFileEvent.
+     * Creates a new file and schedules the ReloadProjectEvent & OpenFileEvent.
+     * 
+     * @param e 
+     */
     @EventListener
     public void newFile(NewFileEvent e) {
         fileChooser.setCurrentDirectory(e.startDirectory);
@@ -275,6 +309,9 @@ public class Main extends javax.swing.JFrame implements JumpListener
         }
     }
 
+    /**
+     * (Re-)loads the editor configuration.
+     */
     private void loadConfiguration() {
         if (configuration.containsKey("lastOpenedFolder")) {
             fileChooser.setCurrentDirectory(
