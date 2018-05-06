@@ -338,11 +338,11 @@ public class AgentVisualizer extends javax.swing.JPanel
 
     if (scaleW < scaleH)
     {
-      scaler.scale(vv, (float) scaleW, new Point2D.Double(1, 0));
+      scaler.scale(vv, (float) scaleW, new Point2D.Double(0, 0));
     }
     else
     {
-      scaler.scale(vv, (float) scaleH, new Point2D.Double(1, 0));
+      scaler.scale(vv, (float) scaleH, new Point2D.Double(0, 0));
     }
   }
 
