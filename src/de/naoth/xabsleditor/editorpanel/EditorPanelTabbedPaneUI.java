@@ -1,12 +1,17 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import java.awt.Component;
+import java.awt.KeyEventPostProcessor;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.Iterator;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.synth.SynthTabbedPaneUI;
 
 /**
@@ -21,6 +26,43 @@ public class EditorPanelTabbedPaneUI extends SynthTabbedPaneUI
     private final Deque<Component> order = new ArrayDeque<>();
     /** Indicates, if the ctrl key is currently pressed */
     private boolean isCtrlPressed = false;
+    /** Listener for monitoring the ctrl key */
+    private final KeyEventPostProcessor ctrlKeyListener = new KeyEventPostProcessor() {
+        @Override
+        public boolean postProcessKeyEvent(KeyEvent e) {
+            isCtrlPressed = e.isControlDown();
+            if(!e.isControlDown() && tabPane.getSelectedComponent()!= order.peekFirst()) {
+                // if released, set current tab to be first
+                setCurrentFirst();
+            }
+            return false;
+        }
+    };
+    /** Listener for monitoring other tab switches (eg. by mouse) */
+    private final ChangeListener tabSwitchListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e){
+            if(!isCtrlPressed) {
+                setCurrentFirst();
+            }
+        }
+    };
+    /** Listener for add/remove new tabs to the ordered queue */
+    ContainerListener tabModifyListener = new ContainerListener() {
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            if (e.getChild() instanceof EditorPanelTab) {
+                order.add(e.getChild());
+            }
+        }
+
+        @Override
+        public void componentRemoved(ContainerEvent e) {
+            if (e.getChild() instanceof EditorPanelTab) {
+                order.remove(e.getChild());
+            }
+        }
+    };
 
     /**
      * Installs custom listeners.
@@ -31,38 +73,33 @@ public class EditorPanelTabbedPaneUI extends SynthTabbedPaneUI
         
         if(!installed) {
             // monitor the ctrl key
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor((e) -> {
-                isCtrlPressed = e.isControlDown();
-                if(!e.isControlDown() && tabPane.getSelectedComponent()!= order.peekFirst()) {
-                    // if released, set current tab to be first
-                    setCurrentFirst();
-                }
-                return false;
-            });
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventPostProcessor(ctrlKeyListener);
             // monitor other tab switches (eg. by mouse)
-            tabPane.addChangeListener((c) -> {
-                if(!isCtrlPressed) {
-                    setCurrentFirst();
-                }
-            });
+            tabPane.addChangeListener(tabSwitchListener);
             // add/remove new tabs to the ordered queue
-            tabPane.addContainerListener(new ContainerListener() {
-                @Override
-                public void componentAdded(ContainerEvent e) {
-                    if(e.getChild() instanceof EditorPanelTab) {
-                        order.add(e.getChild());
-                    }
-                }
-
-                @Override
-                public void componentRemoved(ContainerEvent e) {
-                    if(e.getChild() instanceof EditorPanelTab) {
-                        order.remove(e.getChild());
-                    }
+            tabPane.addContainerListener(tabModifyListener);
+            // add already existing tabs to the queue
+            Arrays.stream(tabPane.getComponents()).forEach((t) -> {
+                if(t instanceof EditorPanelTab) {
+                    order.addFirst(t);
                 }
             });
             
             installed = true;
+        }
+    }
+
+    /**
+     * Removes (uninstalls) custom listeners.
+     */
+    @Override
+    protected void uninstallListeners() {
+        super.uninstallListeners();
+        if(installed) {
+            // remove all added listeners
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventPostProcessor(ctrlKeyListener);
+            tabPane.removeChangeListener(tabSwitchListener);
+            tabPane.removeContainerListener(tabModifyListener);
         }
     }
 

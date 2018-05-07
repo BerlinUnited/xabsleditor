@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
@@ -49,8 +50,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         initComponents();
         // register event handler
         evtManager.add(this);
-        // a custom ui manager is needed, in order to traverse tabs
-        tabs.setUI(new EditorPanelTabbedPaneUI());
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
@@ -194,6 +193,14 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public int getTabLayout() {
         return tabs.getTabLayoutPolicy();
+    }
+    
+    public void setTabUI(TabbedPaneUI ui) {
+        tabs.setUI(ui);
+    }
+    
+    public TabbedPaneUI getTabUI() {
+        return tabs.getUI();
     }
     
     public void setFontSize(float size) {

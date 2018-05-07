@@ -43,9 +43,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="239" max="-2" attributes="0"/>
-                      <Component id="jButtonOK" pref="154" max="32767" attributes="0"/>
+                      <Component id="jButtonOK" pref="179" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButtonCancel" pref="142" max="32767" attributes="0"/>
+                      <Component id="jButtonCancel" pref="167" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -116,7 +116,7 @@
                               <Component id="btBrowseCompilation" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                              <Component id="txtXabslCompilerCommand" alignment="0" pref="490" max="32767" attributes="1"/>
+                              <Component id="txtXabslCompilerCommand" alignment="0" pref="540" max="32767" attributes="1"/>
                               <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="1"/>
                               <Component id="cbUseRuby" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -192,6 +192,7 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbTabLastUsed" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="jLabel4" min="-2" max="-2" attributes="1"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -208,7 +209,7 @@
                           <Component id="cbTabCloseBtn" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbSaveBeforCompile" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="274" max="32767" attributes="0"/>
+                      <EmptySpace pref="282" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -230,8 +231,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbTabLayout" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbTabLastUsed" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbSaveBeforCompile" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="jpStartOpen" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jpStartBehavior" min="-2" max="-2" attributes="0"/>
@@ -388,6 +391,12 @@
                 <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
                   <SpinnerModel initial="14" maximum="120" minimum="8" numberType="java.lang.Integer" stepSize="1" type="number"/>
                 </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbTabLastUsed">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Switch through tabs in the order of last used"/>
+                <Property name="toolTipText" type="java.lang.String" value="Shows opened tabs in multiple rows (instead of only one row)."/>
               </Properties>
             </Component>
           </SubComponents>

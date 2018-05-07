@@ -18,6 +18,7 @@ package de.naoth.xabsleditor;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
+import de.naoth.xabsleditor.editorpanel.EditorPanelTabbedPaneUI;
 import de.naoth.xabsleditor.events.EventListener;
 import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.NewFileEvent;
@@ -328,6 +329,11 @@ public class Main extends javax.swing.JFrame implements JumpListener
             configuration.setProperty(OptionsDialog.EDITOR_TAB_LAYOUT, Boolean.toString(true));
         }
 
+        // set "tab last used" default to false!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_TAB_LAST_USED)) {
+            configuration.setProperty(OptionsDialog.EDITOR_TAB_LAST_USED, Boolean.toString(false));
+        }
+
         // set "tab save before compile" default to false!
         if (!configuration.containsKey(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE)) {
             configuration.setProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE, Boolean.toString(false));
@@ -340,7 +346,9 @@ public class Main extends javax.swing.JFrame implements JumpListener
         // set, if the tab close button should be shown or not
         editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
         editorPanel.setTabLayout(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAYOUT)) ? JTabbedPane.WRAP_TAB_LAYOUT : JTabbedPane.SCROLL_TAB_LAYOUT);
-
+        // a custom ui manager is needed, in order to traverse tabs in 'last used' order
+        editorPanel.setTabUI(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAST_USED)) ? new EditorPanelTabbedPaneUI() : new javax.swing.plaf.synth.SynthTabbedPaneUI());
+        
         // update configuration of the xabsl compiler
         compiler.setConfiguration(configuration);
     }//end loadConfiguration
