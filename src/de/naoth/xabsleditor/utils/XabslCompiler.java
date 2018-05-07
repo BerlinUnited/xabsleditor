@@ -31,6 +31,8 @@ public class XabslCompiler implements CompilationFinishedReceiver
     private final JFileChooser fileChooser = new JFileChooser();
     /** The filter for the file chooser. */
     private final FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
+    /** The current file where the compilation is stored. */
+    private File compilationFile;
 
     /**
      * Constructor, sets the default values for the file chooser.
@@ -83,13 +85,14 @@ public class XabslCompiler implements CompilationFinishedReceiver
             JOptionPane.showMessageDialog(null, "No file selected");
             return;
         } else if (fout.exists()) {
-            if (!fout.delete()) {
+            // 'create' backup file, in order to be able to restore this backup if compilation fails
+            if (!fout.renameTo(new File(fout.getAbsolutePath()+".bak"))) {
                 JOptionPane.showMessageDialog(null, "Can not overwrite the file "
                         + fout.getAbsolutePath());
                 return;
             }
         }
-
+        compilationFile = fout;
         CompilerDialog frame = new CompilerDialog(null, true, file, fout, this, configuration);
         frame.setVisible(true);
     }
@@ -102,6 +105,17 @@ public class XabslCompiler implements CompilationFinishedReceiver
      */
     @Override
     public void compilationFinished(CompileResult result) {
+        // delete or restore backup file, if compilation fails
+        if(compilationFile != null) {
+            File backup = new File(compilationFile.getAbsolutePath() + ".bak");
+            if(backup.exists()) {
+                if(result.errors) {
+                    backup.renameTo(new File(backup.getAbsolutePath().substring(0, backup.getAbsolutePath().length()-4)));
+                } else {
+                    backup.delete();
+                }
+            }
+        }
         evtManager.publish(new CompilationFinishedEvent(this, result));
     }
 }
