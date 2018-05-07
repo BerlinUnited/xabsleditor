@@ -23,6 +23,8 @@ public class XabslCompiler implements CompilationFinishedReceiver
     private final EventManager evtManager = EventManager.getInstance();
     /** The configuration of the editor. */
     private Properties configuration = new Properties();
+    /** The default file name for the compilation result. */
+    private final String defaultFileName = "behavior-ic.dat";
     /** The default path/file, where the compilation result should be stored */
     private String defaultCompilationPath = null;
     /** A file chooser for selecting the file, where the compilation result is saved. */
@@ -36,6 +38,7 @@ public class XabslCompiler implements CompilationFinishedReceiver
     public XabslCompiler() {
         fileChooser.setFileFilter(icFilter);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setSelectedFile(new File(defaultFileName));
         
         evtManager.add(this);
     }
@@ -52,7 +55,11 @@ public class XabslCompiler implements CompilationFinishedReceiver
             String path = configuration.getProperty(OptionsDialog.DEFAULT_COMPILATION_PATH);
             if (new File(path).exists()) {
                 this.defaultCompilationPath = path;
+            } else {
+                this.defaultCompilationPath = null;
             }
+        } else {
+            this.defaultCompilationPath = null;
         }
     }
     
@@ -69,7 +76,7 @@ public class XabslCompiler implements CompilationFinishedReceiver
                 fout = fileChooser.getSelectedFile();
             }
         } else {
-            fout = new File(defaultCompilationPath + "/behavior-ic.dat");
+            fout = new File(defaultCompilationPath + "/" + defaultFileName);
         }
 
         if (fout == null) {
