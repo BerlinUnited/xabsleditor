@@ -17,6 +17,7 @@ import de.naoth.xabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.StringReader;
@@ -46,6 +47,11 @@ public class GraphPanel extends javax.swing.JPanel
         XabslGraphMouseListener mouseListener = new XabslGraphMouseListener();
         initAgentTab(mouseListener);
         initOptionTab(mouseListener);
+    }
+    
+    public void setFontSize(int size) {
+        Font df = panelCompiler.getFont();
+        panelCompiler.setFont(new Font(df.getFamily(), df.getStyle(), size));
     }
     
     /**

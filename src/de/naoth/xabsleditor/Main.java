@@ -346,6 +346,8 @@ public class Main extends javax.swing.JFrame implements JumpListener
         editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
         editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
 
+        graphPanel.setFontSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
+
         // set, if the tab close button should be shown or not
         editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
         editorPanel.setTabLayout(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAYOUT)) ? JTabbedPane.WRAP_TAB_LAYOUT : JTabbedPane.SCROLL_TAB_LAYOUT);

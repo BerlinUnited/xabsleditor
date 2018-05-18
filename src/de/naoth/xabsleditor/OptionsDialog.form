@@ -199,12 +199,12 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="spFontSize" min="-2" pref="47" max="-2" attributes="0"/>
+                              <Component id="spFontSize" min="-2" pref="80" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="appFontSize" min="-2" pref="47" max="-2" attributes="0"/>
+                              <Component id="appFontSize" min="-2" pref="80" max="-2" attributes="0"/>
                           </Group>
                           <Component id="cbTabLastUsed" min="-2" max="-2" attributes="0"/>
                           <Component id="jpStartOpen" alignment="0" min="-2" pref="211" max="-2" attributes="0"/>
