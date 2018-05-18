@@ -34,6 +34,7 @@ import de.naoth.xabsleditor.utils.ProjectMenu;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import de.naoth.xabsleditor.utils.XabslCompiler;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -119,11 +120,24 @@ public class Main extends javax.swing.JFrame implements JumpListener
      * Creates new form Main
      */
     public Main(String file) {
+        // load configuration
+        fConfig = new File(System.getProperty("user.home") + "/.jxabsleditor");
+        try {
+            if (fConfig.exists() && fConfig.canRead()) {
+                configuration.load(new FileReader(fConfig));
+            }
+        } catch (Exception ex) {
+            Tools.handleException(ex);
+        }
+
         // no bold fonts please
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         try {
             //UIManager.setLookAndFeel(new MetalLookAndFeel());
             UIManager.setLookAndFeel(new NimbusLookAndFeel());
+            Font df = UIManager.getFont("defaultFont");
+            int size = configuration.containsKey(OptionsDialog.APPLICATION_FONT_SIZE) ? Integer.parseInt(configuration.getProperty(OptionsDialog.APPLICATION_FONT_SIZE)) : df.getSize();
+            UIManager.getLookAndFeelDefaults().put("defaultFont", new Font(df.getFamily(), df.getStyle(), size));
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -155,17 +169,6 @@ public class Main extends javax.swing.JFrame implements JumpListener
         setIconImage(icon);
 
         searchInProjectDialog = new SearchInProjectDialog(this, false);
-
-        // load configuration
-        fConfig = new File(System.getProperty("user.home") + "/.jxabsleditor");
-
-        try {
-            if (fConfig.exists() && fConfig.canRead()) {
-                configuration.load(new FileReader(fConfig));
-            }
-        } catch (Exception ex) {
-            Tools.handleException(ex);
-        }
 
         fileChooser = new JFileChooser();
         fileChooser.setFileFilter(xabslFilter);
