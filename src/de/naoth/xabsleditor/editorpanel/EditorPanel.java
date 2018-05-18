@@ -2,30 +2,28 @@ package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.FileDrop;
 import de.naoth.xabsleditor.Main;
-import de.naoth.xabsleditor.Tools;
-import de.naoth.xabsleditor.graphpanel.GraphPanel;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.LocateFileEvent;
+import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
-import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.FileWatcher;
-import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.plaf.TabbedPaneUI;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
 
@@ -35,7 +33,9 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
  */
 public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPanelTab>
 {
-    private GraphPanel graph;
+    /** Manager for distributing events. */
+    EventManager evtManager = EventManager.getInstance();
+
     private FileWatcher watcher;
     private EditorPanelTab activeTab = null;
     
@@ -48,14 +48,17 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
      */
     public EditorPanel() {
         initComponents();
+        // register event handler
+        evtManager.add(this);
         // add "tab-switch" listener
         tabs.addChangeListener((ChangeEvent e) -> {
             activeTab = (EditorPanelTab) tabs.getSelectedComponent();
             if(activeTab != null) {
                 activeTab.select();
+                evtManager.publish(new RefreshGraphEvent(activeTab));
             }
-            graph.refreshGraph();
         });
+        tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
         // add right-click-behavior of the tabs
         tabs.addMouseListener(new MouseListener() {
@@ -107,6 +110,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         tabPopupMenu_Close = new javax.swing.JMenuItem();
         tabPopupMenu_CloseAll = new javax.swing.JMenuItem();
         tabPopupMenu_CloseOthers = new javax.swing.JMenuItem();
+        tabPopupMenu_Sep = new javax.swing.JPopupMenu.Separator();
+        tabPopupMenu_Locate = new javax.swing.JMenuItem();
         tabs = new javax.swing.JTabbedPane();
 
         tabPopupMenu_Close.setText("Close");
@@ -137,6 +142,15 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             }
         });
         tabPopupMenu.add(tabPopupMenu_CloseOthers);
+        tabPopupMenu.add(tabPopupMenu_Sep);
+
+        tabPopupMenu_Locate.setText("Locate file in project tree");
+        tabPopupMenu_Locate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tabPopupMenu_LocateActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(tabPopupMenu_Locate);
 
         setLayout(new java.awt.BorderLayout());
         add(tabs, java.awt.BorderLayout.CENTER);
@@ -156,10 +170,12 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }//GEN-LAST:event_tabPopupMenu_CloseOthersActionPerformed
 
-    public void setGraph(GraphPanel g) {
-        graph = g;
-    }
-    
+    private void tabPopupMenu_LocateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tabPopupMenu_LocateActionPerformed
+        if(activeTab != null) {
+            locateTabInProjectTree(activeTab);
+        }
+    }//GEN-LAST:event_tabPopupMenu_LocateActionPerformed
+
     public void setTabSize(int size) {
         tabSize = size;
         for (EditorPanelTab tab : this) {
@@ -169,6 +185,22 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public int getTabSize() {
         return tabSize;
+    }
+    
+    public void setTabLayout(int layout) {
+        tabs.setTabLayoutPolicy(layout);
+    }
+    
+    public int getTabLayout() {
+        return tabs.getTabLayoutPolicy();
+    }
+    
+    public void setTabUI(TabbedPaneUI ui) {
+        tabs.setUI(ui);
+    }
+    
+    public TabbedPaneUI getTabUI() {
+        return tabs.getUI();
     }
     
     public void setFontSize(float size) {
@@ -195,68 +227,28 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public boolean getShowCloseButtons() {
         return showCloseButtons;
     }
-    
-    public void openFile(File f) {
-        if (f == null) {
+
+    public void openFile(File file, File agent, XABSLContext context, int carret, String search) {
+        if (file == null) {
             createDocumentTab(null, null, null);
         } else {
             // find and select already opened file
             for (EditorPanelTab tab : this) {
-                if(tab.getFile() != null && tab.getFile().equals(f)) {
+                if(tab.getFile() != null && tab.getFile().equals(file)) {
                     tabs.setSelectedComponent(tab);
                     return;
                 }
             }
             // ... otherwise create new tab
-            File agentsFile = Tools.getAgentFileForOption(f);
-            XABSLContext newContext = null;
-
-            if (agentsFile != null) {
-                newContext = loadXABSLContext(agentsFile.getParentFile(), null);
+            createDocumentTab(file, context, agent);
+            
+            if(search == null) {
+                activeTab.setCarretPosition(carret);
+            } else {
+                activeTab.search(search);
             }
-
-            createDocumentTab(f, newContext, agentsFile);
         }
     }
-    
-    public void openFile(File f, int position) {
-        openFile(f);
-        activeTab.setCarretPosition(position);
-    }
-
-    public XABSLContext loadXABSLContext(File folder, XABSLContext context) {
-        if (context == null) {
-            context = new XABSLContext();
-        }
-
-        final String XABSL_FILE_ENDING = ".xabsl";
-
-        File[] fileList = folder.listFiles();
-        for (File file : fileList) {
-            if (file.isDirectory()) {
-                loadXABSLContext(file, context);
-            } else if (file.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
-                // remove the file ending
-                int dotIndex = file.getName().length() - XABSL_FILE_ENDING.length();
-                String name = file.getName().substring(0, dotIndex);
-                context.getOptionPathMap().put(name, file);
-
-                // parse XABSL file
-                try {
-                    //System.out.println("parse: " + file.getName()); // debug stuff
-                    XParser p = new XParser(context);
-                    p.parse(new FileReader(file), file.getAbsolutePath());
-
-                    // HACK: problems with equal file names
-                    context.getFileTypeMap().put(name, p.getFileType());
-                } catch (Exception e) {
-                    System.err.println("Couldn't read the XABSL file " + file.getAbsolutePath());
-                }
-            }
-        }//end for
-
-        return context;
-    }//end loadXABSLContext
 
     private EditorPanelTab createDocumentTab(File file, XABSLContext context, File agentsFile) {
         try {
@@ -387,13 +379,27 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }
     
+    public void locateTabInProjectTree(EditorPanelTab t) {
+        evtManager.publish(new LocateFileEvent(this, t.getFile()));
+    }
+    
+    private final List<DefaultMutableTreeNode> getSearchNodes(DefaultMutableTreeNode root) {
+            List<DefaultMutableTreeNode> searchNodes = new ArrayList<DefaultMutableTreeNode>();
+
+            Enumeration<?> e = root.preorderEnumeration();
+            while(e.hasMoreElements()) {
+                searchNodes.add((DefaultMutableTreeNode)e.nextElement());
+            }
+            return searchNodes;
+        }
+    
     public void save() {
         save(System.getProperty("user.home"));
     }
     
     public void save(String defaultDirectory) {
         if(activeTab != null && activeTab.save(defaultDirectory)) {
-            graph.refreshGraph();
+            evtManager.publish(new RefreshGraphEvent(activeTab));
         }
     }
 
@@ -406,7 +412,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             File old = activeTab.getFile();
             activeTab.setFile(null);
             if(activeTab.save(defaultDirectory)) {
-                graph.refreshGraph();
+                evtManager.publish(new RefreshGraphEvent(activeTab));
             } else {
                 activeTab.setFile(old);
             }
@@ -415,6 +421,16 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     
     public boolean hasOpenFiles() {
         return tabs.getTabCount() > 0;
+    }
+    
+    public ArrayList<EditorPanelTab> hasOpenUnsavedFiles() {
+        ArrayList<EditorPanelTab> unsavedtabs = new ArrayList<>();
+        for (EditorPanelTab tab : this) {
+            if(tab.isChanged() && tab.getFile() != null) {
+                unsavedtabs.add(tab);
+            }
+        }
+        return unsavedtabs;
     }
     
     public ArrayList<File> getOpenFiles() {
@@ -469,6 +485,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     private javax.swing.JMenuItem tabPopupMenu_Close;
     private javax.swing.JMenuItem tabPopupMenu_CloseAll;
     private javax.swing.JMenuItem tabPopupMenu_CloseOthers;
+    private javax.swing.JMenuItem tabPopupMenu_Locate;
+    private javax.swing.JPopupMenu.Separator tabPopupMenu_Sep;
     private javax.swing.JTabbedPane tabs;
     // End of variables declaration//GEN-END:variables
 

@@ -15,102 +15,95 @@
  */
 package de.naoth.xabsleditor;
 
-import de.naoth.xabsleditor.compilerconnection.CompilationFinishedReceiver;
-import de.naoth.xabsleditor.compilerconnection.CompileResult;
-import de.naoth.xabsleditor.compilerconnection.CompilerDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
-import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
-import de.naoth.xabsleditor.parser.XABSLContext;
+import de.naoth.xabsleditor.editorpanel.EditorPanelTabbedPaneUI;
+import de.naoth.xabsleditor.events.EventListener;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.NewFileEvent;
+import de.naoth.xabsleditor.events.OpenFileEvent;
+import de.naoth.xabsleditor.events.RefreshGraphEvent;
+import de.naoth.xabsleditor.events.ReloadProjectEvent;
+import de.naoth.xabsleditor.events.RenameFileEvent;
+import de.naoth.xabsleditor.events.UpdateProjectEvent;
 import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.FileWatcher;
+import de.naoth.xabsleditor.utils.Project;
+import de.naoth.xabsleditor.utils.ProjectMenu;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
-import java.awt.Color;
-import java.awt.Component;
+import de.naoth.xabsleditor.utils.XabslCompiler;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 
 /**
  *
  * @author Heinrich Mellmann
  */
-public class Main extends javax.swing.JFrame implements CompilationFinishedReceiver, JumpListener
+public class Main extends javax.swing.JFrame implements JumpListener
 {
+    /** Manager for distributing events. */
+    private final EventManager evtManager = EventManager.getInstance();
+    /** The Xabsl file extension. */
+    public final String XABSL_FILE_ENDING = ".xabsl";
+    /** Dialog for searching all projects for a given string. */
+    private SearchInProjectDialog searchInProjectDialog;
+    /** The user configuration for the editor */
+    private Properties configuration = new Properties();
+    /** The file where the configuration is saved. */
+    private File fConfig;
+    /** Default file chooser */
+    private JFileChooser fileChooser = new JFileChooser();
+    /** A filter for files ending with ".dot" for the file chooser. */
+    private FileFilter dotFilter = new DotFileFilter();
+    /** A filter for files ending with ".xabsl" for the file chooser. */
+    private FileFilter xabslFilter = new XABSLFileFilter();
+    /** */
+    private boolean splitterManuallySet = false;
+    /** */
+    private boolean ignoreSplitterMovedEvent = false;
+    /** The help dialog for the xabsl editor. */
+    private HelpDialog helpDialog = null;
+    /** File change watcher */
+    private FileWatcher watcher = null;
+    /** Stores the currently opened projects. */
+    HashMap<String, Project> projects = new HashMap<>();
+    /** The xabsl compiler. */
+    private final XabslCompiler compiler = new XabslCompiler();
 
-  private JFileChooser fileChooser = new JFileChooser();
-  private SearchInProjectDialog searchInProjectDialog;
-  
-  private Properties configuration = new Properties();
-  private File fConfig;
-  private FileFilter dotFilter = new DotFileFilter();
-  private FileFilter xabslFilter = new XABSLFileFilter();
-  private FileFilter icFilter = new FileNameExtensionFilter("Intermediate code (*.dat)", "dat");
-
-  private String defaultCompilationPath = null;
-  private boolean splitterManuallySet = false;
-  private boolean ignoreSplitterMovedEvent = false;
-
-  private HelpDialog helpDialog = null;
-
-  // xabsl files icons
-  private final ImageIcon icon_xabsl_agent =
-      new ImageIcon(this.getClass().getResource("res/xabsl_agents_file.png"));
-  private final ImageIcon icon_xabsl_option =
-      new ImageIcon(this.getClass().getResource("res/xabsl_option_file.png"));
-  private final ImageIcon icon_xabsl_symbol =
-      new ImageIcon(this.getClass().getResource("res/xabsl_symbols_file.png"));
-  
-  public final String XABSL_FILE_ENDING = ".xabsl";
-  
+    /**
+     * Callback for drag'n'drop xabsl files on the editor.
+     */
     public FileDrop.Listener dropHandler = (File[] files) -> {
         ArrayList<String> notaXabslFile = new ArrayList<>();
         // iterate through dropped files and open them - if their xabsl files
         for (File f : files) {
             if (f.getName().toLowerCase().endsWith(XABSL_FILE_ENDING)) {
-                getEditorPanel().openFile(f);
-                updateProjectDirectoryMenu();
+                evtManager.publish(new OpenFileEvent(this, f));
             } else {
                 notaXabslFile.add(f.getAbsolutePath());
             }
@@ -121,483 +114,259 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
                     "The File(s):\n" + notaXabslFile.stream().collect(Collectors.joining(",\n")) + "\naren't XABSL-files.", "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-  };
+    };
 
-  private FileWatcher watcher = null;
-
-  /** Creates new form Main */
-  public Main(String file)
-  {
-    
-    // no bold fonts please
-    UIManager.put("swing.boldMetal", Boolean.FALSE);
-    try
-    {
-      //UIManager.setLookAndFeel(new MetalLookAndFeel());
-      UIManager.setLookAndFeel(new NimbusLookAndFeel());
-    }
-    catch (UnsupportedLookAndFeelException ex)
-    {
-      Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-    }
-    
-    // add file drop
-    new FileDrop(this, dropHandler);
-    
-    // start the file watcher service
-    try {
-        watcher = new FileWatcher();
-        watcher.start();
-    } catch (IOException ex) {
-        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-    }
-
-    initComponents();
-
-    graphPanel.addJumpListener(this);
-    graphPanel.setEditor(editorPanel);
-    editorPanel.setGraph(graphPanel);
-    editorPanel.setFileWatcher(watcher);
-    
-    addWindowListener(new ShutdownHook());
-
-    // icon
-    Image icon = Toolkit.getDefaultToolkit().getImage(
-      this.getClass().getResource("res/XabslEditor.png"));
-    setIconImage(icon);
-
-    searchInProjectDialog = new SearchInProjectDialog(this, false);
-
-    // load configuration
-    fConfig = new File(System.getProperty("user.home") + "/.jxabsleditor");
-
-    try
-    {
-      if (fConfig.exists() && fConfig.canRead())
-      {
-        configuration.load(new FileReader(fConfig));
-      }
-    }
-    catch (Exception ex)
-    {
-      Tools.handleException(ex);
-    }
-
-    fileChooser = new JFileChooser();
-    fileChooser.setFileFilter(xabslFilter);
-    fileChooser.setFileFilter(icFilter);
-    fileChooser.setFileFilter(dotFilter);
-    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    fileChooser.setAcceptAllFileFilterUsed(true);
-
-    loadConfiguration();
-    
-    String open = configuration.getProperty(OptionsDialog.OPEN_LAST,"");
-    if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[1])) {
-        // try to open last agent
-        File laf = new File(configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[0], ""));
-        if(laf.exists()) {
-            editorPanel.openFile(laf);
-            updateProjectDirectoryMenu();
-        }
-    } else if(open.equals(OptionsDialog.OPEN_LAST_OPTIONS[2])) {
-        // try to open the last opened files
-        String[] strFiles = configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[1], "").split("\\|");
-        for (String strFile : strFiles) {
-            File f = new File(strFile);
-            if(f.exists()) {
-                editorPanel.openFile(f);
+    /**
+     * Creates new form Main
+     */
+    public Main(String file) {
+        // load configuration
+        fConfig = new File(System.getProperty("user.home") + "/.jxabsleditor");
+        try {
+            if (fConfig.exists() && fConfig.canRead()) {
+                configuration.load(new FileReader(fConfig));
             }
+        } catch (Exception ex) {
+            Tools.handleException(ex);
         }
-        updateProjectDirectoryMenu();
-    }
-    
-    String start = configuration.getProperty(OptionsDialog.START_POSITION,"");
-    if(start.equals(OptionsDialog.START_POSITION_OPTIONS[1])) {
-        // open window with last postion and size
-        Dimension s = getPreferredSize();
-        setLocation(
-            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()))),
-            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY())))
-        );
-        setSize(
-            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(s.width))),
-            Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(s.height)))
-        );
-    } else if(start.equals(OptionsDialog.START_POSITION_OPTIONS[2])) {
-        // open window maximized
-        setExtendedState(getExtendedState() | javax.swing.JFrame.MAXIMIZED_BOTH);
-    }
-    // set the divider location from the config
-    if(configuration.getProperty("dividerPostionOne")!=null) {
-        jSplitPaneMain.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionOne")));
-    }
-    if(configuration.getProperty("dividerPostionTwo")!=null) {
-        jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
-    }
-    
-    // set the cell renderer for the projects treeview
-    fileTree.setCellRenderer(new DefaultTreeCellRenderer(){
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            if(value instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode)value).getUserObject() instanceof File) {
-                File file = (File)((DefaultMutableTreeNode)value).getUserObject();
-                if(file.isDirectory()) {
-                    value = file.getName();
-                } else {
-                    value = file.getName().substring(0, file.getName().length()-6);
-                }
+
+        // no bold fonts please
+        UIManager.put("swing.boldMetal", Boolean.FALSE);
+        try {
+            //UIManager.setLookAndFeel(new MetalLookAndFeel());
+            UIManager.setLookAndFeel(new NimbusLookAndFeel());
+            Font df = UIManager.getFont("defaultFont");
+            int size = configuration.containsKey(OptionsDialog.APPLICATION_FONT_SIZE) ? Integer.parseInt(configuration.getProperty(OptionsDialog.APPLICATION_FONT_SIZE)) : df.getSize();
+            UIManager.getLookAndFeelDefaults().put("defaultFont", new Font(df.getFamily(), df.getStyle(), size));
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // register event handler
+        evtManager.add(this);
+
+        // add file drop
+        new FileDrop(this, dropHandler);
+
+        // start the file watcher service
+        try {
+            watcher = new FileWatcher();
+            watcher.start();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        initComponents();
+
+        graphPanel.addJumpListener(this);
+        editorPanel.setFileWatcher(watcher);
+
+        addWindowListener(new ShutdownHook());
+
+        // icon
+        Image icon = Toolkit.getDefaultToolkit().getImage(
+                this.getClass().getResource("res/XabslEditor.png"));
+        setIconImage(icon);
+
+        searchInProjectDialog = new SearchInProjectDialog(this, false);
+
+        fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(xabslFilter);
+        fileChooser.setFileFilter(dotFilter);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setAcceptAllFileFilterUsed(true);
+
+        loadConfiguration();
+
+        String open = configuration.getProperty(OptionsDialog.OPEN_LAST, "");
+        if (open.equals(OptionsDialog.OPEN_LAST_OPTIONS[1])) {
+            // try to open last agent
+            File laf = new File(configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[0], ""));
+            if (laf.exists()) {
+                evtManager.publish(new OpenFileEvent(this, laf));
             }
-            Component c = super.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
-            c.setForeground(Color.BLACK);
-            return c;
-        }
-    });
-    // add mouse listener for selecting element in tree
-    fileTree.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if(e.getClickCount() == 2) {
-                TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                openFileFromTree(selPath);
-            } else if (SwingUtilities.isRightMouseButton(e)) {
-                TreePath selPath = fileTree.getPathForLocation(e.getX(), e.getY());
-                if(selPath != null && !fileTree.getModel().isLeaf(selPath.getLastPathComponent())) {
-                    fileTree.setSelectionPath(selPath);
-                    fileTreePopup.show(e.getComponent(), e.getX(), e.getY());
+        } else if (open.equals(OptionsDialog.OPEN_LAST_OPTIONS[2])) {
+            // try to open the last opened files
+            String[] strFiles = configuration.getProperty(OptionsDialog.OPEN_LAST_VALUES[1], "").split("\\|");
+            for (String strFile : strFiles) {
+                File f = new File(strFile);
+                if (f.exists()) {
+                    evtManager.publish(new OpenFileEvent(this, f));
                 }
             }
         }
-    });
-  }//end Main
 
-  /** Reconstruct the Projects menu entry */
-  /*
-  private void updateProjectMenu()
-  {
-    mProject.removeAll();
-    fileTree.removeAll();
+        String start = configuration.getProperty(OptionsDialog.START_POSITION, "");
+        if (start.equals(OptionsDialog.START_POSITION_OPTIONS[1])) {
+            // open window with last postion and size
+            Dimension s = getPreferredSize();
+            setLocation(
+                    Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()))),
+                    Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY())))
+            );
+            setSize(
+                    Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(s.width))),
+                    Integer.parseInt(configuration.getProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(s.height)))
+            );
+        } else if (start.equals(OptionsDialog.START_POSITION_OPTIONS[2])) {
+            // open window maximized
+            setExtendedState(getExtendedState() | javax.swing.JFrame.MAXIMIZED_BOTH);
+        }
+        // set the divider location from the config
+        if (configuration.getProperty("dividerPostionOne") != null) {
+            jSplitPaneMain.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionOne")));
+        }
+        if (configuration.getProperty("dividerPostionTwo") != null) {
+            jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
+        }
+    }//end Main
 
-    // get all opened agents
-    TreeSet<File> foundAgents = new TreeSet<File>();
-    for (int i = 0; i < tabbedPanelEditor.getTabCount(); i++)
-    {
-      XEditorPanel p = (XEditorPanel) tabbedPanelEditor.getComponentAt(i);
-      File agentFile = file2Agent.get(p.getFile());
-      if (agentFile != null && !foundAgents.contains(agentFile))
-      {
-
-        JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        XABSLContext context = p.getXABSLContext();
-
-        final Map<String, File> optionPathMap = context.getOptionPathMap();
-        Map<String,JMenu> menuSubs = new TreeMap<String, JMenu>();
-
-        for (final String option : optionPathMap.keySet())
-        {
-          String subCategory = option.substring(0,1).toUpperCase();
-          if(menuSubs.get(subCategory) == null)
-          {
-            menuSubs.put(subCategory, new JMenu(subCategory));
-          }
-
-          JMenuItem miOptionOpener = new JMenuItem(option);
-          menuSubs.get(subCategory).add(miOptionOpener);
-
-          miOptionOpener.addActionListener(new ActionListener()
-          {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-              File f = optionPathMap.get(option);
-              openFile(f);
+    /**
+     * Listener for the OpenFileEvent.
+     * If a (new) file should be opened, it is first search in the already opened projects.
+     * If not found, a new project is loaded.
+     * 
+     * @param evt 
+     */
+    @EventListener
+    public void openFile(OpenFileEvent evt) {
+        Project p = null;
+        for (Map.Entry<String, Project> entry : projects.entrySet()) {
+            if (entry.getValue().contains(evt.file)) {
+                p = entry.getValue();
+                break;
             }
-          });
         }
-
-        DefaultMutableTreeNode curDir = new DefaultMutableTreeNode(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        for(String s : menuSubs.keySet())
-        {
-          curDir.add(new DefaultMutableTreeNode(menuSubs.get(s)));
+        if (p == null) {
+            File agent = Tools.getAgentFileForOption(evt.file);
+            p = new Project(agent);
+            projects.put(agent.getAbsolutePath(), p);
+            evtManager.publish(new UpdateProjectEvent(this, projects));
         }
-        
-        for(String s : menuSubs.keySet())
-        {
-          miAgent.add(menuSubs.get(s));
-        }
-
-        fileTree.setModel(new DefaultTreeModel(curDir));
-        mProject.add(miAgent);
-
-        foundAgents.add(agentFile);
-      }
+        editorPanel.openFile(evt.file, p.agent(), p.context(), evt.carretPosition, evt.search);
     }
-  }//end updateProjectMenu
-*/
 
-  private void addFilesToMenu(JMenu miParent, File folder, final XABSLContext context)
-  {
-    if(miParent == null || folder == null || context == null)
-        return;
-
-    File[] fileList = folder.listFiles();
-    // sort entries alphabetically, with directory first
-    Arrays.sort(fileList, (File f1, File f2)->{
-        if(f1.isDirectory() && !f2.isDirectory()) {
-            return -1;
-        } else if(!f1.isDirectory() && f2.isDirectory()) {
-            return 1;
-        }
-        return f1.getName().compareTo(f2.getName());
-    });
-    // iterate through files and add them to menu
-    for (final File file : fileList)
-    {
-      if (file.isDirectory())
-      {
-        JMenu miChild = new JMenu(file.getName());
-        addFilesToMenu(miChild, file, context);
-        if(miChild.getMenuComponentCount() > 0) {
-          miParent.add(miChild);
-        }
-      }
-      else if (file.getName().toLowerCase().endsWith(XABSL_FILE_ENDING))
-      {
-        // remove the file ending
-        int dotIndex = file.getName().length() - XABSL_FILE_ENDING.length();
-        final String name = file.getName().substring(0, dotIndex);
-
-        if(!context.getOptionPathMap().containsKey(name)) {
-          continue;
-        }
-
-        // create new item
-        JMenuItem miOptionOpener = setJMenuItemXabslFont(new JMenuItem(name));
-      
-        // agent, option or symbol file
-        String type = context.getFileTypeMap().get(name);
-        if(type != null)
-        {
-          if(type.equals("option")) {
-            miOptionOpener.setIcon(icon_xabsl_option);
-          } else if(type.equals("symbol")) {
-            miOptionOpener.setIcon(icon_xabsl_symbol);
-          } else if(type.equals("agent")) {
-            miOptionOpener.setIcon(icon_xabsl_agent);
-          }
-        }//end if
-
-        miOptionOpener.addActionListener(new ActionListener()
-        {
-          @Override
-          public void actionPerformed(ActionEvent e)
-          {
-            editorPanel.openFile(context.getOptionPathMap().get(name));
-          }
+    /**
+     * Listener for the ReloadProjectEvent.
+     * If something changed in the project structure (file created/deleted/renamed ...)
+     * this method is called. It updates all currently opened projects and schedules the
+     * UpdateProjectEvent.
+     * 
+     * @param e 
+     */
+    @EventListener
+    public void updateProject(ReloadProjectEvent e) {
+        projects.entrySet().forEach((entry) -> {
+            entry.getValue().update();
         });
-        miParent.add(miOptionOpener);
-      }
-    }//end for
-  }//end addFilesToMenu
+        evtManager.publish(new UpdateProjectEvent(this, projects));
+    } // END updateProject()
 
-  private void addFilesToTree(DefaultMutableTreeNode nodeParent, File folder, final XABSLContext context)
-  {
-    if(nodeParent == null || folder == null || context == null) {
-        return;
-    }
-
-    final String XABSL_FILE_ENDING = ".xabsl";
-
-    ArrayList<DefaultMutableTreeNode> childDirectories = new ArrayList<DefaultMutableTreeNode>();
-    ArrayList<DefaultMutableTreeNode> childFiles = new ArrayList<DefaultMutableTreeNode>();
-    
-    File[] fileList = folder.listFiles();
-    for (final File file : fileList)
-    {
-      if (file.isDirectory())
-      {
-        DefaultMutableTreeNode nodeDirectory = new DefaultMutableTreeNode(file);
-        addFilesToTree(nodeDirectory, file, context);
-
-        if(nodeDirectory.getChildCount() > 0) {
-          //nodeParent.add(nodeDirectory);
-          childDirectories.add(nodeDirectory);
-        }
-      }
-      else if (file.getName().toLowerCase().endsWith(XABSL_FILE_ENDING))
-      {
-        // remove the file ending
-        int dotIndex = file.getName().length() - XABSL_FILE_ENDING.length();
-        final String name = file.getName().substring(0, dotIndex);
-
-        if(!context.getOptionPathMap().containsKey(name)) {
-          continue;
-        }
-
-        // create new item
-        DefaultMutableTreeNode nodeChild = new DefaultMutableTreeNode(file);
-        
-        // agent, option or symbol file
-        /*
-        String type = context.getFileTypeMap().get(name);
-        if(type != null)
-        {
-          if(type.equals("option")) {
-            nodeChild.setIcon(icon_xabsl_option);
-          } else if(type.equals("symbol")) {
-            nodeChild.setIcon(icon_xabsl_symbol);
-          } else if(type.equals("agent")) {
-            nodeChild.setIcon(icon_xabsl_agent);
-          }
-        }//end if
-        */
-
-        //nodeParent.add(nodeChild);
-        childFiles.add(nodeChild);
-      }
-    }//end for
-    
-    // added directories sorted, first
-    childDirectories.stream().sorted((d1, d2) -> {
-        return d1.toString().compareTo(d2.toString());
-    }).forEachOrdered((d) -> {
-        nodeParent.add(d);
-    });
-    // add files sorted
-    childFiles.stream().sorted((n1, n2) -> {
-        return n1.toString().compareTo(n2.toString());
-    }).forEachOrdered((n) -> {
-        nodeParent.add(n);
-    });
-  }
-
-  /** Reconstruct the Projects menu entry */
-  TreeSet<File> foundAgents = new TreeSet<File>();
-
-  private void nodeExpander(TreeNode node, String val) {
-      // we're only expanding nodes
-      if(!node.isLeaf()) {
-          // matching?
-          if(node.toString().equals(val)) {
-              fileTree.expandPath(new TreePath(((DefaultMutableTreeNode)node).getPath()));
-          }
-          // iterate through childs
-          Enumeration childs = node.children();
-          while(childs.hasMoreElements()) {
-              nodeExpander((TreeNode)childs.nextElement(), val);
-          }
-      }
-  }
-
-  private void updateProjectDirectoryMenu()
-  {
-    mProject.removeAll();
-    foundAgents.clear();
-    
-    // get all opened agents
-    //TreeSet<File> foundAgents = new TreeSet<File>();
-    for (EditorPanelTab tab : editorPanel) {
-      final File agentFile = tab.getAgent();
-      final XABSLContext context = tab.getXABSLContext();
-      if (agentFile != null && !foundAgents.contains(agentFile) && context !=null)
-      {
-        JMenu miAgent = new JMenu(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        // HACK: 're-load' xabsl context, otherwise new files wouldn't get added to tree/menu!
-        editorPanel.loadXABSLContext(agentFile.getParentFile(), context);
-
-        addFilesToMenu(miAgent, agentFile.getParentFile(), context);
-        mProject.add(miAgent);
-
-        // get expanded nodes
-        Enumeration<TreePath> expendedNodes = fileTree.getExpandedDescendants(new TreePath(((DefaultMutableTreeNode) fileTree.getModel().getRoot()).getPath()));
-
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(agentFile.getParentFile().getName() + "/" + agentFile.getName());
-        addFilesToTree(root, agentFile.getParentFile(), context);
-        fileTree.setModel(new DefaultTreeModel(root));
-        
-        // previously expended nodes ...
-        if (expendedNodes != null) {
-            // get "restored"
-            while (expendedNodes.hasMoreElements()) {
-                TreePath param = expendedNodes.nextElement();
-                nodeExpander(root, param.getLastPathComponent().toString());
-            }
-        }
-        /*
-        fileTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent tse) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) fileTree.getLastSelectedPathComponent();
-                if (node == null || !node.isLeaf()) { 
-                    return;
+    /**
+     * Listener for the RenameFileEvent.
+     * Asks for a new file name and renames the selected file/directory. The xabsl
+     * extension is appended if necessary.
+     * 
+     * @param evt 
+     */
+    @EventListener
+    public void renameFile(RenameFileEvent evt) {
+        if (evt.file.exists()) {
+            String newName = JOptionPane.showInputDialog("Rename file '" + evt.file.getName() + "': ", evt.file.getName());
+            if (newName != null && !newName.trim().isEmpty()) {
+                // add extension, if not set and if its not a directory
+                if (!evt.file.isDirectory() && !newName.endsWith(".xabsl")) {
+                    newName += ".xabsl";
                 }
-                
-                String name = (String)node.getUserObject();
-                File f = context.getOptionPathMap().get(name);
-                openFileDirectly(f);
+                // rename
+                evt.file.renameTo(new File(evt.file.getParent(), newName));
+                // update project
+                evtManager.publish(new ReloadProjectEvent(this));
             }
-        });
-*/
-        foundAgents.add(agentFile);
-      }
-    }//end for
-
-    if(mProject.getMenuComponentCount() == 0)
-    {
-      mProject.add(setJMenuItemXabslFont(new JMenuItem("empty")));
-    }
-  }//end updateProjectMenu
-
-  private JMenuItem setJMenuItemXabslFont(JMenuItem jMenuItem)
-  {
-    jMenuItem.setFont(jMenuItem.getFont().deriveFont((jMenuItem.getFont().getStyle() | java.awt.Font.ITALIC)));
-    return jMenuItem;
-  }
-
-  private void loadConfiguration()
-  {
-    if (configuration.containsKey("lastOpenedFolder"))
-    {
-      fileChooser.setCurrentDirectory(
-        new File(configuration.getProperty("lastOpenedFolder")));
-    }
-
-    if (configuration.containsKey(OptionsDialog.DEFAULT_COMPILATION_PATH))
-    {
-      String path = configuration.getProperty(OptionsDialog.DEFAULT_COMPILATION_PATH);
-      if (new File(path).exists())
-      {
-        this.defaultCompilationPath = path;
-      }
+        }
     }
     
-    // set "tab close button" default to true!
-    if(!configuration.containsKey(OptionsDialog.EDITOR_TAB_CLOSE_BTN)) {
-      configuration.setProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN, Boolean.toString(true));
+    /**
+     * Listener for the NewFileEvent.
+     * Creates a new file and schedules the ReloadProjectEvent & OpenFileEvent.
+     * 
+     * @param e 
+     */
+    @EventListener
+    public void newFile(NewFileEvent e) {
+        fileChooser.setCurrentDirectory(e.startDirectory);
+        fileChooser.resetChoosableFileFilters();
+        fileChooser.setSelectedFile(new File(""));
+        fileChooser.setFileFilter(xabslFilter);
+        // show save dialog
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
+            if(f != null) {
+                try {
+                    f.createNewFile();
+                    evtManager.publish(new ReloadProjectEvent(this));
+                    evtManager.publish(new OpenFileEvent(this, f));
+                } catch (IOException ex) {}
+            } else {
+                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
+            }
+        }
     }
-    
-    // set tab size from configuration
-    editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
-    editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
-    
-    // set, if the tab close button should be shown or not
-    editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
-    
-  }//end loadConfiguration
 
-  /** This method is called from within the constructor to
-   * initialize the form.
-   * WARNING: Do NOT modify this code. The content of this method is
-   * always regenerated by the Form Editor.
-   */
-  @SuppressWarnings("unchecked")
+    /**
+     * (Re-)loads the editor configuration.
+     */
+    private void loadConfiguration() {
+        if (configuration.containsKey("lastOpenedFolder")) {
+            fileChooser.setCurrentDirectory(
+                    new File(configuration.getProperty("lastOpenedFolder")));
+        }
+
+        // set "tab close button" default to true!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_TAB_CLOSE_BTN)) {
+            configuration.setProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN, Boolean.toString(true));
+        }
+
+        // set "tab layout" default to true!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_TAB_LAYOUT)) {
+            configuration.setProperty(OptionsDialog.EDITOR_TAB_LAYOUT, Boolean.toString(true));
+        }
+
+        // set "tab last used" default to false!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_TAB_LAST_USED)) {
+            configuration.setProperty(OptionsDialog.EDITOR_TAB_LAST_USED, Boolean.toString(false));
+        }
+
+        // set "tab save before compile" default to false!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE)) {
+            configuration.setProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE, Boolean.toString(false));
+        }
+
+        // set tab size from configuration
+        editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
+        editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
+
+        graphPanel.setFontSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
+
+        // set, if the tab close button should be shown or not
+        editorPanel.setShowCloseButtons(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_CLOSE_BTN)));
+        editorPanel.setTabLayout(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAYOUT)) ? JTabbedPane.WRAP_TAB_LAYOUT : JTabbedPane.SCROLL_TAB_LAYOUT);
+        // a custom ui manager is needed, in order to traverse tabs in 'last used' order
+        editorPanel.setTabUI(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_TAB_LAST_USED)) ? new EditorPanelTabbedPaneUI() : new javax.swing.plaf.synth.SynthTabbedPaneUI());
+        
+        // update configuration of the xabsl compiler
+        compiler.setConfiguration(configuration);
+    }//end loadConfiguration
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fileTreePopup = new javax.swing.JPopupMenu();
-        fileTreePopupRefresh = new javax.swing.JMenuItem();
-        fileTreePopupNewFile = new javax.swing.JMenuItem();
         toolbarMain = new javax.swing.JToolBar();
         btNew = new javax.swing.JButton();
         btOpen = new javax.swing.JButton();
@@ -605,11 +374,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         seperator1 = new javax.swing.JToolBar.Separator();
         btCompile = new javax.swing.JButton();
         jSplitPaneMain = new javax.swing.JSplitPane();
-        jScrollPaneFileTree = new javax.swing.JScrollPane();
-        fileTree = new javax.swing.JTree();
         jSplitPane = new javax.swing.JSplitPane();
         editorPanel = new de.naoth.xabsleditor.editorpanel.EditorPanel();
         graphPanel = new de.naoth.xabsleditor.graphpanel.GraphPanel();
+        projectTree1 = new de.naoth.xabsleditor.utils.ProjectTree();
         mbMain = new javax.swing.JMenuBar();
         mFile = new javax.swing.JMenu();
         miNew = new javax.swing.JMenuItem();
@@ -629,31 +397,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         miRefreshGraph = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JSeparator();
         miOption = new javax.swing.JMenuItem();
-        mProject = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        mProject = new ProjectMenu();
         mHelp = new javax.swing.JMenu();
         miHelp = new javax.swing.JMenuItem();
         miInfo = new javax.swing.JMenuItem();
-
-        fileTreePopupRefresh.setMnemonic('R');
-        fileTreePopupRefresh.setText("Refresh (F5)");
-        fileTreePopupRefresh.setToolTipText("Reloads the project file tree.");
-        fileTreePopupRefresh.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileTreePopupRefreshActionPerformed(evt);
-            }
-        });
-        fileTreePopup.add(fileTreePopupRefresh);
-
-        fileTreePopupNewFile.setMnemonic('N');
-        fileTreePopupNewFile.setText("New File");
-        fileTreePopupNewFile.setToolTipText("Add a new xabsl file");
-        fileTreePopupNewFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileTreePopupNewFileActionPerformed(evt);
-            }
-        });
-        fileTreePopup.add(fileTreePopupNewFile);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("XabslEditor");
@@ -722,19 +469,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         jSplitPaneMain.setDividerLocation(200);
         jSplitPaneMain.setOneTouchExpandable(true);
 
-        jScrollPaneFileTree.setPreferredSize(new java.awt.Dimension(300, 322));
-
-        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("<no project>");
-        fileTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        fileTree.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                fileTreeKeyReleased(evt);
-            }
-        });
-        jScrollPaneFileTree.setViewportView(fileTree);
-
-        jSplitPaneMain.setLeftComponent(jScrollPaneFileTree);
-
         jSplitPane.setDividerLocation(450);
         jSplitPane.setOneTouchExpandable(true);
         jSplitPane.setPreferredSize(new java.awt.Dimension(750, 600));
@@ -751,6 +485,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         jSplitPane.setRightComponent(graphPanel);
 
         jSplitPaneMain.setRightComponent(jSplitPane);
+        jSplitPaneMain.setLeftComponent(projectTree1);
 
         getContentPane().add(jSplitPaneMain, java.awt.BorderLayout.CENTER);
 
@@ -897,11 +632,6 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
         mProject.setMnemonic('p');
         mProject.setText("Project");
-
-        jMenuItem1.setFont(jMenuItem1.getFont().deriveFont((jMenuItem1.getFont().getStyle() | java.awt.Font.ITALIC)));
-        jMenuItem1.setText("empty");
-        mProject.add(jMenuItem1);
-
         mbMain.add(mProject);
 
         mHelp.setMnemonic('H');
@@ -936,10 +666,10 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
-    // create new tab
-    editorPanel.openFile(null);
+      // create new tab
+      editorPanel.openFile(null, null, null, 0, null);
 }//GEN-LAST:event_newFileAction
-  
+
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed
     {//GEN-HEADEREND:event_miCloseActionPerformed
         editorPanel.closeActiveTab(false);
@@ -947,49 +677,46 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
 
     private void saveFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveFileAction
     {//GEN-HEADEREND:event_saveFileAction
-      editorPanel.save(configuration.getProperty("lastOpenedFolder"));
-      updateProjectDirectoryMenu();
+        editorPanel.save(configuration.getProperty("lastOpenedFolder"));
+        evtManager.publish(new ReloadProjectEvent(this));
 }//GEN-LAST:event_saveFileAction
 
     private void miRefreshGraphActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miRefreshGraphActionPerformed
     {//GEN-HEADEREND:event_miRefreshGraphActionPerformed
-      graphPanel.refreshGraph();
+        evtManager.publish(new RefreshGraphEvent(editorPanel.getActiveTab()));
 }//GEN-LAST:event_miRefreshGraphActionPerformed
 
     private void miSaveAsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSaveAsActionPerformed
     {//GEN-HEADEREND:event_miSaveAsActionPerformed
-      if(editorPanel.getActiveTab() != null && editorPanel.getActiveTab().getFile() != null) {
-          editorPanel.saveAs(editorPanel.getActiveTab().getFile().getParent());
-      } else {
-        editorPanel.saveAs();
-      }
-      updateProjectDirectoryMenu();
+        if (editorPanel.getActiveTab() != null && editorPanel.getActiveTab().getFile() != null) {
+            editorPanel.saveAs(editorPanel.getActiveTab().getFile().getParent());
+        } else {
+            editorPanel.saveAs();
+        }
+        evtManager.publish(new ReloadProjectEvent(this));
 }//GEN-LAST:event_miSaveAsActionPerformed
 
     private void miOptionActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miOptionActionPerformed
     {//GEN-HEADEREND:event_miOptionActionPerformed
-      OptionsDialog optionDialog = new OptionsDialog(this, true, this.configuration);
-      optionDialog.setVisible(true);
+        OptionsDialog optionDialog = new OptionsDialog(this, true, this.configuration);
+        optionDialog.setVisible(true);
 
-      saveConfiguration();
-      loadConfiguration(); // reload settings
+        saveConfiguration();
+        loadConfiguration(); // reload settings
 }//GEN-LAST:event_miOptionActionPerformed
 
     private void miQuitActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miQuitActionPerformed
     {//GEN-HEADEREND:event_miQuitActionPerformed
-
-      System.exit(0);
+        System.exit(0);
     }//GEN-LAST:event_miQuitActionPerformed
 
     private void miInfoActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miInfoActionPerformed
     {//GEN-HEADEREND:event_miInfoActionPerformed
-
-      AboutDialog dlg = new AboutDialog(this, true);
-      Point location = this.getLocation();
-      location.translate(100, 100);
-      dlg.setLocation(location);
-      dlg.setVisible(true);
-
+        AboutDialog dlg = new AboutDialog(this, true);
+        Point location = this.getLocation();
+        location.translate(100, 100);
+        dlg.setLocation(location);
+        dlg.setVisible(true);
     }//GEN-LAST:event_miInfoActionPerformed
 
     private void openFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openFileAction
@@ -999,8 +726,8 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile != null && selectedFile.exists()) {
-                editorPanel.openFile(selectedFile);
-                updateProjectDirectoryMenu();
+                evtManager.publish(new OpenFileEvent(this, selectedFile));
+                evtManager.publish(new ReloadProjectEvent(this));
                 // update and save configuration
                 configuration.setProperty("lastOpenedFolder", fileChooser.getCurrentDirectory().getAbsolutePath());
                 saveConfiguration();
@@ -1012,197 +739,106 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
         }
     }//GEN-LAST:event_openFileAction
 
-  private void openFileFromTree(TreePath selPath) {
-        if (selPath != null) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
-            if (node == null || !node.isLeaf()) {
-                return;
-            }
-            editorPanel.openFile((File) node.getUserObject());
-        }
-    }
-
     private void compileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_compileAction
     {//GEN-HEADEREND:event_compileAction
-      if (editorPanel.hasOpenFiles()) {
-        File optionFile = editorPanel.getActiveFile();
+        if (editorPanel.hasOpenFiles()) {
+            // retrieve unsaved tabs
+            ArrayList<EditorPanelTab> unsaved = editorPanel.hasOpenUnsavedFiles();
+            if (!unsaved.isEmpty()) {
+                // if set via config, otherwise ask ...
+                if (Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE))
+                        || JOptionPane.showConfirmDialog(this, "There are unsaved changes. Save files before compiling?", "Unsaved changes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    // save all changed tabs
+                    unsaved.forEach((t) -> {
+                        t.save(configuration.getProperty("lastOpenedFolder"));
+                    });
+                }
+            }
 
-        File fout = null;
-
-        if (defaultCompilationPath == null)
-        {
-          fileChooser.setFileFilter(icFilter);
-          int result = fileChooser.showSaveDialog(this);
-          fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-          if (result == JFileChooser.APPROVE_OPTION)
-          {
-            fout = fileChooser.getSelectedFile();
-          }
+            compiler.compile(editorPanel.getActiveFile());
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Please open an *.xabsl file first before compiling", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
-        else
-        {
-          fout = new File(defaultCompilationPath + "/behavior-ic.dat");
-        }
-
-        if (fout == null)
-        {
-          JOptionPane.showMessageDialog(this, "No file selected");
-          return;
-        }
-        else if (fout.exists())
-        {
-          if (!fout.delete())
-          {
-            JOptionPane.showMessageDialog(this, "Can not overwrite the file "
-              + fout.getAbsolutePath());
-            return;
-          }
-        }
-
-        CompilerDialog frame = new CompilerDialog(this, true, optionFile, fout,
-          this, configuration);
-        frame.setVisible(true);
-      }
-      else
-      {
-        JOptionPane.showMessageDialog(this,
-          "Please open an *.xabsl file first before compiling", "Error",
-          JOptionPane.ERROR_MESSAGE);
-      }
     }//GEN-LAST:event_compileAction
 
     private void miSearchActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchActionPerformed
     {//GEN-HEADEREND:event_miSearchActionPerformed
-      editorPanel.searchInActiveTab();
+        editorPanel.searchInActiveTab();
     }//GEN-LAST:event_miSearchActionPerformed
 
     private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
     {//GEN-HEADEREND:event_formComponentResized
-
-      if (!splitterManuallySet)
-      {
-        // position splitter in the middle
-        ignoreSplitterMovedEvent = true;
-        jSplitPane.setDividerLocation(this.getWidth() / 2);
-        ignoreSplitterMovedEvent = false;
-      }
+        if (!splitterManuallySet) {
+            // position splitter in the middle
+            ignoreSplitterMovedEvent = true;
+            jSplitPane.setDividerLocation(this.getWidth() / 2);
+            ignoreSplitterMovedEvent = false;
+        }
     }//GEN-LAST:event_formComponentResized
 
     private void jSplitPanePropertyChange(java.beans.PropertyChangeEvent evt)//GEN-FIRST:event_jSplitPanePropertyChange
     {//GEN-HEADEREND:event_jSplitPanePropertyChange
-
-      if (evt.getPropertyName().equals("dividerLocation"))
-      {
-        if (!ignoreSplitterMovedEvent)
-        {
-          splitterManuallySet = true;
+        if (evt.getPropertyName().equals("dividerLocation")) {
+            if (!ignoreSplitterMovedEvent) {
+                splitterManuallySet = true;
+            }
         }
-      }
-
     }//GEN-LAST:event_jSplitPanePropertyChange
 
     private void miSearchProjectActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miSearchProjectActionPerformed
     {//GEN-HEADEREND:event_miSearchProjectActionPerformed
-
-      searchInProjectDialog.setVisible(true);
-
+        searchInProjectDialog.setProjects(projects);
+        searchInProjectDialog.setVisible(true);
     }//GEN-LAST:event_miSearchProjectActionPerformed
 
     private void miHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miHelpActionPerformed
-    if(this.helpDialog == null)
-        this.helpDialog = new HelpDialog(this, false);
+        if (this.helpDialog == null) {
+            this.helpDialog = new HelpDialog(this, false);
+        }
 
-    this.helpDialog.setVisible(true);
+        this.helpDialog.setVisible(true);
 }//GEN-LAST:event_miHelpActionPerformed
 
   private void miFindUnusedOptionsActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miFindUnusedOptionsActionPerformed
   {//GEN-HEADEREND:event_miFindUnusedOptionsActionPerformed
-    // get selected tab
-    if (editorPanel.hasOpenFiles()) {
-      new UnusedOptions(this, editorPanel.getActiveXABSLContext()).setVisible(true);
-    }
-    
+      // get selected tab
+      if (editorPanel.hasOpenFiles()) {
+          new UnusedOptions(this, projects).setVisible(true);
+      }
   }//GEN-LAST:event_miFindUnusedOptionsActionPerformed
 
-    private void fileTreeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileTreeKeyReleased
-        if(evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            openFileFromTree(fileTree.getSelectionPath());
-        } else if(evt.getKeyCode() == KeyEvent.VK_F5) {
-            updateProjectDirectoryMenu();
-        }
-    }//GEN-LAST:event_fileTreeKeyReleased
-
-    private void fileTreePopupRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupRefreshActionPerformed
-        updateProjectDirectoryMenu();
-    }//GEN-LAST:event_fileTreePopupRefreshActionPerformed
-
-    private void fileTreePopupNewFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupNewFileActionPerformed
-        // reset filechooser config
-        fileChooser.setCurrentDirectory(new File(fileTree.getSelectionPath().getLastPathComponent().toString()));
-        fileChooser.resetChoosableFileFilters();
-        fileChooser.setSelectedFile(new File(""));
-        fileChooser.setFileFilter(xabslFilter);
-        // show save dialog
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File f = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
-            if(f != null) {
-                try {
-                    f.createNewFile();
-                } catch (IOException ex) {}
-                editorPanel.openFile(f);
-                editorPanel.getActiveTab().setFile(f);
-            } else {
-                JOptionPane.showMessageDialog(null, "Not a valid xabsl file", "Invalid file", JOptionPane.WARNING_MESSAGE);
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Main(null).setVisible(true);
             }
+        });
+    }//end main
+
+    @Override
+    public void jumpTo(JumpTarget target) {
+        if (target.getFileName() == null) {
+            return;
         }
-    }//GEN-LAST:event_fileTreePopupNewFileActionPerformed
 
+        final String XABSL_FILE_ENDING = ".xabsl";
+        int dotIndex = target.getFileName().length() - XABSL_FILE_ENDING.length();
+        String name = target.getFileName().substring(0, dotIndex);
 
-  /**
-   * @param args the command line arguments
-   */
-  public static void main(String args[])
-  {
-    java.awt.EventQueue.invokeLater(new Runnable()
-    {
-      @Override
-      public void run()
-      {
-        new Main(null).setVisible(true);
-      }
-    });
-  }//end main
+        evtManager.publish(new OpenFileEvent(this, editorPanel.getActiveXABSLContext().getOptionPathMap().get(name)));
 
-  @Override
-  public void jumpTo(JumpTarget target)
-  {
-    if(target.getFileName() == null) return;
-
-    final String XABSL_FILE_ENDING = ".xabsl";
-    int dotIndex = target.getFileName().length() - XABSL_FILE_ENDING.length();
-    String name = target.getFileName().substring(0, dotIndex);
-
-    editorPanel.openFile(getOptionPathMap().get(name));
-    updateProjectDirectoryMenu();
-
-    if(editorPanel.hasOpenFiles()) {
-        editorPanel.getActiveTab().jumpToLine(target.getLineNumber());
-    } else {
-      System.err.println("Couldn't jump to taget " + target);
-    }
-  }//end jumpTo
-
-    public Map<String, File> getOptionPathMap() {
-        if (editorPanel.getActiveXABSLContext() != null) {
-            return editorPanel.getActiveXABSLContext().getOptionPathMap();
+        if (editorPanel.hasOpenFiles()) {
+            editorPanel.getActiveTab().jumpToLine(target.getLineNumber());
         } else {
-            return null;
+            System.err.println("Couldn't jump to taget " + target);
         }
-    }
-    
-    public EditorPanel getEditorPanel() {
-        return editorPanel;
-    }
+    }//end jumpTo
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btCompile;
@@ -1210,13 +846,7 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JButton btOpen;
     private javax.swing.JButton btSave;
     private de.naoth.xabsleditor.editorpanel.EditorPanel editorPanel;
-    private javax.swing.JTree fileTree;
-    private javax.swing.JPopupMenu fileTreePopup;
-    private javax.swing.JMenuItem fileTreePopupNewFile;
-    private javax.swing.JMenuItem fileTreePopupRefresh;
     private de.naoth.xabsleditor.graphpanel.GraphPanel graphPanel;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JScrollPane jScrollPaneFileTree;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -1242,111 +872,60 @@ public class Main extends javax.swing.JFrame implements CompilationFinishedRecei
     private javax.swing.JMenuItem miSaveAs;
     private javax.swing.JMenuItem miSearch;
     private javax.swing.JMenuItem miSearchProject;
+    private de.naoth.xabsleditor.utils.ProjectTree projectTree1;
     private javax.swing.JToolBar.Separator seperator1;
     private javax.swing.JToolBar toolbarMain;
     // End of variables declaration//GEN-END:variables
 
-  @Override
-  public void compilationFinished(CompileResult result)
-  {
-    //txtCompilerOutput.setText(result.messages);
-    graphPanel.updateCompilerResult(result);
-    if (result.errors || result.warnings)
-    {
-      graphPanel.selectTab("Compiler");
-    }
-  }//end compilationFinished
-
-  private void saveConfiguration()
-  {
-    try
-    {
-      configuration.store(new FileWriter(fConfig), "JXabslEditor configuration");
-    }
-    catch (IOException ex)
-    {
-      Tools.handleException(ex);
-    }
-  }//end saveConfiguration
-
-  // NOTICE: do we need this?!?
-  class XABSLErrorOutputStream extends OutputStream
-  {
-
-    private StringBuilder messageBuffer = new StringBuilder();
-
-    @Override
-    public void write(int b) throws IOException
-    {
-      messageBuffer.append((char) b);
-    }
-
-    public String getMessage()
-    {
-      return messageBuffer.toString();
-    }//end getMessage
-    public String fileName;
-    int row;
-    int col;
-    String message;
-
-    public void parseMessage()
-    {
-      String str = messageBuffer.toString();
-      str = str.replaceAll("\\(|(\\) : )|,", ";");
-      String[] splStr = str.split(";");
-      if (splStr.length == 4)
-      {
-        fileName = splStr[0];
-        row = Integer.parseInt(splStr[1]);
-        col = Integer.parseInt(splStr[2]);
-        message = splStr[3];
-      }//end if
-    }//end parseMessage
-  }//end class XABSLErrorOutputStream
-  
-  class ShutdownHook extends WindowAdapter
-  {
-      @Override
-      public void windowClosing(WindowEvent e)
-      {
-        // save "last" opened agent file
+    private void saveConfiguration() {
         try {
-            configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[0], editorPanel.getActiveAgent().getAbsolutePath());
-        } catch(Exception ex) { /* ignore exceptions! */ }
-        
-        // retrieve all opened files and close tabs
-        List<String> openedFiles = editorPanel.closeAllTabs(true).stream().map((t) -> t.getAbsolutePath()).collect(Collectors.toList());
-        
-        // save opened files to configuration
-        configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[1], openedFiles.stream().collect(Collectors.joining("|")));
-        
-        // the last position 6 size of the main window should be saved.
-        if(OptionsDialog.START_POSITION_OPTIONS[1].equals(configuration.getProperty(OptionsDialog.START_POSITION,""))) {
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()));       // x coordinate
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY()));       // y coordinate
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(getWidth()));   // window width
-            configuration.setProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(getHeight()));  // window height
+            configuration.store(new FileWriter(fConfig), "JXabslEditor configuration");
+        } catch (IOException ex) {
+            Tools.handleException(ex);
         }
-        
-        // save divider position
-        configuration.setProperty("dividerPostionOne", String.valueOf(jSplitPaneMain.getDividerLocation()));
-        configuration.setProperty("dividerPostionTwo", String.valueOf(jSplitPane.getDividerLocation()));
-        
-        saveConfiguration();
-        
-        if(watcher != null) {
+    }//end saveConfiguration
+
+    class ShutdownHook extends WindowAdapter {
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+            // save "last" opened agent file
             try {
-                watcher.running.set(false);
-                watcher.interrupt();
-                watcher.join();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[0], editorPanel.getActiveAgent().getAbsolutePath());
+            } catch (Exception ex) {
+                /* ignore exceptions! */ }
+
+            // retrieve all opened files and close tabs
+            List<String> openedFiles = editorPanel.closeAllTabs(true).stream().map((t) -> t.getAbsolutePath()).collect(Collectors.toList());
+
+            // save opened files to configuration
+            configuration.setProperty(OptionsDialog.OPEN_LAST_VALUES[1], openedFiles.stream().collect(Collectors.joining("|")));
+
+            // the last position 6 size of the main window should be saved.
+            if (OptionsDialog.START_POSITION_OPTIONS[1].equals(configuration.getProperty(OptionsDialog.START_POSITION, ""))) {
+                configuration.setProperty(OptionsDialog.START_POSITION_VALUE[0], String.valueOf(getX()));       // x coordinate
+                configuration.setProperty(OptionsDialog.START_POSITION_VALUE[1], String.valueOf(getY()));       // y coordinate
+                configuration.setProperty(OptionsDialog.START_POSITION_VALUE[2], String.valueOf(getWidth()));   // window width
+                configuration.setProperty(OptionsDialog.START_POSITION_VALUE[3], String.valueOf(getHeight()));  // window height
             }
+
+            // save divider position
+            configuration.setProperty("dividerPostionOne", String.valueOf(jSplitPaneMain.getDividerLocation()));
+            configuration.setProperty("dividerPostionTwo", String.valueOf(jSplitPane.getDividerLocation()));
+
+            saveConfiguration();
+
+            if (watcher != null) {
+                try {
+                    watcher.running.set(false);
+                    watcher.interrupt();
+                    watcher.join();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            System.exit(0);
         }
-
-        System.exit(0);
-      }
-  }
+    }
 }//end class Main
-

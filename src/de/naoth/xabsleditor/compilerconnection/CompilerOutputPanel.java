@@ -7,6 +7,7 @@
 package de.naoth.xabsleditor.compilerconnection;
 
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -200,5 +201,12 @@ public class CompilerOutputPanel extends javax.swing.JPanel {
       jumpListener.jumpTo(jumpTarget);
     }//end for
   }//end fireJumpEvent
-         
+
+    @Override
+    public void setFont(Font font) {
+        super.setFont(font);
+        if(txtCompilerOutput != null) {
+            txtCompilerOutput.setFont(font);
+        }
+    }
 }//end CompilerOutputPanel

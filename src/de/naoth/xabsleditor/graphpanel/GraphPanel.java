@@ -2,9 +2,13 @@ package de.naoth.xabsleditor.graphpanel;
 
 import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
-import de.naoth.xabsleditor.editorpanel.EditorPanel;
 import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
+import de.naoth.xabsleditor.events.CompilationFinishedEvent;
+import de.naoth.xabsleditor.events.EventListener;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
+import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -13,6 +17,7 @@ import de.naoth.xabsleditor.parser.XabslNode;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.StringReader;
@@ -25,21 +30,30 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
  */
 public class GraphPanel extends javax.swing.JPanel
 {
-//    private final XabslGraphMouseListener mouseListener;
+    /** Manager for distributing events. */
+    private final EventManager evtManager = EventManager.getInstance();
+    
     private OptionVisualizer optionVisualizer;
     private AgentVisualizer agentVisualizer;
-    private EditorPanel editor;
+    private XEditorPanel currentEditor;
   
     /**
      * Creates new form GraphPanel
      */
     public GraphPanel() {
         initComponents();
+        // register event handler
+        evtManager.add(this);
         XabslGraphMouseListener mouseListener = new XabslGraphMouseListener();
         initAgentTab(mouseListener);
         initOptionTab(mouseListener);
     }
-
+    
+    public void setFontSize(int size) {
+        Font df = panelCompiler.getFont();
+        panelCompiler.setFont(new Font(df.getFamily(), df.getStyle(), size));
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -81,11 +95,7 @@ public class GraphPanel extends javax.swing.JPanel
     public void addJumpListener(CompilerOutputPanel.JumpListener j) {
         panelCompiler.addJumpListener(j);
     }
-    
-    public void setEditor(EditorPanel e) {
-        editor = e;
-    }
-    
+
     public void selectTab(String tab) {
         for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
             if(jTabbedPane1.getTitleAt(i).equals(tab)) {
@@ -93,7 +103,6 @@ public class GraphPanel extends javax.swing.JPanel
                 break;
             }
         }
-        
     }
     
     public void updateAgentContext(XABSLContext context, String selectedNodeName) {
@@ -108,21 +117,32 @@ public class GraphPanel extends javax.swing.JPanel
         panelCompiler.setCompilerResult(result);
     }
     
-    public void refreshGraph() {
-        if (!editor.hasOpenFiles() || editor.getActiveFile() == null) {
+    @EventListener
+    public void compileResult(CompilationFinishedEvent e) {
+        
+        updateCompilerResult(e.result);
+        if (e.result.errors || e.result.warnings) {
+            selectTab("Compiler");
+        }
+    }
+    
+    @EventListener
+    public void refreshGraph(RefreshGraphEvent e) {
+        if (e.getSource() == null || !(e.getSource() instanceof XEditorPanel) || ((XEditorPanel)e.getSource()).getFile() == null) {
             return;
         }
+        currentEditor = (XEditorPanel)e.getSource();
 
-        String text = editor.getActiveContent();
+        String text = currentEditor.getContent();
 
         // Option
-        XParser p = new XParser(editor.getActiveXABSLContext());
+        XParser p = new XParser(currentEditor.getXABSLContext());
         p.parse(new StringReader(text));
         updateOptionGraph(p.getOptionGraph());
 
-        String optionName = editor.getActiveFile().getName();
+        String optionName = currentEditor.getFile().getName();
         optionName = optionName.replaceAll(".xabsl", "");
-        updateAgentContext(editor.getActiveXABSLContext(), optionName);
+        updateAgentContext(currentEditor.getXABSLContext(), optionName);
 
         // refresh autocompetion
         DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
@@ -132,24 +152,24 @@ public class GraphPanel extends javax.swing.JPanel
                     new XABSLStateCompetion(completionProvider, state.name));
         }//end for
 
-        editor.setActiveCompletionProvider(completionProvider);
+        currentEditor.setCompletionProvider(completionProvider);
     }
     
     class XabslGraphMouseListener implements GraphMouseListener<XabslNode>
     {
         @Override
         public void graphClicked(XabslNode v, MouseEvent me) {
-            if (editor.hasOpenFiles() && v.getType() == XabslNode.Type.State && v.getPosInText() > -1) {
-                editor.getActiveTab().setCarretPosition(v.getPosInText());
+            if (currentEditor != null && v.getType() == XabslNode.Type.State && v.getPosInText() > -1) {
+                currentEditor.setCarretPosition(v.getPosInText());
             } else if (v.getType() == XabslNode.Type.Option) {
                 String option = v.getName();
                 File file = null;
-                if (editor.getActiveXABSLContext() != null) {
-                    file = editor.getActiveXABSLContext().getOptionPathMap().get(option);
+                if (currentEditor.getXABSLContext()!= null) {
+                    file = currentEditor.getXABSLContext().getOptionPathMap().get(option);
                 }
 
                 if (file != null) {
-                    editor.openFile(file);
+                    evtManager.publish(new OpenFileEvent(this, file));
                 } else {
                     JOptionPane.showMessageDialog(null, "Could not find the file for option "
                             + option, "Option not found", JOptionPane.WARNING_MESSAGE);
