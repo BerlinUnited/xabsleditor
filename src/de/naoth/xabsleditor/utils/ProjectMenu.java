@@ -25,9 +25,9 @@ public class ProjectMenu extends JMenu
     /** The default menu item, if no project is loaded. */
     private final JMenuItem emptyItem;
     /** xabsl files icons */
-    private final ImageIcon icon_xabsl_agent = new ImageIcon(this.getClass().getResource("../res/xabsl_agents_file.png"));
-    private final ImageIcon icon_xabsl_option = new ImageIcon(this.getClass().getResource("../res/xabsl_option_file.png"));
-    private final ImageIcon icon_xabsl_symbol = new ImageIcon(this.getClass().getResource("../res/xabsl_symbols_file.png"));
+    private final ImageIcon icon_xabsl_agent = new ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/xabsl_agents_file.png"));
+    private final ImageIcon icon_xabsl_option = new ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/xabsl_option_file.png"));
+    private final ImageIcon icon_xabsl_symbol = new ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/xabsl_symbols_file.png"));
 
     /**
      * Contructor, initializes the default (empty) menu item.
