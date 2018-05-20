@@ -15,33 +15,37 @@
  */
 package de.naoth.xabsleditor.editorpanel;
 
+import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.parser.XTokenMaker;
+import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import de.naoth.xabsleditor.autocomplete.CCompletionProvider;
-import org.fife.ui.autocomplete.AbstractCompletionProvider;
+import javax.swing.undo.UndoManager;
 import org.fife.ui.autocomplete.AutoCompletion;
+import de.naoth.xabsleditor.autocomplete.CCompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -63,35 +67,32 @@ public class XEditorPanel extends javax.swing.JPanel
 
   private File file;
   private XABSLContext context;
-  private boolean changed;
+  private int hashCode;
   private int searchOffset;
   private String lastSearch;
 
   /** Creates new form XEditorPanel */
   public XEditorPanel()
   {
-    initComponents();
-    InitTextArea(null);
-    changed = false;
+      this((String)null);
   }
 
+  /** Create new panel and read text from file */
+  public XEditorPanel(File file)
+  {
+    this(loadFromFile(file));
+    setFile(file);
+  }
+
+  /** Create new panel and with the given text */
   public XEditorPanel(String str)
   {
     initComponents();
     InitTextArea(str);
-    changed = false;
-  }
-
-  // create new panel and read text from file
-  public XEditorPanel(File file)
-  {
-    initComponents();
-    InitTextArea(null);
-
-
-    loadFromFile(file);
-    setFile(file);
-    changed = false;
+    resetUndos();
+    hashCode = textArea.getText().hashCode();
+    // disable traversal keys; the tab panel should handle it
+    textArea.setFocusTraversalKeysEnabled(false);
   }
 
   private void InitTextArea(String str)
@@ -132,7 +133,9 @@ public class XEditorPanel extends javax.swing.JPanel
     textArea.requestFocusInWindow();
 
 
-    textArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+    //textArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
+    // HACK: set a font, so that the default font is not null
+    textArea.setFont(RSyntaxTextArea.getDefaultFont());
 
     // replace tabs with spaces
     textArea.setTabsEmulated(true);
@@ -166,19 +169,19 @@ public class XEditorPanel extends javax.swing.JPanel
       @Override
       public void insertUpdate(DocumentEvent e)
       {
-        setChanged(true);
+        fireDocumentChangedEvent();
       }
 
       @Override
       public void removeUpdate(DocumentEvent e)
       {
-        setChanged(true);
+        fireDocumentChangedEvent();
       }
 
       @Override
       public void changedUpdate(DocumentEvent e)
       {
-        setChanged(true);
+        fireDocumentChangedEvent();
       }
     });
 
@@ -187,6 +190,17 @@ public class XEditorPanel extends javax.swing.JPanel
 
     searchPanel.setVisible(false);
   }//end InitTextArea
+  
+  private void resetUndos() {
+    if(textArea.getDocument() instanceof RSyntaxDocument) {
+        UndoableEditListener[] mgr = ((RSyntaxDocument)textArea.getDocument()).getUndoableEditListeners();
+        for (UndoableEditListener undoers : mgr) {
+            if(undoers instanceof UndoManager) {
+                ((UndoManager)undoers).discardAllEdits();
+            }
+        }
+    }
+  }
 
   /** This method is called from within the constructor to
    * initialize the form.
@@ -206,7 +220,7 @@ public class XEditorPanel extends javax.swing.JPanel
   public String getText()
   {
     return this.textArea.getText();
-  }//end getText
+  }
 
   public void setText(String text)
   {
@@ -216,22 +230,20 @@ public class XEditorPanel extends javax.swing.JPanel
 
     this.textArea.setText(text);
     this.textArea.revalidate();
-  }//end getText
+  }
+  
+  public void setContent(String s) {
+    setText(s);
+  }
+
+  public String getContent() {
+    return getText();
+  }
 
   public boolean isChanged()
   {
-    return changed;
+    return hashCode != textArea.getText().hashCode();
   }
-
-  public void setChanged(boolean changed)
-  {
-    if(changed == this.changed)
-    {
-      return;
-    }
-    this.changed = changed;
-    fireDocumentChangedEvent();
-  }//end setChanged
 
   public File getFile()
   {
@@ -241,7 +253,7 @@ public class XEditorPanel extends javax.swing.JPanel
   public void setFile(File file)
   {
     this.file = file;
-  }//end setFile
+  }
 
 
   /*
@@ -253,7 +265,8 @@ public class XEditorPanel extends javax.swing.JPanel
   public static void centerLineInScrollPane(JTextComponent component) {
     Container container = SwingUtilities.getAncestorOfClass(JViewport.class, component);
 
-    if (container == null) {
+    // empty container or 'invalid' component size -> can not center on a 0,0 component!
+    if (container == null || (component.getSize().getWidth() == 0 && component.getSize().getHeight() == 0)) {
       return;
     }
 
@@ -271,7 +284,7 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end centerLineInScrollPane
 
-  public void setCarretPosition(int pos)
+  final public void setCarretPosition(int pos)
   {
     this.textArea.setCaretPosition(pos);
 
@@ -285,6 +298,10 @@ public class XEditorPanel extends javax.swing.JPanel
 
     this.textArea.revalidate();
   }//end setCarretPosition
+  
+  public int getCarretPosition() {
+      return this.textArea.getCaretPosition();
+  }
 
   public void jumpToLine(int line)
   {
@@ -297,25 +314,52 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end jumpToLine
 
-  public void loadFromFile(File file)
-  {
-    try
-    {
-      BufferedReader r = new BufferedReader(new FileReader(file));
-      textArea.read(r, null);
-      r.close();
+    private static String loadFromFile(File file) {
+        if(file == null) {
+            return null;
+        }
+        
+        try {
+            return new String(Files.readAllBytes(file.toPath()));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            JOptionPane.showMessageDialog(null, ioe.toString(), "Can't load file", JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }//end loadFromFile
+
+    public void reloadFromFile() {
+        reloadFromFile(true);
     }
-    catch(IOException ioe)
-    {
-      ioe.printStackTrace();
-      UIManager.getLookAndFeel().provideErrorFeedback(textArea);
+    
+    public void reloadFromFile(boolean updateTextArea) {
+        if (this.file != null && this.file.exists()) {
+            
+            String content = loadFromFile(file);
+            if(updateTextArea) {
+                textArea.setText(content);
+            }
+            renewHashCode(content);
+        }
     }
-  }//end loadFromFile
+    public void renewHashCode() {
+        renewHashCode(null);
+    }
+    
+    public void renewHashCode(String content) {
+        if(content == null) {
+            hashCode = textArea.getText().hashCode();
+        } else {
+            hashCode = content.hashCode();
+        }
+        fireDocumentChangedEvent();
+    }
 
   public void addHyperlinkListener(HyperlinkListener listener)
   {
     textArea.addHyperlinkListener(listener);
-  }//end addHyperlinkListener
+  }
+  
   ArrayList<DocumentChangedListener> documentChangedListeners = new ArrayList<DocumentChangedListener>();
 
   public void addDocumentChangedListener(DocumentChangedListener listener)
@@ -459,6 +503,80 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     this.textArea.setTabSize(size);
   }
+  
+  public void setFontSize(float size)
+  {
+    // update all the fonts with the new fonsize
+    this.textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
+    
+    scrolPane.getGutter().setLineNumberFont(scrolPane.getGutter().getLineNumberFont().deriveFont(size));
+  }
+  
+  /**
+   * Checks whether the tab/editor can be closed savely - without data loss.
+   * @return true, if tab/editor can be closed without data loss, false otherwise
+   */
+    public boolean close() {
+        if (this.isChanged()) {
+            // something changed ...
+            int result = JOptionPane.showConfirmDialog(this, "Save changes?", "File was modified.", JOptionPane.YES_NO_CANCEL_OPTION);
+            // cancel or try to save
+            if (result == JOptionPane.CANCEL_OPTION || (result == JOptionPane.YES_OPTION && !this.save())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean save() {
+        return save(System.getProperty("user.home"));
+    }
+    
+    public boolean save(String defaultDirectory) {
+        // save as a new file
+        if(this.file == null)
+        {
+            // set up file chooser
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setFileFilter(new XABSLFileFilter());
+            fileChooser.setAcceptAllFileFilterUsed(true);
+            fileChooser.setCurrentDirectory(new File(defaultDirectory));
+            // get new file
+            int result = fileChooser.showSaveDialog(this);
+            if (result != JFileChooser.APPROVE_OPTION) {
+                this.file = null;
+            } else {
+                this.file = Tools.validateFileName(fileChooser.getSelectedFile(), fileChooser.getFileFilter());
+            }
+        }
+        // only if we have a valid file
+        if(this.file != null) {
+            try {
+                // write data
+                FileWriter writer = new FileWriter(this.file);
+                writer.write(this.getText());
+                writer.close();
+                renewHashCode();
+
+                // change UI (title, tooltip) of tab
+                if(this.getParent() instanceof JTabbedPane) {
+                    JTabbedPane pane = (JTabbedPane)this.getParent();
+                    int idx = pane.indexOfComponent(this);
+                    pane.setTitleAt(idx, this.file.getName());
+                    pane.setToolTipTextAt(idx, file.getAbsolutePath());
+                }
+                // data saved
+                return true;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, e.toString(), "The file could not be written.", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, e.toString(), "Could not save the file.", JOptionPane.ERROR_MESSAGE);
+            }//end catch
+        }
+        // ... otherwise we're wasn't able to save!!
+        return false;
+    }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private de.naoth.xabsleditor.editorpanel.SearchPanel searchPanel;

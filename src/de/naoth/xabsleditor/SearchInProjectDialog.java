@@ -15,12 +15,18 @@
  */
 package de.naoth.xabsleditor;
 
-import de.naoth.xabsleditor.editorpanel.XEditorPanel;
+import de.naoth.xabsleditor.events.EventManager;
+import de.naoth.xabsleditor.events.OpenFileEvent;
+import de.naoth.xabsleditor.utils.Project;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -28,7 +34,8 @@ import javax.swing.JOptionPane;
  */
 public class SearchInProjectDialog extends javax.swing.JDialog
 {
-
+  private final EventManager evtManager = EventManager.getInstance();
+  private Map<String, Project> projects = new HashMap<>();
   private Main parent;
 
   /** Creates new form SearchInProjectDialog */
@@ -40,6 +47,15 @@ public class SearchInProjectDialog extends javax.swing.JDialog
 
     initComponents();
     resultList.setModel(new DefaultListModel());
+    
+    // hide dialog when pressing ESC
+    this.getRootPane().registerKeyboardAction(e -> {
+        setVisible(false);
+    }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+  }
+  
+  public void setProjects(Map<String, Project> p) {
+      projects = p;
   }
 
   /** This method is called from within the constructor to
@@ -155,11 +171,7 @@ public class SearchInProjectDialog extends javax.swing.JDialog
   private void openFile()
   {
     String path = (String) resultList.getModel().getElementAt(resultList.getSelectedIndex());
-    XEditorPanel p = parent.openFile(new File(path));
-    if(p != null)
-    {
-      p.search(txtSearch.getText());
-    }
+    evtManager.publish(new OpenFileEvent(this, new File(path), txtSearch.getText()));   
   }
 
   private void search()
@@ -168,33 +180,24 @@ public class SearchInProjectDialog extends javax.swing.JDialog
 
     m.removeAllElements();
 
-    if(parent != null)
-    {
-
-      if(parent.getOptionPathMap() == null || parent.getOptionPathMap().values().size() == 0)
-      {
+    if(projects.isEmpty()) {
         JOptionPane.showMessageDialog(null, "No option openend yet. You need to" +
           " open an option so I'm able to search in the project structure.",
           "WARNING", JOptionPane.WARNING_MESSAGE);
-        return;
-      }
-
-      for(File f : parent.getOptionPathMap().values())
-      {
-        try
-        {
-          String content = Tools.readFileToString(f);
-          if(content.indexOf(txtSearch.getText()) > -1)
-          {
-            m.addElement(f.getAbsolutePath());
-          }
-        }
-        catch(IOException ex)
-        {
-          Tools.handleException(ex);
-        }
-      }//end for
-    }//end if
+    } else {
+        projects.forEach((i, p) -> {
+            for (File f : p.context().getOptionPathMap().values()) {
+                try {
+                    String content = Tools.readFileToString(f);
+                    if (content.indexOf(txtSearch.getText()) > -1) {
+                        m.addElement(f.getAbsolutePath());
+                    }
+                } catch (IOException ex) {
+                    Tools.handleException(ex);
+                }
+            }//end for
+        });
+    }
   }//end search
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
