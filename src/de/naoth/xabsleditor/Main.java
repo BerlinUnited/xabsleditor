@@ -243,7 +243,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
             projects.put(agent.getAbsolutePath(), p);
             evtManager.publish(new UpdateProjectEvent(this, projects));
         }
-        editorPanel.openFile(evt.file, p.agent(), p.context(), evt.carretPosition, evt.search);
+        editorPanel.openFile(evt.file, p, evt.carretPosition, evt.search);
     }
 
     /**
@@ -667,7 +667,9 @@ public class Main extends javax.swing.JFrame implements JumpListener
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
       // create new tab
-      editorPanel.openFile(null, null, null, 0, null);
+      // NOTE: the new (empty) file has no associated project, hence no autocompletion or alike
+      // TODO: can we fix this somehow?!
+      editorPanel.openFile(null, null, 0, null);
 }//GEN-LAST:event_newFileAction
 
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed

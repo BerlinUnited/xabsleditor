@@ -16,25 +16,32 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
-import javax.swing.text.JTextComponent;
+import java.util.stream.Collectors;
 import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
 import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.FunctionCompletion;
 
 /**
  *
  * @author Heinrich Mellmann
  */
-public class XABSLSymbolCompletion
-        extends XABSLSymbolSimpleCompletion
+public class XABSLSymbolCompletion extends FunctionCompletion
 {
-
-  public XABSLSymbolCompletion(CompletionProvider provider, XABSLContext.XABSLSymbol symbol)
-  {
-    super(provider, symbol);
-  }
-
-  public String getDefinitionString() {
+    protected XABSLContext.XABSLSymbol symbol;
+    
+    public XABSLSymbolCompletion(CompletionProvider provider, XABSLContext.XABSLSymbol symbol) {
+        super(provider, symbol.getName(), symbol.getType());
+        this.symbol = symbol;
+        // TODO: set correct parameter definition
+        setParams(symbol.getParameter().stream().map((t) -> {
+            Parameter p = new Parameter(t.getName(), t.getType());
+            p.setDescription(t.getComment());
+            return p;
+        }).collect(Collectors.toList()));
+    }
     /*
+    public String getDefinitionString() {
+        /*
      helpBody += "<br><u>Parameter</u>:<table>";
         helpHeader += "(";
         replacementText += "(";
@@ -66,16 +73,17 @@ public class XABSLSymbolCompletion
         helpBody += "</table>";
       
         helpHeader + "<hr>" + helpBody
-     */
-    return "test";
-  }//end getDefinitionString
+         * /
+        return "test";
+    }//end getDefinitionString
 
-  public Parameter getParam(int idx) {
-    XABSLContext.XABSLBasicSymbol parameter = this.symbol.getParameter().get(idx);
-    return new Parameter(parameter.getType(), parameter.getName());
-  }//end getParam
+    public Parameter getParam(int idx) {
+        XABSLContext.XABSLBasicSymbol parameter = this.symbol.getParameter().get(idx);
+        return new Parameter(parameter.getType(), parameter.getName());
+    }//end getParam
 
-  public int getParamCount() {
-    return this.symbol.getParameter().size();
-  }//end getParamCount
+    public int getParamCount() {
+        return this.symbol.getParameter().size();
+    }//end getParamCount
+    */
 }//end class XABSLSymbolCompletion

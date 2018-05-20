@@ -152,7 +152,8 @@ public class GraphPanel extends javax.swing.JPanel
                     new XABSLStateCompetion(completionProvider, state.name));
         }//end for
 
-        currentEditor.setCompletionProvider(completionProvider);
+//        currentEditor.setCompletionProvider(completionProvider);
+        // TODO: is updating the context and the completion provider neccessary?!
     }
     
     class XabslGraphMouseListener implements GraphMouseListener<XabslNode>

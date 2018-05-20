@@ -64,6 +64,8 @@ public class XEditorPanel extends javax.swing.JPanel
 
   private RSyntaxTextArea textArea;
   private RTextScrollPane scrolPane;
+  private AutoCompletion ac;
+  
 
   private File file;
   private XABSLContext context;
@@ -445,36 +447,43 @@ public class XEditorPanel extends javax.swing.JPanel
     return false;
   }//end search
 
-  private CCompletionProvider completionProvider = null;
-  
-  
-  private void createCompletionProvider()
-  {
-    this.completionProvider = new CCompletionProvider();
+    private void createCompletionProvider() {
+//        completionProvider = new CCompletionProvider();
 
-    AutoCompletion ac = new AutoCompletion(this.completionProvider);
-    ac.setDescriptionWindowSize(300, 200);
-		ac.setListCellRenderer(new CCellRenderer());
-		ac.setShowDescWindow(true);
-		ac.setParameterAssistanceEnabled(true);
-		ac.install(textArea);
+//        AutoCompletion ac = new AutoCompletion(completionProvider);
+//        ac.setDescriptionWindowSize(300, 200);
+//        ac.setListCellRenderer(new CCellRenderer());
+//        ac.setShowDescWindow(true);
+//        ac.setParameterAssistanceEnabled(true);
+//        ac.install(textArea);
 
-    textArea.setToolTipSupplier((ToolTipSupplier)this.completionProvider);
-		ToolTipManager.sharedInstance().registerComponent(textArea);
-  }//end createCompletionProvider
+//        textArea.setToolTipSupplier((ToolTipSupplier) this.completionProvider);
+//        ToolTipManager.sharedInstance().registerComponent(textArea);
+    }//end createCompletionProvider
 
 
-  public void setCompletionProvider(DefaultCompletionProvider completionProvider) {
-    if(this.completionProvider == null) createCompletionProvider();
-    this.completionProvider.setDefaultCompletionProvider(completionProvider);
+  public void setCompletionProvider(DefaultCompletionProvider provider) {
+    if(ac == null) {
+        ac = new AutoCompletion(provider);
+        // TODO: setup some stuff, see above
+        ac.setDescriptionWindowSize(300, 200);
+//        ac.setListCellRenderer(new CCellRenderer());
+        ac.setShowDescWindow(true);
+        ac.setParameterAssistanceEnabled(true);
+        ac.install(textArea);
+    } else {
+        ac.setCompletionProvider(provider);
+    }
   }//end setCompletionProvider
 
-  
-  public void setLocalCompletionProvider(DefaultCompletionProvider completionProvider) {
-    if(this.completionProvider == null) createCompletionProvider();
-    this.completionProvider.setXabslLocalCompletionProvider(completionProvider);
+/*
+  public void setLocalCompletionProvider(DefaultCompletionProvider provider) {
+    if(completionProvider == null) {
+        createCompletionProvider();
+    }
+    completionProvider.setXabslLocalCompletionProvider(provider);
   }//end setLocalCompletionProvider
-
+*/
   // HACK: make it local...
   public Map<String, XABSLOptionContext.State> getStateMap()
   {

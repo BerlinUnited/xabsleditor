@@ -1,5 +1,7 @@
 package de.naoth.xabsleditor.utils;
 
+import de.naoth.xabsleditor.editorpanel.XABSLSymbolCompletion;
+import de.naoth.xabsleditor.editorpanel.XABSLSymbolSimpleCompletion;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
 import java.io.File;
@@ -7,6 +9,8 @@ import java.io.FileReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.fife.ui.autocomplete.ShorthandCompletion;
 
 /**
  * Represents a xabsl project.
@@ -24,6 +28,8 @@ public class Project
     private final XABSLContext context = new XABSLContext();
     /** The xabsl extension. */
     private final String XABSL_FILE_ENDING = ".xabsl";
+    /** */
+    private final DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
 
     /**
      * Constructor, reads the project of the given agent file and creates the
@@ -35,6 +41,7 @@ public class Project
         this.agent = agent;
         fileTree.setUserObject(agent.getName());
         updateProject(fileTree, agent.getParentFile());
+        setupCompletionProvider();
     }
     
     /**
@@ -132,5 +139,57 @@ public class Project
      */
     public DefaultMutableTreeNode tree() {
         return fileTree;
+    }
+    
+    private void setupCompletionProvider() {
+        // add some default macros
+        completionProvider.addCompletion(new ShorthandCompletion(completionProvider,
+                "state",                                                 // input text
+                "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}", // replacement
+                "behavior state",                                        // short description
+                "behavior state"                                         // summary
+        ));
+        // update completion provider based on the context
+        updateCompletionProvider();
+    }
+    
+    private void updateCompletionProvider() {
+        // TODO: if the context has changed, the provider must be updated
+        /*
+        
+        DefaultCompletionProvider provider = new DefaultCompletionProvider() {
+            @Override
+            protected boolean isValidChar(char ch) {
+                return super.isValidChar(ch) || ch == '.';
+            }
+        };
+
+        provider.setParameterizedCompletionParams('(', ", ", ')');
+        */
+        
+        for (XABSLContext.XABSLSymbol symbol : context.getSymbolMap().values()) {
+            System.out.println(symbol.getName() +" -> "+ symbol.getParameter());
+            if (symbol.getParameter().isEmpty()) {
+                completionProvider.addCompletion(new XABSLSymbolSimpleCompletion(completionProvider, symbol));
+            } else {
+                completionProvider.addCompletion(new XABSLSymbolCompletion(completionProvider, symbol));
+            }
+            //System.out.println(symbol); // debug stuff
+        }//end for
+        /*
+        for (XABSLContext.XABSLOption option : context.getOptionMap().values()) {
+            provider.addCompletion(new XABSLOptionCompletion(provider, option));
+        }//end for
+
+        for (XABSLContext.XABSLEnum xabslEnum : context.getEnumMap().values()) {
+            for (String param : xabslEnum.getElements()) {
+                provider.addCompletion(new XABSLEnumCompletion(provider, xabslEnum.name, param));
+            }//end for
+        }//end for
+*/
+    }
+    
+    public DefaultCompletionProvider completionProvider() {
+        return completionProvider;
     }
 }
