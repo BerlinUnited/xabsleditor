@@ -149,6 +149,8 @@ public class Project
                 "behavior state",                                        // short description
                 "behavior state"                                         // summary
         ));
+        completionProvider.setParameterizedCompletionParams('(', ", ", ')');
+        
         // update completion provider based on the context
         updateCompletionProvider();
     }
