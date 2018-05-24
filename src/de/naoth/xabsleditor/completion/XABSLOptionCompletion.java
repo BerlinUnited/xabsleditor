@@ -17,7 +17,6 @@ package de.naoth.xabsleditor.completion;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
 import java.util.stream.Collectors;
-import javax.swing.ImageIcon;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.FunctionCompletion;
 import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
@@ -28,14 +27,11 @@ import org.fife.ui.autocomplete.ParameterizedCompletion.Parameter;
  */
 public class XABSLOptionCompletion extends FunctionCompletion
 {
-    private static final ImageIcon ICON = new ImageIcon(XabslCompletionProvider.class.getResource("/de/naoth/xabsleditor/res/function.png"));
-    
     protected XABSLContext.XABSLOption option;
 
     public XABSLOptionCompletion(CompletionProvider provider, XABSLContext.XABSLOption option) {
         super(provider, option.getName(), "void");
         setShortDescription(option.getComment());
-        //super(provider, option.getName(), "XABSLOptionCompletition.DefinitionString", "", "", option.getName() + "</b><hr>" + option.getComment());
         this.option = option;
         
         // TODO: set correct parameter definition
@@ -46,7 +42,6 @@ public class XABSLOptionCompletion extends FunctionCompletion
         }).collect(Collectors.toList()));
         
         setRelevance(30);
-        setIcon(ICON);
     }
     
     @Override

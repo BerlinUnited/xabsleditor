@@ -3,9 +3,7 @@ package de.naoth.xabsleditor.completion;
 import de.naoth.xabsleditor.parser.XABSLOptionParser;
 import de.naoth.xabsleditor.parser.XParser;
 import java.util.Arrays;
-import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
-import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.LanguageAwareCompletionProvider;
@@ -18,8 +16,6 @@ import org.fife.ui.rsyntaxtextarea.Token;
  */
 public class XabslCompletionProvider extends LanguageAwareCompletionProvider
 {
-    private static final ImageIcon VAR_ICON = new ImageIcon(XabslCompletionProvider.class.getResource("/de/naoth/xabsleditor/res/var.png"));
-    
     private final CompletionProvider emptyDocumentProvider = new EmptyCompletionProvider();
     private final CompletionProvider symbolProvider = new SymbolCompletionProvider();
     private final CompletionProvider optionProvider = new OptionCompletionProvider();
@@ -30,16 +26,6 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
 
     public XabslCompletionProvider() {
         super(new XabslDefaultCompletionProvider());
-        /*
-        // add some default macros
-        ((DefaultCompletionProvider)getDefaultCompletionProvider()).addCompletion(new ShorthandCompletion(getDefaultCompletionProvider(),
-                "state",                                                 // input text
-                "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}", // replacement
-                "behavior state",                                        // short description
-                "behavior state"                                         // summary
-        ));
-        */
-        //((DefaultCompletionProvider)getDefaultCompletionProvider()).setParameterizedCompletionParams('(', ", ", ')');
     }
 
     @Override
@@ -79,10 +65,7 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         if(parser.getFileParser() instanceof XABSLOptionParser) {
             DefaultCompletionProvider option_provider = new DefaultCompletionProvider();
             ((XABSLOptionParser)parser.getFileParser()).getOption().getParameter().forEach((t) -> {
-                BasicCompletion c = new BasicCompletion(option_provider, "@"+t.getName(), "Option parameter", t.getComment());
-                c.setRelevance(50);
-                c.setIcon(VAR_ICON);
-                option_provider.addCompletion(c);
+                option_provider.addCompletion(new XabslVariableCompletion(option_provider, "@"+t.getName(), "Option parameter", t.getComment()));
             });
             option_provider.setParent(provider);
             return option_provider;
@@ -116,14 +99,6 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
                 new XabslTemplateCompletion(this, "option", "option file", "option ${name}\n{\n${cursor}\n}", "option", "The name of the option. Must be identical to the file name without extension."),
                 new XabslTemplateCompletion(this, "agent", "agent file", "agent ${id}(\"${agent-title}\", ${root-option});", "agent", "The name of the option. Must be identical to the file name without extension.")
             ));
-            /*
-            addCompletion(new ShorthandCompletion(getDefaultCompletionProvider(),
-                "state",                                                 // input text
-                "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}", // replacement
-                "behavior state",                                        // short description
-                "behavior state"                                         // summary
-            ));
-            */
         }
     } // END EmptyCompletionProvider
     

@@ -16,6 +16,7 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.Tools;
+import de.naoth.xabsleditor.completion.CCellRenderer;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -444,30 +445,18 @@ public class XEditorPanel extends javax.swing.JPanel
     return false;
   }//end search
 
-    private void createCompletionProvider() {
-//        completionProvider = new CCompletionProvider();
-
-//        AutoCompletion ac = new AutoCompletion(completionProvider);
-//        ac.setDescriptionWindowSize(300, 200);
-//        ac.setListCellRenderer(new CCellRenderer());
-//        ac.setShowDescWindow(true);
-//        ac.setParameterAssistanceEnabled(true);
-//        ac.install(textArea);
-
-//        textArea.setToolTipSupplier((ToolTipSupplier) this.completionProvider);
-//        ToolTipManager.sharedInstance().registerComponent(textArea);
-    }//end createCompletionProvider
-
-
   public void setCompletionProvider(CompletionProvider provider) {
     if(ac == null) {
         ac = new AutoCompletion(provider);
         // TODO: setup some stuff, see above
         ac.setDescriptionWindowSize(300, 200);
-//        ac.setListCellRenderer(new CCellRenderer());
+        ac.setListCellRenderer(new CCellRenderer());
         ac.setShowDescWindow(true);
         ac.setParameterAssistanceEnabled(true);
         ac.install(textArea);
+        
+//        textArea.setToolTipSupplier((ToolTipSupplier) this.completionProvider);
+//        ToolTipManager.sharedInstance().registerComponent(textArea);
     } else {
         ac.setCompletionProvider(provider);
     }
@@ -477,14 +466,6 @@ public class XEditorPanel extends javax.swing.JPanel
       return ac == null ? null : ac.getCompletionProvider();
   }
 
-/*
-  public void setLocalCompletionProvider(DefaultCompletionProvider provider) {
-    if(completionProvider == null) {
-        createCompletionProvider();
-    }
-    completionProvider.setXabslLocalCompletionProvider(provider);
-  }//end setLocalCompletionProvider
-*/
   // HACK: make it local...
   public Map<String, XABSLOptionContext.State> getStateMap()
   {

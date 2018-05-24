@@ -4,13 +4,13 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
 /**
- * This class represents a completion for the xabsl language itself.
+ *
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
-public class XabslCompletion extends BasicCompletion
+public class XabslVariableCompletion extends BasicCompletion
 {
-    public XabslCompletion(CompletionProvider provider, String replacementText, String shortDesc, String summary) {
+    public XabslVariableCompletion(CompletionProvider provider, String replacementText, String shortDesc, String summary) {
         super(provider, replacementText, shortDesc, summary);
-        setRelevance(10);
+        setRelevance(50);
     }
 }

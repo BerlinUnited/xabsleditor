@@ -15,10 +15,7 @@
  */
 package de.naoth.xabsleditor.completion;
 
-import de.naoth.xabsleditor.completion.XABSLEnumCompletion;
-import de.naoth.xabsleditor.completion.XABSLSymbolCompletion;
-import de.naoth.xabsleditor.completion.XABSLOptionCompletion;
-import de.naoth.xabsleditor.completion.XABSLSymbolSimpleCompletion;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.io.Serializable;
@@ -35,70 +32,61 @@ import org.fife.ui.autocomplete.VariableCompletion;
  *
  * @author Heinrich Mellmann
  */
-class CCellRenderer extends CompletionCellRenderer {
+public class CCellRenderer extends CompletionCellRenderer {
 
-    private final Icon variableIcon;
-    private final Icon functionIcon;
-    private final Icon macroIcon;
-    private final Icon emptyIcon;
-    //private final Icon testIcon;
+    private static final Icon VARIABLE_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/var.png"));
+    private static final Icon FUNCTION_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/function.png"));
+    private static final Icon MACRO_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/macro.png"));
+    private static final Icon TEST_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/test.png"));
+    private static final Icon EMPTY_ICON = new EmptyIcon(16);
 
-    private final Icon downarrowIcon;
-    private final Icon leftarrowIcon;
-    private final Icon rightarrowIcon;
+    private static final Icon DOWNARROW_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/downarrow.png"));
+    private static final Icon LEFTARROW_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/leftarrow.png"));
+    private static final Icon RIGHTARROW_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/rightarrow.png"));
+    
+    private static final Icon AGENT_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/xabsl_agents_file.png"));
+    private static final Icon OPTION_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/xabsl_option_file.png"));
+    private static final Icon SYMBOL_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/xabsl_symbols_file.png"));
 
     public CCellRenderer() {
-        variableIcon = getIcon("/de/naoth/xabsleditor/res/var.png");
-        functionIcon = getIcon("/de/naoth/xabsleditor/res/function.png");
-        macroIcon = getIcon("/de/naoth/xabsleditor/res/macro.png");
-        //testIcon = getIcon("/de/naoth/xabsleditor/res/test.png");
-
-        downarrowIcon = getIcon("/de/naoth/xabsleditor/res/downarrow.png");
-        leftarrowIcon = getIcon("/de/naoth/xabsleditor/res/leftarrow.png");
-        rightarrowIcon = getIcon("/de/naoth/xabsleditor/res/rightarrow.png");
-
-        emptyIcon = new EmptyIcon(16);
+        setAlternateBackground(new Color(245, 245, 245));
     }
-
-    /**
-     * Returns an icon.
-     *
-     * @param resource The icon to retrieve. This should either be a file, or a
-     * resource loadable by the current ClassLoader.
-     * @return The icon.
-     */
-    protected Icon getIcon(String resource) {
-        return new ImageIcon(this.getClass().getResource(resource));
-    }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    public Component getListCellRendererComponent(JList list, Object value,
-            int index, boolean selected, boolean hasFocus) {
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean selected, boolean hasFocus) {
 
         super.getListCellRendererComponent(list, value, index, selected, hasFocus);
+        
+        // Enum
+        // Option
+        // State
+        // Symbol / SymbolSimple
+        // TemplateCompletion
+        // Variable
 
         if (value instanceof XABSLSymbolCompletion) {
-            XABSLSymbolCompletion xc = (XABSLSymbolCompletion) value;
-            prepareForXABSLSymbolCompletion(list, xc, index, selected, hasFocus);
+            prepareForXABSLSymbolCompletion(list, (XABSLSymbolCompletion) value, index, selected, hasFocus);
         } else if (value instanceof XABSLSymbolSimpleCompletion) {
-            XABSLSymbolSimpleCompletion xc = (XABSLSymbolSimpleCompletion) value;
-            prepareForXABSLSymbolSimpleCompletion(list, xc, index, selected, hasFocus);
+            prepareForXABSLSymbolSimpleCompletion(list, (XABSLSymbolSimpleCompletion) value, index, selected, hasFocus);
         } else if (value instanceof XABSLOptionCompletion) {
-            XABSLOptionCompletion oc = (XABSLOptionCompletion) value;
-            prepareForXABSLOptionCompletion(list, oc, index, selected, hasFocus);
+            prepareForXABSLOptionCompletion(list, (XABSLOptionCompletion) value, index, selected, hasFocus);
         } else if (value instanceof XABSLEnumCompletion) {
-            XABSLEnumCompletion ec = (XABSLEnumCompletion) value;
-            prepareForXABSLEnumCompletion(list, ec, index, selected, hasFocus);
+            prepareForXABSLEnumCompletion(list, (XABSLEnumCompletion) value, index, selected, hasFocus);
+        } else if(value instanceof XabslVariableCompletion) {
+            prepareForXABSLVariableCompletion(list, (XabslVariableCompletion) value, index, selected, hasFocus);
+        } else if(value instanceof XabslCompletion) {
+            prepareForXABSLCompletion(list, (XabslCompletion)value, index, selected, hasFocus);
+        } else if(value instanceof XabslTemplateCompletion) {
+            prepareForXABSLTemplateCompletion(list, (XabslTemplateCompletion)value, index, selected, hasFocus);
         }
 
         return this;
     }//end getListCellRendererComponent
 
-    protected void prepareForXABSLSymbolSimpleCompletion(JList list,
-            XABSLSymbolSimpleCompletion xc, int index, boolean selected, boolean hasFocus) {
+    protected void prepareForXABSLSymbolSimpleCompletion(JList list, XABSLSymbolSimpleCompletion xc, int index, boolean selected, boolean hasFocus) {
 
         StringBuilder sb = new StringBuilder("<html><b><em>");
         sb.append(xc.getName());
@@ -119,13 +107,13 @@ class CCellRenderer extends CompletionCellRenderer {
 
         switch (xc.getSecondaryType()) {
             case input:
-                setIcon(rightarrowIcon);
+                setIcon(LEFTARROW_ICON);
                 break;
             case output:
-                setIcon(leftarrowIcon);
+                setIcon(RIGHTARROW_ICON);
                 break;
             case internal:
-                setIcon(downarrowIcon);
+                setIcon(DOWNARROW_ICON);
                 break;
         }//end switch
 
@@ -147,7 +135,7 @@ class CCellRenderer extends CompletionCellRenderer {
         sb.append("</em>");
 
         setText(sb.toString());
-        setIcon(functionIcon);
+        setIcon(FUNCTION_ICON);
     }//end prepareForXABSLEnumCompletion
 
     protected void prepareForXABSLSymbolCompletion(JList list,
@@ -193,11 +181,10 @@ class CCellRenderer extends CompletionCellRenderer {
         }
 
         setText(sb.toString());
-        setIcon(variableIcon);
+        setIcon(VARIABLE_ICON);
     }//end prepareForXABSLSymbolCompletion
 
-    protected void prepareForXABSLOptionCompletion(JList list,
-            XABSLOptionCompletion oc, int index, boolean selected, boolean hasFocus) {
+    protected void prepareForXABSLOptionCompletion(JList list, XABSLOptionCompletion oc, int index, boolean selected, boolean hasFocus) {
 
         StringBuilder sb = new StringBuilder("<html><b><em>");
         sb.append(oc.getName());
@@ -231,8 +218,23 @@ class CCellRenderer extends CompletionCellRenderer {
         sb.append(oc.getProvider().getParameterListEnd());
 
         setText(sb.toString());
-        setIcon(macroIcon);
+        setIcon(MACRO_ICON);
     }//end prepareForXABSLOptionCompletion
+    
+    protected void prepareForXABSLVariableCompletion(JList list, XabslVariableCompletion vc, int index, boolean selected, boolean hasFocus) {
+        setText("<html><b><em>"+vc.getReplacementText()+"</em></b></html>");
+        setIcon(TEST_ICON);
+    }
+    
+    protected void prepareForXABSLCompletion(JList list, XabslCompletion vc, int index, boolean selected, boolean hasFocus) {
+        setText("<html><b><font color='#0000FF'>"+vc.getReplacementText()+"</font></b></html>");
+        setIcon(TEST_ICON);
+    }
+
+    protected void prepareForXABSLTemplateCompletion(JList list, XabslTemplateCompletion vc, int index, boolean selected, boolean hasFocus) {
+        setText("<html><b><font color='#5096ff'>"+vc.getDefinitionString()+"</font></b></html>");
+        setIcon(TEST_ICON);
+    }
 
     /**
      * {@inheritDoc}
@@ -241,7 +243,7 @@ class CCellRenderer extends CompletionCellRenderer {
     protected void prepareForOtherCompletion(JList list,
             Completion c, int index, boolean selected, boolean hasFocus) {
         super.prepareForOtherCompletion(list, c, index, selected, hasFocus);
-        setIcon(emptyIcon);
+        setIcon(EMPTY_ICON);
     }//end prepareForOtherCompletion
 
     /**
@@ -253,7 +255,7 @@ class CCellRenderer extends CompletionCellRenderer {
             boolean hasFocus) {
         super.prepareForVariableCompletion(list, vc, index, selected,
                 hasFocus);
-        setIcon(variableIcon);
+        setIcon(VARIABLE_ICON);
     }//end prepareForVariableCompletion
 
     /**
@@ -265,7 +267,7 @@ class CCellRenderer extends CompletionCellRenderer {
             boolean hasFocus) {
         super.prepareForFunctionCompletion(list, fc, index, selected,
                 hasFocus);
-        setIcon(functionIcon);
+        setIcon(FUNCTION_ICON);
     }//end prepareForFunctionCompletion
 
     private static class EmptyIcon implements Icon, Serializable {
