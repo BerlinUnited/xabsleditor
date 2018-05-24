@@ -34,6 +34,7 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
 
         this.setShortDescription(symbol.toString());
         this.setSummary(createSummary());
+        setRelevance(40);
     }
 
     protected String createSummary() {

@@ -35,6 +35,7 @@ public class XABSLEnumCompletion extends BasicCompletion
 
         this.setShortDescription("element of enum " + enumName);
         this.setSummary(createSummary());
+        setRelevance(40);
     }
 
     protected String createSummary() {

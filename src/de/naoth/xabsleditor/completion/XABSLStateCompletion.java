@@ -33,6 +33,7 @@ public class XABSLStateCompletion extends BasicCompletion
     this.stateName = stateName;
     this.setShortDescription("State " + stateName);
     this.setSummary(createSummary());
+    setRelevance(30);
   }
 
   protected String createSummary() {

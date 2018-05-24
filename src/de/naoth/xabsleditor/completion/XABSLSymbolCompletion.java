@@ -38,6 +38,7 @@ public class XABSLSymbolCompletion extends FunctionCompletion
             p.setDescription(t.getComment());
             return p;
         }).collect(Collectors.toList()));
+        setRelevance(40);
     }
     
     @Override
