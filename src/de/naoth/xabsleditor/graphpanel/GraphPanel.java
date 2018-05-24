@@ -2,7 +2,7 @@ package de.naoth.xabsleditor.graphpanel;
 
 import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
-import de.naoth.xabsleditor.completion.XABSLStateCompetion;
+import de.naoth.xabsleditor.completion.XABSLStateCompletion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import de.naoth.xabsleditor.events.CompilationFinishedEvent;
 import de.naoth.xabsleditor.events.EventListener;
@@ -148,11 +148,11 @@ public class GraphPanel extends javax.swing.JPanel
         DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
 
         for (XABSLOptionContext.State state : p.getStateMap().values()) {
-            completionProvider.addCompletion(
-                    new XABSLStateCompetion(completionProvider, state.name));
+            completionProvider.addCompletion(new XABSLStateCompletion(completionProvider, state.name));
         }//end for
 
 //        currentEditor.setCompletionProvider(completionProvider);
+        // TODO: is updating the context and the completion provider neccessary?!//        currentEditor.setCompletionProvider(completionProvider);
         // TODO: is updating the context and the completion provider neccessary?!
     }
     

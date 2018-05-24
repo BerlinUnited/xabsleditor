@@ -22,11 +22,11 @@ import org.fife.ui.autocomplete.CompletionProvider;
  *
  * @author Heinrich Mellmann
  */
-public class XABSLStateCompetion extends BasicCompletion
+public class XABSLStateCompletion extends BasicCompletion
 {
   String stateName;
   
-  public XABSLStateCompetion(CompletionProvider provider, String stateName)
+  public XABSLStateCompletion(CompletionProvider provider, String stateName)
   {
     super(provider, stateName);
     
