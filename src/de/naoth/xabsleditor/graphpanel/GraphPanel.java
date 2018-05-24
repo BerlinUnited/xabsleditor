@@ -2,7 +2,7 @@ package de.naoth.xabsleditor.graphpanel;
 
 import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
-import de.naoth.xabsleditor.editorpanel.XABSLStateCompetion;
+import de.naoth.xabsleditor.completion.XABSLStateCompetion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import de.naoth.xabsleditor.events.CompilationFinishedEvent;
 import de.naoth.xabsleditor.events.EventListener;

@@ -182,6 +182,10 @@ public class XParser extends AbstractParser
     return fileType;
   }
 
+  public XABSLAbstractParser getFileParser() {
+      return parser;
+  }
+
   public Map<String, State> getStateMap()
   {
     if(xabslOptionContext != null)

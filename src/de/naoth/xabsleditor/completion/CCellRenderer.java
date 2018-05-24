@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.naoth.xabsleditor.editorpanel;
+package de.naoth.xabsleditor.completion;
 
+import de.naoth.xabsleditor.completion.XABSLEnumCompletion;
+import de.naoth.xabsleditor.completion.XABSLSymbolCompletion;
+import de.naoth.xabsleditor.completion.XABSLOptionCompletion;
+import de.naoth.xabsleditor.completion.XABSLSymbolSimpleCompletion;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.io.Serializable;

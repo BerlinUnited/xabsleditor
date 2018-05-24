@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.naoth.xabsleditor.editorpanel;
+package de.naoth.xabsleditor.completion;
 
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLContext.XABSLSymbol.SecondaryType;

@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
@@ -45,15 +44,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.undo.UndoManager;
 import org.fife.ui.autocomplete.AutoCompletion;
-import de.naoth.xabsleditor.autocomplete.CCompletionProvider;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rtextarea.RTextScrollPane;
-import org.fife.ui.rtextarea.ToolTipSupplier;
 
 /**
  *
@@ -462,7 +459,7 @@ public class XEditorPanel extends javax.swing.JPanel
     }//end createCompletionProvider
 
 
-  public void setCompletionProvider(DefaultCompletionProvider provider) {
+  public void setCompletionProvider(CompletionProvider provider) {
     if(ac == null) {
         ac = new AutoCompletion(provider);
         // TODO: setup some stuff, see above
@@ -475,6 +472,10 @@ public class XEditorPanel extends javax.swing.JPanel
         ac.setCompletionProvider(provider);
     }
   }//end setCompletionProvider
+  
+  public CompletionProvider getCompletionProvider() {
+      return ac == null ? null : ac.getCompletionProvider();
+  }
 
 /*
   public void setLocalCompletionProvider(DefaultCompletionProvider provider) {

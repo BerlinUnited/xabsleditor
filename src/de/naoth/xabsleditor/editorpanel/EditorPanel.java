@@ -25,8 +25,6 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
-import org.fife.ui.autocomplete.ShorthandCompletion;
 
 /**
  *

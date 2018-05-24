@@ -44,6 +44,10 @@ public class XABSLOptionParser extends XABSLAbstractParser
   private boolean currentStateTarget;
   private XABSLOption currentOption;
 
+  public XABSLOption getOption() {
+      return currentOption;
+  }
+
   @Override
   public void parse() throws Exception
   {
