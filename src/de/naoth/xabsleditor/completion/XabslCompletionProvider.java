@@ -21,8 +21,8 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
     private final CompletionProvider optionProvider = new OptionCompletionProvider();
     private final CompletionProvider stateProvider = new StateCompletionProvider();
     private final CompletionProvider decisionProvider = new DecisionCompletionProvider();
-    private final CompletionProvider actionProvider = new ActionCompletionProvider();
-    private final CompletionProvider optionsProvider = new OptionsCompletionProvider();
+    private final CompletionProvider actionProvider = new XabslDefaultCompletionProvider();
+    private final CompletionProvider optionsProvider = new XabslDefaultCompletionProvider();
 
     public XabslCompletionProvider() {
         super(new XabslDefaultCompletionProvider());
@@ -41,8 +41,8 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
                         case "goto":      provider = optionsProvider;  break;
                         case "if":
                         case "else":
-                        case "decision":  provider = updateLocalParameter((XParser)rsta.getParser(0), (DefaultCompletionProvider) decisionProvider); break;
-                        case "action":    provider = updateLocalParameter((XParser)rsta.getParser(0), (DefaultCompletionProvider) actionProvider);   break;
+                        case "decision":  provider = updateLocalParameter((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) decisionProvider); break;
+                        case "action":    provider = updateLocalParameter((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) actionProvider);   break;
                         case "state":     provider = stateProvider;    break;
                         case "option":    provider = optionProvider;   break;
                         case "namespace": provider = symbolProvider;   break;
@@ -61,144 +61,215 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         return provider;//super.getProviderFor(comp);
     }
     
-    public CompletionProvider updateLocalParameter(XParser parser, DefaultCompletionProvider provider) {
+    public CompletionProvider updateLocalParameter(XParser parser, XabslDefaultCompletionProvider provider) {
         if(parser.getFileParser() instanceof XABSLOptionParser) {
-            DefaultCompletionProvider option_provider = new DefaultCompletionProvider();
+            DefaultCompletionProvider variables = new DefaultCompletionProvider();
             ((XABSLOptionParser)parser.getFileParser()).getOption().getParameter().forEach((t) -> {
-                option_provider.addCompletion(new XabslVariableCompletion(option_provider, "@"+t.getName(), "Option parameter", t.getComment()));
+                variables.addCompletion(new XabslVariableCompletion(variables, "@"+t.getName(), "Option parameter", t.getComment()));
             });
-            option_provider.setParent(provider);
-            return option_provider;
+            provider.addChildCompletionProvider("variables", variables);
+            return provider;
         }
         return provider;
     }
     
     public void updateSymbols(CompletionProvider provider) {
-        actionProvider.setParent(provider);
-        decisionProvider.setParent(provider);
+        ((XabslDefaultCompletionProvider)actionProvider).addChildCompletionProvider("symbols", provider);
+        ((XabslDefaultCompletionProvider)decisionProvider).addChildCompletionProvider("symbols", provider);
     }
     
     public void updateOptions(CompletionProvider provider) {
-        optionsProvider.setParent(provider);
-        actionProvider.setParent(provider);
+        ((XabslDefaultCompletionProvider)actionProvider).addChildCompletionProvider("options", provider);
+        ((XabslDefaultCompletionProvider)decisionProvider).addChildCompletionProvider("options", provider);
     }
     
     class EmptyCompletionProvider extends DefaultCompletionProvider
     {
-
         public EmptyCompletionProvider() {
             addCompletions(Arrays.asList(
                 //                        replacement, shortDesc,    summary               
-                new XabslCompletion(this, "include", "include", "include"),
-                new XabslCompletion(this, "namespace", "namespace", "namespace"),
-                new XabslCompletion(this, "option", "option", "option"),
-                new XabslCompletion(this, "agent", "agent", "agent"),
+                new XabslCompletion(this, "include", "include", "include statement"),
+                new XabslCompletion(this, "namespace", "namespace", "namespace statement"),
+                new XabslCompletion(this, "option", "option", "option statement"),
+                new XabslCompletion(this, "agent", "agent", "agent statement"),
                 //                          input, definition, template, shortDescription, summary
-                new XabslTemplateCompletion(this, "include", "include file", "include \"${cursor}\";", "include", "include"),
-                new XabslTemplateCompletion(this, "namespace", "namespace file", "namespace ${id}(\"${name}\")\n{\n${cursor}\n}", "namespace", "An id for the symbol collection. Must be identical to the file name without extension."),
-                new XabslTemplateCompletion(this, "option", "option file", "option ${name}\n{\n${cursor}\n}", "option", "The name of the option. Must be identical to the file name without extension."),
-                new XabslTemplateCompletion(this, "agent", "agent file", "agent ${id}(\"${agent-title}\", ${root-option});", "agent", "The name of the option. Must be identical to the file name without extension.")
+                new XabslTemplateCompletion(this, "include", 
+                                                  "include \"\";", 
+                                                  "include \"${cursor}\";", 
+                                                  "include", 
+                                                  "<pre>include \"|\";</pre>"),
+                new XabslTemplateCompletion(this, "namespace", 
+                                                  "namespace(\"\"){}", 
+                                                  "namespace ${id}(\"${name}\")\n{\n\t${cursor}\n}",
+                                                  "namespace", 
+                                                  "<pre>namespace <b>id</b>(\"<b>name</b>\")\n{\n    |\n}</pre>"),
+                new XabslTemplateCompletion(this, "option", 
+                                                  "option {}", 
+                                                  "option ${name}\n{\n${cursor}\n}", 
+                                                  "option", 
+                                                  "<pre>option <b>name</b>\n{\n    |\n}</pre>"),
+                new XabslTemplateCompletion(this, "agent", 
+                                                  "agent (\"\");", 
+                                                  "agent ${id}(\"${agent-title}\", ${root-option});", 
+                                                  "agent", 
+                                                  "<pre>agent <b>id</b>(\"<b>agent-title</b>\", <b>root-option</b>);</pre>")
             ));
         }
     } // END EmptyCompletionProvider
     
-    class NamespaceCompletionProvider extends DefaultCompletionProvider {
-
-        public NamespaceCompletionProvider() {
-        }
-        
-    }
-    
-    class SymbolCompletionProvider extends DefaultCompletionProvider
+    class SymbolCompletionProvider extends XabslDefaultCompletionProvider
     {
-
         public SymbolCompletionProvider() {
             addCompletions(Arrays.asList(
                 //                        replacement, shortDesc,    summar
-                new XabslCompletion(this, "internal", "internal", "internal"),
-                new XabslCompletion(this, "input", "input", "input"),
-                new XabslCompletion(this, "output", "output", "output"),
-                new XabslCompletion(this, "enum", "enum", "enum"),
-                new XabslCompletion(this, "float", "float", "float"),
-                new XabslCompletion(this, "bool", "bool", "bool"),
-                new XabslCompletion(this, "const", "const", "const"),
+                new XabslCompletion(this, "internal", "internal", "internal statement"),
+                new XabslCompletion(this, "input", "input", "input statement"),
+                new XabslCompletion(this, "output", "output", "output statement"),
+                new XabslCompletion(this, "enum", "enum", "enum statement"),
+                new XabslCompletion(this, "float", "float", "float statement"),
+                new XabslCompletion(this, "bool", "bool", "bool statement"),
+                new XabslCompletion(this, "const", "const", "const statement"),
                 //                          input, definition, template, shortDescription, summary
-                new XabslTemplateCompletion(this, "enum", "enum input symbol", "enum input ${name}\n{\n${cursor}\n};", "enum input symbol", "enum input symbol"),
-                new XabslTemplateCompletion(this, "float", "float input symbol", "float input ${name};", "float input symbol", "float input symbol"),
-                new XabslTemplateCompletion(this, "bool", "bool input symbol", "bool input ${name};", "bool input symbol", "bool input symbol"),
-                new XabslTemplateCompletion(this, "enum", "enum output symbol", "enum output ${name}\n{\n${cursor}\n};", "enum output symbol", "enum output symbol"),
-                new XabslTemplateCompletion(this, "float", "float output symbol", "float output ${name};", "float output symbol", "float output symbol"),
-                new XabslTemplateCompletion(this, "bool", "bool output symbol", "bool output ${name};", "bool output symbol", "bool output symbol"),
-                new XabslTemplateCompletion(this, "const", "const symbol", "const ${name} = ${value};", "const symbol", "const symbol")
+                new XabslTemplateCompletion(this, "enum", 
+                                                  "enum input {}", 
+                                                  "enum input ${name}\n{\n\t${cursor}\n};", 
+                                                  "enum input symbol", 
+                                                  "<pre>enum input <b>name</b>\n{\n    |\n};</pre>"),
+                new XabslTemplateCompletion(this, "float", 
+                                                  "float input", 
+                                                  "float input ${name};", 
+                                                  "float input symbol", 
+                                                  "<pre>float input <b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "bool", 
+                                                  "bool input", 
+                                                  "bool input ${name};", 
+                                                  "bool input symbol", 
+                                                  "<pre>bool input <b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "enum", 
+                                                  "enum output {}", 
+                                                  "enum output ${name}\n{\n\t${cursor}\n};", 
+                                                  "enum output symbol", 
+                                                  "<pre>enum output <b>name</b>\n{\n    |\n};</pre>"),
+                new XabslTemplateCompletion(this, "float", 
+                                                  "float output", 
+                                                  "float output ${name};", 
+                                                  "float output symbol", 
+                                                  "<pre>float output <b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "bool", 
+                                                  "bool output", 
+                                                  "bool output ${name};", 
+                                                  "bool output symbol", 
+                                                  "<pre>bool output <b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "const", 
+                                                  "const name = value", 
+                                                  "const ${name} = ${value};", 
+                                                  "const symbol", 
+                                                  "<pre>const <b>name</b> = <b>value</b>;</pre>")
             ));
         }
     } // END SymbolCompletionProvider
     
-    class OptionCompletionProvider extends DefaultCompletionProvider
+    class OptionCompletionProvider extends XabslDefaultCompletionProvider
     {
         public OptionCompletionProvider() {
             addCompletions(Arrays.asList(
                 //                        replacement, shortDesc,    summar
-                new XabslCompletion(this, "initial", "initial", "initial"),
-                new XabslCompletion(this, "target", "target", "target"),
-                new XabslCompletion(this, "state", "state", "state"),
-                new XabslCompletion(this, "common", "common", "common"),
+                new XabslCompletion(this, "initial", "initial", "initial statement"),
+                new XabslCompletion(this, "target", "target", "target statement"),
+                new XabslCompletion(this, "state", "state", "state statement"),
+                new XabslCompletion(this, "common", "common", "common statement"),
                 //                          input, definition, template, shortDescription, summary
-                new XabslTemplateCompletion(this, "float parameter", "float parameter", "float @${name}", "float parameter", "float parameter"),
-                new XabslTemplateCompletion(this, "bool parameter", "bool parameter", "bool @${name}", "bool parameter", "bool parameter"),
-                new XabslTemplateCompletion(this, "enum parameter", "enum parameter", "enum ${enumeration} @${name}", "enum parameter", "enum parameter"),
-                new XabslTemplateCompletion(this, "initial state", "initial state", "initial state ${name}\n{\n\tdecision {\n\t${cursor}}\n\taction {\n\t}\n}", "initial state", "initial state"),
-                new XabslTemplateCompletion(this, "target state", "target state", "target state ${name}\n{\n\tdecision {\n\t${cursor}}\n\taction {\n\t}\n}", "target state", "target state"),
-                new XabslTemplateCompletion(this, "state", "state", "state ${name}\n{\n\tdecision {\n\t${cursor}}\n\taction {\n\t}\n}", "state", "state"),
-                new XabslTemplateCompletion(this, "common decision", "common decision", "common decision\n{\n\tif(${cursor})\n\t\tgoto\n}", "common decision", "common decision")
+                new XabslTemplateCompletion(this, "float parameter", 
+                                                  "float @param", 
+                                                  "float @${name};", 
+                                                  "float parameter", 
+                                                  "<pre>float @<b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "bool parameter", 
+                                                  "bool @param", 
+                                                  "bool @${name};", 
+                                                  "bool parameter", 
+                                                  "<pre>bool @<b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "enum parameter", 
+                                                  "enum @param", 
+                                                  "enum ${enumeration} @${name};", 
+                                                  "enum parameter", 
+                                                  "<pre>enum <b>enumeration</b> @<b>name</b>;</pre>"),
+                new XabslTemplateCompletion(this, "initial state", 
+                                                  "initial state { decision {} action {} }", 
+                                                  "initial state ${name}\n{\n\tdecision {\n\t\t${if-else}\n\t}\n\taction {\n\t\t${cursor}\n\t}\n}", 
+                                                  "initial state", 
+                                                  "<pre>initial state <b>name</b>\n{\n    decision {\n        |\n}\n    action {\n        |\n    }\n}</pre>"),
+                new XabslTemplateCompletion(this, "target state", 
+                                                  "target state { decision {} action {} }", 
+                                                  "target state ${name}\n{\n\tdecision {\n\t${if-else}\n\t}\n\taction {\n\t${cursor}\n\t}\n}", 
+                                                  "target state", 
+                                                  "<pre>target state <b>name</b>\n{\n    decision {\n        |\n}\n    action {\n        |\n    }\n}</pre>"),
+                new XabslTemplateCompletion(this, "state", 
+                                                  "state { decision {} action {} }", 
+                                                  "state ${name}\n{\n\tdecision {\n\t${if-else}\n\t}\n\taction {\n\t${cursor}\n\t}\n}",
+                                                  "state", 
+                                                  "<pre>state <b>name</b>\n{\n    decision {\n        |\n}\n    action {\n        |\n    }\n}</pre>"),
+                new XabslTemplateCompletion(this, "common decision", 
+                                                  "common decision { if() goto }", 
+                                                  "common decision\n{\n\tif(${condition})\n\t\tgoto ${cursor}\n}", 
+                                                  "common decision", 
+                                                  "<pre>common decision\n{\n    if(|)\n        goto |\n}</pre>")
             ));
         }
     } // END OptionCompletionProvider
     
-    class StateCompletionProvider extends DefaultCompletionProvider
+    class StateCompletionProvider extends XabslDefaultCompletionProvider
     {
         public StateCompletionProvider() {
             addCompletions(Arrays.asList(
                 //                        replacement, shortDesc,    summar
-                new XabslCompletion(this, "decision", "decision", "decision"),
-                new XabslCompletion(this, "action", "action", "action"),
+                new XabslCompletion(this, "decision", "decision", "decision statement"),
+                new XabslCompletion(this, "action", "action", "action statement"),
                 //                          input, definition, template, shortDescription, summary
-                new XabslTemplateCompletion(this, "decision", "decision", "decision {\n\t${cursor}}", "decision", "decision"),
-                new XabslTemplateCompletion(this, "action", "action", "action {\n\t}", "action", "action")
+                new XabslTemplateCompletion(this, "decision", 
+                                                  "decision", 
+                                                  "decision {\n\t${cursor}\n}", 
+                                                  "decision", 
+                                                  "<pre>decision {\n    |\n}</pre>"),
+                new XabslTemplateCompletion(this, "action", 
+                                                  "action", 
+                                                  "action {\n\t${cursor}\n}", 
+                                                  "action", 
+                                                  "<pre>action {\n    |\n}</pre>")
             ));
         }
     } // END StateCompletionProvider
     
-    class DecisionCompletionProvider extends DefaultCompletionProvider
+    class DecisionCompletionProvider extends XabslDefaultCompletionProvider
     {
         public DecisionCompletionProvider() {
             addCompletions(Arrays.asList(
                 //                        replacement, shortDesc,    summar
-                new XabslCompletion(this, "if", "if", "if"),
-                new XabslCompletion(this, "else", "else", "else"),
-                new XabslCompletion(this, "stay", "stay", "stay"),
-//                new BasicCompletion(this, "goto", "goto", "goto"),
+                new XabslCompletion(this, "if", "if", "if statement"),
+                new XabslCompletion(this, "else", "else", "else statement"),
+                new XabslCompletion(this, "stay", "stay", "stay statement"),
                 //                          input, definition, template, shortDescription, summary
-                new XabslTemplateCompletion(this, "if statement", "if statement", "if (${condition})\n\t${cursor}", "if statement", "if statement"),
-                new XabslTemplateCompletion(this, "if else statement", "if else statement", "if (${condition})\n\t${cursor}\n\telse\t\n${curosr}", "if else statement", "if else statement"),
-                new XabslTemplateCompletion(this, "else if statement", "else if statement", "else if (${condition})\n\t${cursor}", "else if statement", "else if statement"),
-                new XabslTemplateCompletion(this, "goto", "goto", "goto ${cursor}", "goto", "goto")
+                new XabslTemplateCompletion(this, "if statement", 
+                                                  "if statement", 
+                                                  "if (${condition})\n\t${cursor}", 
+                                                  "if statement", 
+                                                  "<pre>if (<b>condition</b>)\n    |</pre>"),
+                new XabslTemplateCompletion(this, "if else statement", 
+                                                  "if else statement", 
+                                                  "if (${condition})\n\t${goto}\nelse\n\t${cursor}", 
+                                                  "if else statement", 
+                                                  "<pre>if (<b>condition</b>)\n    |\nelse\n    |</pre>"),
+                new XabslTemplateCompletion(this, "else if statement", 
+                                                  "else if statement", 
+                                                  "else if (${condition})\n\t${cursor}", 
+                                                  "else if statement", 
+                                                  "<pre>else if (<b>condition</b>)\n    |</pre>"),
+                new XabslTemplateCompletion(this, "goto", 
+                                                  "goto", 
+                                                  "goto ${cursor};", 
+                                                  "goto", 
+                                                  "<pre>goto |</pre>")
             ));
         }
     } // END DecisionCompletionProvider
-    
-    class ActionCompletionProvider extends DefaultCompletionProvider
-    {
-        public ActionCompletionProvider() {
-            // TODO: add symbols, options, behavior(?)
-        }
-    } // END ActionCompletionProvider
-    
-    class OptionsCompletionProvider extends DefaultCompletionProvider
-    {
-        public OptionsCompletionProvider() {
-            // TODO: add symbols, options, behavior(?)
-        }
-    } // END OptionCompletionProvider
-    
 }

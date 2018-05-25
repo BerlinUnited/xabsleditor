@@ -29,7 +29,7 @@ import org.fife.ui.autocomplete.FunctionCompletion;
 import org.fife.ui.autocomplete.VariableCompletion;
 
 /**
- *
+ * This class handles the ui/style of the completion window and each completion entry.
  * @author Heinrich Mellmann
  */
 public class CCellRenderer extends CompletionCellRenderer {
@@ -60,13 +60,6 @@ public class CCellRenderer extends CompletionCellRenderer {
 
         super.getListCellRendererComponent(list, value, index, selected, hasFocus);
         
-        // Enum
-        // Option
-        // State
-        // Symbol / SymbolSimple
-        // TemplateCompletion
-        // Variable
-
         if (value instanceof XABSLSymbolCompletion) {
             prepareForXABSLSymbolCompletion(list, (XABSLSymbolCompletion) value, index, selected, hasFocus);
         } else if (value instanceof XABSLSymbolSimpleCompletion) {
