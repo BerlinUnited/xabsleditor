@@ -15,6 +15,7 @@
  */
 package de.naoth.xabsleditor;
 
+import de.naoth.xabsleditor.help.HelpDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;

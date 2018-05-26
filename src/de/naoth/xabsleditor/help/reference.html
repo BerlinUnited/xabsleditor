@@ -1,0 +1,656 @@
+<html>
+  <head> 
+    <title>XabslEditor Reference</title>
+  </head>
+  <body>
+      <h1>Language Reference</h1>
+      <p>Agents following the introduced hierarchical state machine architecture can
+        be completely described in the XABSL language. </p>
+      <p>The XABSL language design ensures:</p>
+      <ul>
+        <li>The scalability of agent behavior solutions. Agent behaviors are easy
+          to extend.</li>
+        <li>High validation and compile speed resulting in a short change-compile-test
+          cycle.</li>
+        <li>XML export allows the interoperability with existing XML editors and tools.</li>
+      </ul>
+      <h2>Modularity</h2>
+      <p>An XABSL agent behavior specification is distributed over many files.
+        This helps to keep an overview over larger agents and to work in parallel.<br />
+        <br />
+        An XABSL agent behavior consists of the following files</p>
+      <ul>
+        <li>Symbol files contain the definitions of symbols. These symbols are
+          used in the options.</li>
+        <li>Basic behavior files contain prototypes for basic behaviors and their
+          parameters. They are referenced from states which have a subsequent
+          basic behavior.</li>
+        <li>Option files contain a single option.</li>
+        <li>"agents.xabsl" includes a list of all the option files. Agents and their root options
+          can be defined here.</li>
+      </ul>
+      <h2>Common Language Elements</h2>
+      <p>Almost all language elements can be provided with describing texts which are used in generated documentations.
+      	Such descriptions are defined in the following syntax:
+<a class="anchor" name="doccomment"></a>
+<pre><b>&lt;</b>doc comment<b>&gt;</b> ::=
+  /** <b>&lt;</b><em>describing text</em><b>&gt;</b> */
+</pre>
+      These documenting comments are always associated with the subsequent language element. The syntax definitions below show at which positions they can be placed in XABSL code.</p>
+      <p>In all XABSL files, comments, that are to be ignored during compilation, can be added using <em>//</em>
+      	for a single line of comment or by surrounding a code block with <em>/*</em> and <em>*/</em> for a comment
+        block which can span multiple lines of code.</p>
+      <p>When <em>symbols</em>, <em>options</em>, or <em>basic behaviors</em> are referenced, a list of parameters can be specified.
+      This is always done according to the following syntax:</p>
+<a class="anchor" name="parameterlist"></a>
+<pre><b>&lt;</b>parameter list<b>&gt;</b> ::=
+  (
+    <b>&lt;</b><em>parameter</em><b>&gt;</b> = <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b>
+    <b>{</b> , <b>&lt;</b><em>parameter</em><b>&gt;</b> = <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b> <b>}</b>
+  )
+</pre>
+      <ul>
+        <li>"<em>parameter</em>": Name of a parameter. The value of the parameter is set to the value of the given expression.
+        	The expression must be of the same type as the parameter. If not all parameters of a symbol, option, or basic behavior are set,
+        	the executing engine sets the remaining parameter values to zero.</li>
+      </ul>
+      <h2>Symbol Definitions</h2>
+      <p>All symbols that are used inside options have to be defined before in
+        separate symbol definition files. For example the file "<em>my_symbols.xabsl</em>"
+        can look like this:</p>
+<pre>/** My most used symbols */
+namespace my_symbols("My Symbols") {
+
+  /** A boolean symbol */
+  bool input something_wrong;
+
+  /** A decimal symbol */
+  float input foo "mm";
+
+  /** The absolute value of a number */
+  float input abs (
+    /** The value for that the absolute value shall be calculated */
+    float value;
+  );
+
+  /** Pets */
+  enumeration type_of_pet {
+    dog,
+    cat,
+    guinea_pig
+  };
+
+  /** Which pet was seen by the robot */
+  enum type_of_pet input type_of_recognized_pet;
+
+  /** Operation modes */
+  enumeration op_mode {
+  	slow,
+  	fast
+  	very_fast
+  };
+
+  /** The mode how fast the robot shall act */
+  enum op_mode output op_mode;
+
+  /** The value of pi */
+  float const pi = 3.14 "rad";
+
+  ...
+}
+</pre>
+      <p>Syntax of a symbols definition file:
+      </p>
+<pre><b>&lt;</b>symbol definition file<b>&gt;</b> ::=
+  <b>{</b> include "<b>&lt;</b><em>include file</em><b>&gt;</b>"; <b>}</b>
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> namespace <b>&lt;</b><em>id</em><b>&gt;</b>("<b>&lt;</b><em>title</em><b>&gt;</b>")
+  {
+    <b>{</b> <b>&lt;</b><a href="#enumeration">enumeration</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#inputsymbol">input symbol</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#outputsymbol">output symbol</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#internalsymbol">internal symbol</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#constant">constant</a><b>&gt;</b> <b>}</b>
+  }
+</pre>
+      <ul>
+        <li>&quot;<em>id</em>&quot;: An id for the symbol collection. Must be
+          identical to the file name without extension.</li>
+        <li>&quot;<em>title</em>&quot;: A title needed for documentation.
+        </li>
+        <li>&quot;<em>include file</em>&quot;: Filename of a symbol definition file to be included.
+          Included files could contain enumeration definitions referenced by symbol definitions.</li>
+      </ul>
+      <p>There are five different symbol definitions allowed inside a symbols definition file:</p>
+      <table border="0" cellpadding="4" cellspacing="0">
+        <tr>
+          <td>enumeration
+          </td>
+          <td>Defines an enumeration of elements used in enumerated symbols. <br />
+            Syntax:
+<a class="anchor" name="enumeration"></a>
+<pre><b>&lt;</b>enumeration<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> enum <b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>internal<b>]</b>
+  {
+    <b>&lt;</b><em>enum-element</em><b>&gt;</b>
+    <b>{</b> , <b>&lt;</b><em>enum-element</em><b>&gt;</b> <b>}</b>
+  };
+</pre>
+            <ul>
+              <li>&quot;<em>name</em>&quot;: The name of the enumeration. </li>
+              <li>&quot;<em>enum-element</em>&quot;: Name of an enumeration element. </li>
+              <li>If &quot;internal&quot; is specified, the enumeration can only be used for internal enumerated symbols. </li>
+            </ul></td>
+        </tr>
+        <tr>
+          <td>input symbol
+          </td>
+          <td>Defines an input symbol.<br />
+            Syntax:
+<a class="anchor" name="inputsymbol"></a>
+<pre><b>&lt;</b>input symbol<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b>
+  <b>[</b>float<b>]</b> <b>[</b>input<b>]</b> <b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>[&lt;<em>range</em>&gt;]<b>]</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b> <b>|</b> bool <b>[</b>input<b>]</b> <b>&lt;</b><em>name</em><b>&gt;</b> <b>|</b> enum <b>&lt;</b><em>enumeration</em><b>&gt;</b> <b>[</b>input<b>]</b> <b>&lt;</b><em>name</em><b>&gt;</b>
+  <b>[</b>
+  (
+    <b>{</b> <b>&lt;</b><a href="#inputsymbolparameter">parameter</a><b>&gt;</b> <b>}</b>
+  )
+  <b>]</b>
+  ;
+</pre>
+            An input symbol can have one of three types: decimal specified by <em>float</em> (corresponds to double in XabslEngine), boolean specified by <em>bool</em>, or enumerated specified by <em>enum</em>.
+            <ul>
+              <li>&quot;<em>name</em>&quot;: The name of the symbol. </li>
+              <li>&quot;<em>range</em>&quot;: The valid range of the decimal input symbol. Used
+                for documentation. </li>
+              <li>&quot;<em>measure</em>&quot;: The measure of the decimal input symbol. Used
+                for documentation. </li>
+              <li>&quot;<em>enumeration</em>&quot;: In case the type of the symbol is enumerated, the name of the corresponding enumeration has to be specified.</li>
+            </ul>
+            An input symbol can have decimal, boolean, or enumerated parameters, and they are defined using the following syntax:
+<a class="anchor" name="inputsymbolparameter"></a>
+<pre><b>&lt;</b>parameter<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> <b>[</b>float<b>]</b> <b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>[&lt;<em>range</em>&gt;]<b>]</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b> <b>|</b> bool <b>&lt;</b><em>name</em><b>&gt;</b> <b>|</b> enum <b>&lt;</b><em>enumeration</em><b>&gt;</b> <b>&lt;</b><em>name</em><b>&gt;</b>
+  ;
+</pre>
+            <ul>
+              <li>&quot;<em>name</em>&quot;: The name of the parameter. </li>
+              <li>&quot;<em>range</em>&quot;: The valid range of the decimal parameter value. Used
+                for documentation. </li>
+              <li>&quot;<em>measure</em>&quot;: The measure of the decimal parameter value. Used
+                for documentation. </li>
+              <li>&quot;<em>enumeration</em>&quot;: In case the type of the parameter is enumerated, the name of the corresponding enumeration has to be specified.</li>
+            </ul></td>
+        </tr>
+        <tr>
+          <td>output symbol
+          </td>
+          <td>Defines an output symbol.<br />
+            Syntax:
+<a class="anchor" name="outputsymbol"></a>
+<pre><b>&lt;</b>output symbol<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b>
+  <b>[</b>float<b>]</b> output <b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>[&lt;<em>range</em>&gt;]<b>]</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b> <b>|</b> bool output <b>&lt;</b><em>name</em><b>&gt;</b> <b>|</b> enum <b>&lt;</b><em>enumeration</em><b>&gt;</b> output <b>&lt;</b><em>name</em><b>&gt;</b>
+  ;
+</pre>
+            <ul>
+              <li>&quot;<em>name</em>&quot;: The name of the symbol. </li>
+              <li>&quot;<em>range</em>&quot;: The valid range of the decimal output symbol. Used
+                for documentation. </li>
+              <li>&quot;<em>measure</em>&quot;: The measure of the decimal output symbol. Used
+                for documentation. </li>
+              <li>&quot;<em>enumeration</em>&quot;: In case the type of the symbol is enumerated, the name of the corresponding enumeration has to be specified.</li>
+            </ul>
+        </tr>
+        <tr>
+          <td>internal symbol
+          </td>
+          <td>Defines an internal symbol.<br />
+            Syntax:
+<a class="anchor" name="internalsymbol"></a>
+<pre><b>&lt;</b>internal symbol<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b>
+  <b>[</b>float<b>]</b> internal <b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>[&lt;<em>range</em>&gt;]<b>]</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b> <b>|</b> bool internal <b>&lt;</b><em>name</em><b>&gt;</b> <b>|</b> enum <b>&lt;</b><em>enumeration</em><b>&gt;</b> internal <b>&lt;</b><em>name</em><b>&gt;</b>
+  ;
+</pre>
+            <ul>
+              <li>&quot;<em>name</em>&quot;: The name of the symbol. </li>
+              <li>&quot;<em>range</em>&quot;: The valid range of the decimal internal symbol. Used
+                for documentation. </li>
+              <li>&quot;<em>measure</em>&quot;: The measure of the decimal internal symbol. Used
+                for documentation. </li>
+              <li>&quot;<em>enumeration</em>&quot;: In case the type of the symbol is enumerated, the name of the corresponding enumeration has to be specified.</li>
+            </ul>
+        </tr>
+        <tr>
+          <td>constant
+          </td>
+          <td>Defines a decimal constant.<br />
+            Syntax:
+<a class="anchor" name="constant"></a>
+<pre><b>&lt;</b>constant<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> <b>[</b>float<b>]</b> const <b>&lt;</b><em>name</em><b>&gt;</b> = <b>&lt;</b><em>value</em><b>&gt;</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b>
+  ;
+</pre>
+            <ul>
+              <li>&quot;<em>name</em>&quot;: The name of the constant. </li>
+              <li>&quot;<em>measure</em>&quot;: The measure of the constant value. Used
+                for documentation. </li>
+              <li>&quot;<em>value</em>&quot;: The decimal value of the constant.
+              </li>
+            </ul></td>
+        </tr>
+      </table>
+      <h2>Basic Behavior Prototypes</h2>
+      <p>For each basic behavior (they are written in C++), a prototype has to
+        be declared. An example basic behavior file "<em>my_basic_behaviors.xabsl</em>"
+        can look like this:</p>
+<pre>/** My common basic behaviors */
+namespace my_basic_behaviors("My Basic Behaviors") {
+  /** Lets the agent move to a point */
+  behavior move_to {
+    /** X of destination position */
+    float x [-1000..1000] "mm";
+    /** Y of destination position */
+    float x [-1000..1000] "mm";
+  };
+}
+</pre>
+      <p>Syntax of a basic behavior definition file:
+      </p>
+<pre><b>&lt;</b>basic behavior definition file<b>&gt;</b> ::=
+  <b>{</b> include "<b>&lt;</b><em>include file</em><b>&gt;</b>"; <b>}</b>
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> namespace <b>&lt;</b><em>id</em><b>&gt;</b>("<b>&lt;</b><em>title</em><b>&gt;</b>")
+  {
+    <b>{</b> <b>&lt;</b><a href="#behavior">behavior</a><b>&gt;</b> <b>}</b>
+  }
+</pre>
+      <ul>
+        <li>&quot;<em>id</em>&quot;: An id for the basic behavior collection. Must be
+          identical to the file name without extension.</li>
+        <li>&quot;<em>title</em>&quot;: A title needed for documentation.
+        </li>
+        <li>&quot;<em>include file</em>&quot;: Filename of a symbol definition file to be included.
+          Included files could contain enumeration definitions referenced by basic behavior parameter definitions.</li>
+      </ul>
+			<p>The syntax of the definition of basic behavior prototypes is as follows:
+		  </p>
+<a class="anchor" name="behavior"></a>
+<pre><b>&lt;</b>behavior<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> behavior <b>&lt;</b><em>name</em><b>&gt;</b>
+  <b>[</b>
+  {
+    <b>{</b> <b>&lt;</b><a href="#behaviorparameter">parameter</a><b>&gt;</b> <b>}</b>
+  }
+  <b>]</b>
+  ;
+</pre>
+      <ul>
+        <li>&quot;<em>name</em>&quot;: The name of the basic behavior. </li>
+      </ul>
+      Optionally a number of parameters can be defined.
+      The definition of parameters of basic behavior is identical to the definition of input symbol parameters.
+      Decimal, boolean, or enumerated parameters are defined using the following syntax:
+<a class="anchor" name="behaviorparameter"></a>
+<pre><b>&lt;</b>parameter<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b>
+  <b>[</b>float<b>]</b> <b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>[&lt;<em>range</em>&gt;]<b>]</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b> <b>|</b> bool <b>&lt;</b><em>name</em><b>&gt;</b> <b>|</b> enum <b>&lt;</b><em>enumeration</em><b>&gt;</b> <b>&lt;</b><em>name</em><b>&gt;</b>
+  ;
+</pre>
+    <ul>
+		  <li>&quot;<em>name</em>&quot;: The name of the parameter. </li>
+		  <li>&quot;<em>range</em>&quot;: The valid range of the decimal parameter value. Used
+		    for documentation. </li>
+		  <li>&quot;<em>measure</em>&quot;: The measure of the decimal parameter value. Used
+		    for documentation. </li>
+		  <li>&quot;<em>enumeration</em>&quot;: In case the type of the parameter is enumerated, the name of the corresponding enumeration has to be specified.</li>
+		</ul>
+      <h2>Options</h2>
+      <p>Each option has to be defined in a seperate file, e.g. &quot;<em>Options/foo.xabsl</em>":</p>
+<pre>include "../my_symbols.xabsl"
+include "../my_basic_behaviors.xabsl"
+
+/** Some option */
+option foo {
+  initial state first_state {
+    ...
+  }
+
+  state second_state {
+    ...
+  }
+}
+</pre>
+      <p>An option file must have the following syntax:</p>
+<pre><b>&lt;</b>option file<b>&gt;</b> ::=
+  <b>{</b> include "<b>&lt;</b><em>include file</em><b>&gt;</b>"; <b>}</b>
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> option <b>&lt;</b><em>name</em><b>&gt;</b>
+  {
+    <b>{</b> <b>&lt;</b><a href="#optionparameter">parameter</a><b>&gt;</b> <b>}</b>
+    <b>[</b> <b>&lt;</b><a href="#commondecisiontree">common decision tree</a><b>&gt;</b> <b>]</b>
+    <b>&lt;</b><a href="#state">state</a><b>&gt;</b>
+    <b>{</b> <b>&lt;</b><a href="#state">state</a><b>&gt;</b> <b>}</b>
+  }
+</pre>
+      <ul>
+        <li>&quot;<em>name</em>&quot;: The name of the option. Must be
+          identical to the file name without extension.</li>
+        <li>&quot;<em>include file</em>&quot;: Filename of an included file.
+          Included files can contain required symbol, basic behavior, or option definitions.</li>
+      </ul>
+      <p>Options can have parameters which are defined in the same way as input symbol parameters. The name of an option parameter has
+      	to start with <em>@</em> in order to be distinguished from an input symbol:</p>
+<a class="anchor" name="optionparameter"></a>
+<pre><b>&lt;</b>parameter<b>&gt;</b> ::=
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b>
+  <b>[</b>float<b>]</b> @<b>&lt;</b><em>name</em><b>&gt;</b> <b>[</b>[&lt;<em>range</em>&gt;]<b>]</b> <b>[</b>"&lt;<em>measure</em>&gt;"<b>]</b> <b>|</b> bool @<b>&lt;</b><em>name</em><b>&gt;</b> <b>|</b> enum <b>&lt;</b><em>enumeration</em><b>&gt;</b> @<b>&lt;</b><em>name</em><b>&gt;</b>
+  ;
+</pre>
+    <ul>
+		  <li>&quot;<em>name</em>&quot;: The name of the option parameter without the leading <em>@</em>. </li>
+		  <li>&quot;<em>range</em>&quot;: The valid range of the decimal parameter value. Used
+		    for documentation. </li>
+		  <li>&quot;<em>measure</em>&quot;: The measure of the decimal parameter value. Used
+		    for documentation. </li>
+		  <li>&quot;<em>enumeration</em>&quot;: In case the type of the parameter is enumerated, the name of the corresponding enumeration has to be specified.</li>
+		</ul>
+      <p>At the start of an option definition optionally a common decision tree can be defined with the following syntax:</p>
+<a class="anchor" name="commondecisiontree"></a>
+<pre><b>&lt;</b>common decision tree<b>&gt;</b> ::=
+  common decision
+  {
+    <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> if ( <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> ) <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b>
+    <b>{</b>
+      <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> else   <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> if ( <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> )   <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b> <b>|</b>
+      <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> else { <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> if ( <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> ) } <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b>
+    <b>}</b>
+  }
+</pre>
+      <p>If there are transitions with the same conditions in each state, these
+        conditions can be put into this common decision tree. It is carried out
+        before the decision tree of the active state. If no condition of the common
+        decision tree evaluates true, the decision tree of the active state is
+        carried out. That is also the reason why there must be no <em>else</em> statement
+        which is not followed by another <em>if</em> statement.</p>
+      <p>If the common decision tree uses expressions that are specific for a
+        state (<em>state_time</em>, <em>action_done</em>),
+        these expressions refer to the state that is currently active.</p>
+      <p>The elements <em><a href="#booleanexpression">boolean expression</a></em>
+        and <em><a href="#decisiontree">decision tree</a></em>
+        are the same as in the normal decision tree of a state, which is explained
+        later in this document.</p>
+      <p>Besides and after the optional common decision tree
+        each option has to have at least one state definition, which is described in the next section.</p>
+      <h2>States</h2>
+      <p>The state definition represents a single state of an option's state machine, as shown in this example:</p>
+<pre>initial target state first_state {
+  decision {
+    if (foo < 14 )
+      goto second_state;
+    else
+      goto first_state;
+  }
+  action {
+    move_to(x = 42);
+    op_mode = fast;
+  }
+}
+</pre>
+      <p>It has the following syntax:</p>
+<a class="anchor" name="state"></a>
+<pre><b>&lt;</b>state<b>&gt;</b> ::=
+  <b>[</b>initial<b>]</b> <b>[</b>target<b>]</b> state <b>&lt;</b><em>name</em><b>&gt;</b> {
+    decision
+    {
+      <b>[</b> else <b>]</b> <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b>
+    }
+    action
+    {
+      <b>{</b> <b>&lt;</b><a href="#action">action definition</a><b>&gt;</b> <b>}</b>
+    }
+  }
+</pre>
+      <ul>
+      	<li>If "initial" is specified, the state is marked as the initial state of the option.
+      		This must be set for exactly one state in the option.</li>
+      	<li>If "target" is specified, this state is marked
+          as a target state. In an option containing a state with this option
+          as subsequent behavior, it can be queried if the subsequent option reached
+          this marked target state.</li>
+        <li>"<em>name</em>": The name of the state.</li>
+      <li> The "decision tree" defines the transitions of the state. It is described in the next section. The leading <em>else</em> before the decision tree must be specified if and only if the option has a common decision tree. This reflects the fact, that when the option has a common decision tree, the decision tree of a state is only executed when no transition was selected by the common decision tree.</li>
+      <li> An "action definition" defines an action to be executed when the state is active. Each state can have any number of action definitions.</li>
+      </ul>
+      <h2>Decision Trees</h2>
+      <p>Each state has a decision tree. The task of this decision tree is to
+      determine a transition to another state depending on the input symbols. The syntax of a decision tree is as follows:</p>
+<a class="anchor" name="decisiontree"></a>
+<pre><b>&lt;</b>decision tree<b>&gt;</b> ::=
+    { <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b> }
+  <b>|</b>
+    <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> if ( <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> ) <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b> <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> else <b>&lt;</b><a href="#decisiontree">decision tree</a><b>&gt;</b>
+  <b>|</b>
+    goto <b>&lt;</b><em>state</em><b>&gt;</b>;
+  <b>|</b>
+    stay;
+</pre>
+      <p>A decision tree contains either an if/else block or a transition to a state.</p>
+      <p>The if/else element consists of a <em><a href="#booleanexpression">boolean expression</a></em>
+        and two decision trees. The first one is executed if the expression evaluates to true, the second one otherwise. This recursive definition allows
+        for complex nested expressions.</p>
+      <ul>
+      	<li>"goto <em>state</em>;": A transition to the specified state.</li>
+      	<li>"stay;": A transition to the current state. When this transition is executed, the active state of the option remains unchanged in the current execution cycle.</li>
+      </ul>
+
+      <h2>Action definitions</h2>
+      <p>Each state has a number of action definitions. These definitions specify which actions are to be executed when a state is active. The syntax is as follows:</p>
+<a class="anchor" name="action"></a>
+<pre><b>&lt;</b>action definition<b>&gt;</b> ::=
+    <b>&lt;</b><em>output symbol</em><b>&gt;</b> <b>|</b> <b>&lt;</b><em>internal symbol</em><b>&gt;</b>
+    =
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> <b>|</b> <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b>    <b>|</b> <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b>
+    ;
+  <b>|</b>
+    <b>&lt;</b><em>option</em><b>&gt;</b>  <b>[</b> <b>&lt;</b><a href="#parameterlist">parameter list</a><b>&gt;</b> <b>]</b> ;
+  <b>|</b>
+    <b>&lt;</b><em>basic behavior</em><b>&gt;</b> <b>[</b> <b>&lt;</b><a href="#parameterlist">parameter list</a><b>&gt;</b> <b>]</b> ;
+</pre>
+      <ul>
+        <li>"<em>output</em>"/"<em>internal symbol</em>": Name of an output or internal symbol to be set in this state. When the state is active, the value of the symbol
+        	is set to the value of the given expression. The expression must be of the same type as the symbol. It may happen that an option
+          which becomes activated lower in the option graph overwrites the symbol value.</li>
+        <li>"<em>option</em>"/"<em>basic behavior</em>: Name of an subsequent option or basic behavior to be executed when this state is active.</li>
+      </ul>
+
+      <h2>Boolean Expressions</h2>
+      <p>A <em>boolean expression</em> can be of the following syntax:</p>
+<a class="anchor" name="booleanexpression"></a>
+<pre><b>&lt;</b>boolean expression<b>&gt;</b> ::=
+    ( <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> )
+  <b>|</b>
+    !<b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> && <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> || <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#qualifiedenumeratedexpression">qualified enumerated expression</a><b>&gt;</b> == <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> == <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#qualifiedenumeratedexpression">qualified enumerated expression</a><b>&gt;</b> != <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> != <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> < <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> <= <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> > <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> >= <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>boolean input symbol</em><b>&gt;</b> <b>[</b> <b>&lt;</b><a href="#parameterlist">parameter list</a><b>&gt;</b> <b>]</b>
+  <b>|</b>
+    <b>&lt;</b><em>boolean output symbol</em><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>boolean internal symbol</em><b>&gt;</b>
+  <b>|</b>
+    @<b>&lt;</b><em>boolean option parameter</em><b>&gt;</b>
+  <b>|</b>
+    true
+  <b>|</b>
+    false
+  <b>|</b>
+    action_done
+</pre>
+      <ul>
+    	  <li>"!": Boolean not operator. Inverts a boolean expression.</li>
+    	  <li>"&&" and "||": Boolean and/or operator. Combines two boolean expressions.</li>
+        <li>"==" and "!=": Compares two decimal or enumerated expressions. Please note that in case of enumerated the expression the left-hand side expression must be qualified, i.e. it must specify the enumeration. Enumerated expressions are described below in this document.</li>
+        <li>"<", ">", "<=", ">=": Compares two decimal expressions.</li>
+        <li>"<em>boolean input symbol</em>": References a boolean input symbol. Optionally parameters can be specified.</li>
+        <li>"<em>boolean output symbol</em>": References a boolean output symbol. This queries the value set to the output symbol previously.</li>
+        <li>"<em>boolean internal symbol</em>": References a boolean internal symbol. This queries the value set to the internal symbol previously.</li>
+        <li>"<em>boolean option parameter</em>": References a boolean option parameter.</li>
+        <li>"action_done": This expression becomes true, when
+            <ul>
+              <li>the current state has an subsequent option, and</li>
+              <li>the active state of the subsequent option is marked as a target
+                state. </li>
+            </ul>
+          Otherwise this statement is false.</li>
+      </ul>
+      <h2>Decimal Expressions</h2>
+      <p>A <em>decimal expression</em>
+        can be used inside some boolean expressions, for parameterizing symbols, options, and basic behaviors, and for the assignment of decimal output symbols.
+      It has the following syntax:</p>
+<a class="anchor" name="decimalexpression"></a>
+<pre><b>&lt;</b>decimal expression<b>&gt;</b> ::=
+    ( <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> )
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> + <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> - <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> * <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> / <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> % <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> ? <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b> : <b>&lt;</b><a href="#decimalexpression">decimal expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>decimal input symbol</em><b>&gt;</b> <b>[</b> <b>&lt;</b><a href="#parameterlist">parameter list</a><b>&gt;</b> <b>]</b>
+  <b>|</b>
+    <b>&lt;</b><em>decimal output symbol</em><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>decimal internal symbol</em><b>&gt;</b>
+  <b>|</b>
+    @<b>&lt;</b><em>decimal option parameter</em><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>constant</em><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>decimal value</em><b>&gt;</b>
+  <b>|</b>
+    state_time
+  <b>|</b>
+    option_time
+</pre>
+   <ul>
+   	  <li>"+","-","*","/" and "%": Arithmetic <em>+</em>, <em>-</em>, <em>*</em>, <em>/</em> and
+          <em>%</em> operators.</li>
+      <li>"<em>boolean expression</em>"?"<em>decimal expression</em>":"<em>decimal expression</em>": Defines a conditional expression, which works such as an ANSI C question mark operator. If the <em> boolean expression</em> is true, the left-hand side <em>decimal expression</em>, otherwise the right-hand side <em>decimal expression</em>, is returned.</li>
+        <li>"<em>decimal input symbol</em>": References a decimal input symbol. Optionally parameters can be specified.</li>
+        <li>"<em>decimal output symbol</em>": References a decimal output symbol. This queries the value set to the output symbol previously.</li>
+        <li>"<em>decimal internal symbol</em>": References a decimal internal symbol. This queries the value set to the internal symbol previously.</li>
+        <li>"<em>decimal option parameter</em>": References a decimal option parameter.</li>
+        <li>"<em>constant</em>": References a constant defined in a symbol definition file.</li>
+        <li>"<em>decimal value</em>": A decimal value, e.g. "<em>3.14</em>".</li>
+      <li>"state_time": This expression returns the duration in seconds for which the current state of the option is active. Whenever a state change occurs this time is set to zero.</li>
+      <li>"option_time": This expression returns the duration in seconds for which the current option is active.</li>
+    </ul>
+      <h2>Enumerated Expressions</h2>
+      <p>An <em>enumerated expression</em>
+        can be used inside some boolean expressions, for parameterizing symbols, options, and basic behaviors, and for the assignment of enumerated output symbols.
+      For the left-hand side of the comparison of two enumerated expressions in a boolean expression a special enumerated expression, a so-called <em>qualified enumerated expression</em>, is required which implicitly defines its associated enumeration. Particularly a reference to an enumeration element cannot be used, since enumeration elements are not necessarily unique. E.g. the boolean expression "dog == type_of_recognized_pet" would be illegal, "type_of_recognized_pet == dog" must be used instead.</p>
+      <p>Enumerated expressions follow this syntax:</p>
+<a class="anchor" name="qualifiedenumeratedexpression"></a>
+<pre><b>&lt;</b>qualified enumerated expression<b>&gt;</b> ::=
+    ( <b>&lt;</b><a href="#qualifiedenumeratedexpression">qualified enumerated expression</a><b>&gt;</b> )
+  <b>|</b>
+    <b>&lt;</b><em>enumerated input symbol</em><b>&gt;</b> <b>[</b> <b>&lt;</b><a href="#parameterlist">parameter list</a><b>&gt;</b> <b>]</b>
+  <b>|</b>
+    <b>&lt;</b><em>enumerated output symbol</em><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>enumerated internal symbol</em><b>&gt;</b>
+  <b>|</b>
+    @<b>&lt;</b><em>enumerated option parameter</em><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> ? <b>&lt;</b><a href="#qualifiedenumeratedexpression">qualified enumerated expression</a><b>&gt;</b> : <b>&lt;</b><a href="#qualifiedenumeratedexpression">qualified enumerated expression</a><b>&gt;</b>
+</pre>
+<a class="anchor" name="enumeratedexpression"></a>
+<pre><b>&lt;</b>enumerated expression<b>&gt;</b> ::=
+    <b>&lt;</b><a href="#qualifiedenumeratedexpression">qualified enumerated expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><a href="#booleanexpression">boolean expression</a><b>&gt;</b> ? <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b> : <b>&lt;</b><a href="#enumeratedexpression">enumerated expression</a><b>&gt;</b>
+  <b>|</b>
+    <b>&lt;</b><em>enumeration element</em><b>&gt;</b>
+</pre>
+     <ul>
+        <li>"<em>enumerated input symbol</em>": References an enumerated input symbol. Optionally parameters can be specified.</li>
+        <li>"<em>enumerated output symbol</em>": References an enumerated output symbol. This queries the value set to the output symbol previously.</li>
+        <li>"<em>enumerated internal symbol</em>": References an enumerated internal symbol. This queries the value set to the internal symbol previously.</li>
+        <li>"<em>enumerated option parameter</em>": References an enumerated option parameter.</li>
+	      <li>"<em>boolean expression</em>"?"<em>enumerated expression</em>":"<em>enumerated expression</em>": Defines a conditional expression, which works such as an ANSI C question mark operator. If the <em> boolean expression</em> is true, the left-hand side <em>enumerated expression</em>, otherwise the right-hand side <em>enumerated expression</em>, is returned.</li>
+        <li>"<em>enumeration element</em>": References an enumeration element.</li>
+     </ul>
+
+      <h2>Agents</h2>
+      <p>The file &quot;<em>agents.xabsl</em>" is the root document of an XABSL
+        behavior specification. It includes all the options and defines agents.
+        An example &quot;<em>agents.xabsl</em>" file may look like this:</p>
+<pre>/***
+  Title: My XABSL behavior application
+  Platform: My robot/agent platform.
+  Software-Environment: My software platform
+*/
+
+include "Options/foo.xabsl";
+include "Options/bla.xabsl";
+
+/** The default agent */
+agent default_agent("Default", foo);
+
+/** A test environment for the option bla */
+agent test_behavior("Test", bla);
+</pre>
+      <p>The "<em>agents.xabsl</em>" has the following syntax:</p>
+<a class="anchor" name="agents"></a>
+<pre><b>&lt;</b>agents definition file<b>&gt;</b> ::=
+  /***
+  Title: <b>&lt;</b><em>title</em><b>&gt;</b>
+  Platform: <b>&lt;</b><em>platform</em><b>&gt;</b>
+  Software-Environment: <b>&lt;</b><em>software-environment</em><b>&gt;</b>
+  */
+  <b>{</b> include "<b>&lt;</b><em>include file</em><b>&gt;</b>"; <b>}</b>
+  <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> agent <b>&lt;</b><em>id</em><b>&gt;</b>("<b>&lt;</b><em>agent-title</em><b>&gt;</b>", <b>&lt;</b><em>root-option</em><b>&gt;</b>);
+  <b>{</b> <b>[&lt;</b><a href="#doccomment">doc comment</a><b>&gt;]</b> agent <b>&lt;</b><em>id</em><b>&gt;</b>("<b>&lt;</b><em>agent-title</em><b>&gt;</b>", <b>&lt;</b><em>root-option</em><b>&gt;</b>); <b>}</b>
+</pre>
+      <p>The <em>title</em>,
+        <em>platform</em>,
+        and <em>software-environment</em>
+        elements are only used for generating the HTML documentation.</p>
+      <p>In an XABSL behavior, the option graph doesn't need to be completely
+        connected. So it is difficult to determine a single root option of the
+        graph. Instead a sub-graph that is spanned by an option and all it's subsequent
+        options and basic behaviors can be declared as an agent. So an agent defines
+        a starting point into the option graph.</p>
+      <p>Included files must contain option definitions for options to be used as agent root options.</p>
+      <p>There has to be at least one <em>agent</em>
+      element inside the agents definition file. It contains the following elements:</p>
+      <ul>
+        <li>"<em>id</em>": The id of the agent. This id must be used to select
+          that agent at the engine.</li>
+        <li>"<em>agent-title</em>": A title needed for the documentation.</li>
+        <li>"<em>root-option</em>": The name of the root option of the agent.<br />
+        </li>
+      </ul>
+  </body>
+</html>

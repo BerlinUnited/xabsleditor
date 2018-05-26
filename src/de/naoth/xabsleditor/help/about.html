@@ -1,0 +1,142 @@
+<html>
+  <head> 
+    <title>XabslEditor About</title>
+  </head>
+  <body>
+	  <h1>What is XABSL?</h1>
+	  <p>The <em>Extensible Agent Behavior Specification Language</em> XABSL is a very simple language to describe behaviors
+	    for autonomous agents based on hierarchical finite state machines. XABSL was developed to design the behavior of soccer robots.
+	    Behaviors specified in XABSL proved to be very successful during <a target="_blank" href="http://www.robocup.org">RoboCup</a> since 2004.
+	    The <a target="_blank" href="http://www.germanteam.org">GermanTeam</a> has won the competitions in the <a target="_blank" href="http://www.tzi.de/spl/">Standard Platform League</a> (using Sony Aibo robots) in 2004, 2005, and 2008. The <a target="_blank" href="http://www.dribblers.de">Darmstadt Dribblers</a>
+        have won the <a target="_blank" href="http://www.tzi.de/humanoid">Humanoid Kid Size</a> competition in 2009 and 2010.
+	    However, the usage of the language is not restricted to robotic soccer.
+	    XABSL is a good choice to describe behaviors for all kinds of autonomous robots or virtual agents like
+	    characters in computer games.
+	  </p>
+	  <h1>Examples</h1>
+	  <ul>
+	    <li>The <a href="examples/ascii-soccer/src/index.html">sources</a> and <a target="_blank" href="examples/ascii-soccer/index.html">documentation</a> of an XABSL example implementation for the <a target="_blank" href="http://www.cs.cmu.edu/~trb/soccer/">ASCII Soccer</a> simulator. These behaviors are also contained in the XABSL <a href="download.html">release</a>, so you can play around with them.</li>
+	    <li>The <a target="_blank" href="examples/gt2008/index.html">documentation</a> of the <a target="_blank" href="http://www.germanteam.org">GermanTeam</a>'s behaviors for their winning entry in the <a target="_blank" href="http://robocup-cn.org/">RoboCup 2008</a> <a target="_blank" href="http://www.tzi.de/spl/">Standard Platform League</a>.</li>
+	  </ul>
+	  <h1>Publications</h1>
+    <p>M. Risler. <a target="_blank" href="http://tuprints.ulb.tu-darmstadt.de/2046">Behavior Control for Single and Multiple Autonomous Agents Based on Hierarchical Finite State Machines</a>. Fortschritt-Berichte VDI Reihe 10: Informatik/Kommunikation, No.
+801, Darmstadt, VDI-Verlag, 2009. &nbsp;&nbsp;&nbsp;<a id="thesis-risler" href="javascript:showBibtexRecord(true,'thesis-risler')" class="bibtex-command">[bibtex]</a></p>
+	  <p>M. Risler and O. von Stryk. <a target="_blank" href="http://www.sim.tu-darmstadt.de/publ/download/2008_RislerVonStryk.pdf">Formal Behavior Specification of Multi-Robot Systems Using Hierarchical State Machines in XABSL</a>. In <em>AAMAS08-Workshop on Formal Models and Methods for Multi-Robot Systems</em>, Estoril, Portugal, 2008. &nbsp;&nbsp;&nbsp;<a id="aamas08-xabsl" href="javascript:showBibtexRecord(true,'aamas08-xabsl')" class="bibtex-command">[bibtex]</a></p>
+	  <p>M. Lötzsch, M. Risler, and M. Jüngel. <a target="_blank" href="http://www.sim.tu-darmstadt.de/publ/download/2006-IROSLoetzschRislerJuengel.pdf">XABSL - A Pragmatic Approach to Behavior Engineering</a>. In <em>Proceedings of IEEE/RSJ International Conference of Intelligent Robots and Systems (IROS)</em>, pages 5124-5129, Beijing, China, 2006. &nbsp;&nbsp;&nbsp;<a id="iros06-xabsl" href="javascript:showBibtexRecord(true,'iros06-xabsl')" class="bibtex-command">[bibtex]</a></p>
+	  <p>M. Lötzsch. <a target="_blank" href="http://www.martin-loetzsch.de/papers/diploma-thesis.pdf">XABSL - A Behavior Engineering System for Autonomous Agents</a>. Diploma thesis. Humboldt-Universität zu Berlin, 2004.  &nbsp;&nbsp;&nbsp;<a id="diploma-thesis" href="javascript:showBibtexRecord(true,'diploma-thesis')" class="bibtex-command">[bibtex]</a></p>
+	  <p>M. Lötzsch, J. Bach, H.-D. Burkhard, and M. Jüngel. <a target="_blank" href="http://www.martin-loetzsch.de/papers/rc03-xabsl.pdf">Designing Agent Behavior with the Extensible Agent Behavior Specification Language XABSL</a>. In D. Polani, B. Browning, and A. Bonarini, editors, <em>RoboCup 2003: Robot Soccer World Cup VII</em>, volume 3020 of <em>Lecture Notes in Artificial Intelligence</em>, pages 114-124, Padova, Italy, 2004.  Springer. &nbsp;&nbsp;&nbsp;<a id="rc03-xabsl" href="javascript:showBibtexRecord(true,'rc03-xabsl')" class="bibtex-command">[bibtex]</a></p>
+	  <h1>What do you need to use XABSL for your agent?</h1>
+	  <p>
+	    To start using XABSL for your agent you need only three things:
+	  </p>
+	  <ul>
+	    <li>A text editor of your choice</li>
+	    <li>The XABSL-Compiler (ruby-based)</li>
+	    <li>The XabslEngine (C++ or Java library)</li>
+	  </ul>
+	  <p>The behavior is described by a set of .xabsl files.
+	    These have to be compiled to an intermediate code using the XABSL-Compiler.
+	    At the start-up of the agent this intermediate code is read by the XabslEngine which executes
+	    the behavoirs during run-time.</p>
+	
+	  <h1>How to describe behaviors with XABSL?</h1>
+          In XABSL complex behaviors are described as hierarchical finite state machines.
+	      To use XABSL, you have to know four concepts: Agents, options, states and decision trees.
+	      <h2>Agents</h2>
+              In XASBL, an <em>agent</em> consists of a number of behavior modules called
+              <em>options</em>. The options are ordered in a rooted directed acyclic
+              graph, the <em>option graph</em>.
+	      <h2>Options</h2>
+	          Options are behavior modules which make up the hierarchical decomposition of the complex agent behavior.
+              Lower hierarchy levels consist of primitives behaviors which are composed into more complex behavior
+              options.
+	      <h2>States</h2>
+	          Each option is a finite state machine. The states of an option define the actions that are active. The actions
+              of a state can reference other options, thus allowing the decomposition of a task into primitive options.
+	      <h2>Decision Trees</h2>
+	          The state transitions are defined by decision trees. Decision trees can reference <em>input symbols</em>
+              in order to access input data such as the agent's world state or sensory data.
+	  <p>
+            <br />
+	  <h1>How does it work?</h1>
+          <img src="file:option-graph.png" alt=""/>
+            The chart to the right shows the option graph of a simple goalie behavior.
+            Boxes denote options, ellipses denote basic behaviors. Basic behaviors represent available basic skills.
+            The edges show which other option or basic behavior can be activated from
+            within an option.<br />
+            <br />
+            The task of the option graph is to activate and parameterize one of the
+            basic behaviors, which is then executed. Beginning from the root option,
+            each active option has to activate and parameterize another option on
+            a lower level in the graph or a basic behavior.
+           </p>
+	  <p style="clear:both">
+              <img src="file:state-machine.png" alt=""/>
+            Within options, the activation of behaviors on lower levels is done by
+            state machines. Each state has any number of subsequent options basic
+            behaviors. Note that there can be several states that have the same subsequent
+            option or basic behavior. <br />
+            <br />
+            The chart to the right shows the internal state machine of the option
+            "goalie-playing". Circles denote states, the circle with the two horizontal
+            lines denotes the initial state. An edge between two states indicates
+            that there is at least one transition from one state to the other. The
+            dashed edges show which other option or basic behavior becomes activated
+            when the corresponding state is active.<br />
+            <br />
+            Each option has an initial state. This state becomes activated when the
+            option was not active during the last execution of the option graph. Additionally,
+            states can be declared as <em>target states</em>. In the options above
+            it can be queried if the subsequent option reached such a target state.
+            This helps to check if a behavior was successful.<br />
+            <br />
+            Additionally, each state can set special requests (<em>output symbols</em>),
+            that influence the information processing besides the actions that are
+            generated from the basic behaviors. </p>
+	  <p style="clear:both">
+              <img src="file:decision-tree.png" alt=""/>
+            Each state has a decision tree with transitions to other states at the
+            leaves. For the decisions the agent's world state, other sensory information
+            and messages from other agents can be used. As timing is often important,
+            the time how long the state is already active and the time how long the
+            option is already active can be taken into account. <br />
+            <br />
+            The chart to the right shows the decision tree of the state &quot;get-to-ball&quot;.
+            The leaves of the tree are transitions to other states. The dashed circle
+            denotes a transition to the current state.<br />
+            <br />
+            <br />
+            The <em>execution</em> of the option graph starts from the root option
+            of the agent. For each option the state machine is carried out once,
+            the decision tree of the active state is executed to determine the next
+            active state. This is continued for the subsequent options of the active
+            state.</p>
+	  <p style="clear:both">
+              <img src="file:activation-tree.png" alt=""/>
+During behavior execution, the options and basic behaviors that are
+activated at a specific time step form a rooted tree which is a subtree of the option graph, the
+so called <em>option activation tree</em>. The diagram to the right shows an example option graph
+from a simple two-player robot soccer behavior. It depicts the decomposition of the task of
+playing soccer into several options and a basic behavior. Boxes represent options, ellipses
+represent basic behaviors. The edges show which options might get activated from another option.
+The highlighted options, basic behaviors and edges show an example of a possible option activation
+tree, showing which behaviors are activated during one specific time step.</p>
+	  <p style="clear:both">Agents following this layered state machine architecture
+            can be completely described in XABSL. There are language elements for
+            options, their states, and their decision trees. Boolean logic (||, &amp;&amp;,
+            !, ==, !=, &lt;, &lt;=, &gt; and &gt;=) and simple arithmetic operators
+            (+, -, *, / and %) can be used for conditional expressions. Custom arithmetic
+            functions (e.g. distance-to(x, y)) that are not part of the language can
+            be easily defined and used in instance documents.</p>
+	  <p style="clear:both"> <em>Symbols</em> are defined in XABSL instance documents
+            to formalize the interaction with the software environment. Interaction
+            means access to input functions and variables (e. g. from the world state)
+            and to output functions (e. g. to set requests for other parts of the
+            information processing). For each variable or function that shall be used
+            for conditions a symbol has to be defined. This makes the XABSL architecture and programming language
+            independent from specific software environments and platforms.</p>
+	  <p style="clear:both">As basic behaviors are implemented externally, prototypes
+            and parameter definitions have to be specified in an XABSL document so
+            that states can reference them.</p>
+  </body>
+</html>

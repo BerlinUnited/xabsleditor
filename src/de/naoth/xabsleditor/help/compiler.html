@@ -1,0 +1,164 @@
+<html>
+  <head> 
+    <title>XabslEditor Compiler</title>
+  </head>
+  <body>
+      <h1>Tools</h1>
+      <p>From XABSL source documents, four types of documents can be generated:</p>
+      <ul>
+        <li>An <em>Intermediate Code</em> which is executed by the <a href="xabslengine.html">XabslEngine</a>.
+          Thus no additional parser is needed as on many embedded computing platforms
+          e.g. XML parsers are not available due to resource and portability constraints.<br/>
+        </li>
+        <li>An extensive HTML-documentation containing SVG-charts for each agent,
+          option and state which helps the developers to understand what their
+          behaviors do. See the <a href="index.html">start page</a> for examples.<br/>
+        </li>
+        <li><em>Debug Symbols</em> containing the names for all options, states,
+          basic behaviors, and symbols can be helpful to implement platform
+          and application dependent debugging tools for monitoring option and
+          state activations as well as input and output symbols.
+          <br/>
+        </li>
+        <li>A <em>keyword list</em> for instance for using editors with syntax highlighting.<br/>
+        </li>
+      </ul>
+      <p><img alt="xabsl work flow" src="figs/xabsl_work_flow.gif"/></p>
+      <p>The graph above shows how these documents are generated. Documentation and
+        debug symbols are generated from an intermediate XML representation using an XSLT processor.
+        The XML representation also allows to generate different content from XABSL sources using custom
+        XSLT style sheets.
+        The files are automatically generated using a Makefile, which is desribed
+        in the next section. A Ruby interpreter is required to run the XABSL compiler.</p>
+      <h2>Adopting the Makefile</h2>
+      <p>As there are very many input files and XSLT style sheets, it is recommended
+        to use a Makefile instead of executing the XABSL compiler and the XSLT processor directly. There
+        is a <a href="XabslMakefile.html">common XABSL Makefile</a>. This file
+        has to be included into a custom Makefile which should be located inside
+        the directory of the source files. The custom Makefile must contain the
+        following variables:</p>
+      <table border="0" cellpadding="4" cellspacing="0">
+        <tr>
+          <td>AGENTS_FILE</td>
+          <td>The root source file <em>agents.xabsl</em> which defines the behavior agents and links to all other source files.</td>
+        </tr>
+        <tr>
+          <td>SOURCES</td>
+          <td>A list of all XABSL source files</td>
+        </tr>
+        <tr>
+          <td>XABSL_OUTPUT_DIR</td>
+          <td>Directory where the intermediate code and the debug symbols shall
+            be generated.</td>
+        </tr>
+        <tr>
+          <td>XABSL_TEMP_DIR</td>
+          <td>Directory where temporary files generated during compilation can be stored.</td>
+        </tr>
+        <tr>
+          <td>INTERMEDIATE_CODE</td>
+          <td>The path of the intermediate code to be generated.</td>
+        </tr>
+        <tr>
+          <td>DEBUG_SYMBOLS</td>
+          <td>Path of the debug symbols to be generated.</td>
+        </tr>
+        <tr>
+          <td>XML_OUTPUT_DIR</td>
+          <td>Directory where the XML representation shall be generated.</td>
+        </tr>
+        <tr>
+          <td>XABSL_COMPILER_DIR</td>
+          <td>Directory where the XABSL compiler (the file <em>xabsl.rb</em>) can be found.</td>
+        </tr>
+        <tr>
+          <td>XABSL_COMPILER_OPTIONS</td>
+          <td>Additional options to the XABSL compiler. See below for a description of possible compiler options.</td>
+        </tr>
+        <tr>
+          <td>DOC_OUTPUT_DIR</td>
+          <td>Directory for the documentation output.</td>
+        </tr>
+        <tr>
+          <td>XSLT</td>
+          <td>An XSLT processor that can process XInclude statements (with necessary
+            parameters). We recommend LibXSLT (<a href="xmlsoft.org/XSLT/" target="_blank">http://xmlsoft.org/XSLT/</a>).</td>
+        </tr>
+        <tr>
+          <td>DOT</td>
+          <td target="_blank">Path to the dot tool. (<a href="http://www.research.att.com/sw/tools/graphviz/" target="_blank">http://www.research.att.com/sw/tools/graphviz/</a>).
+            This is needed for the charts in the HTML documentation.</td>
+        </tr>
+        <tr>
+          <td>DOTML_DIR</td>
+          <td>Directory that contains the DotML Schemas and XSLT stylesheets (<a href="http://www.martin-loetzsch.de/DOTML/" target="_blank">http://www.martin-loetzsch.de/DOTML/</a>).
+            DotML is needed to generate the charts in the HTML documentation.</td>
+        </tr>
+        <tr>
+          <td>XABSL_XSL_DIR</td>
+          <td>Directory of the XABSL Schemas and XSLT Stylesheets relative to
+            the source files and the custom Makefile.</td>
+        </tr>
+      </table>
+      <p>At last, the common Makefile must be included into the Makefile:</p>
+      <pre>include $(XABSL_DIR)/XabslMakefile</pre>
+      <p>&nbsp;</p>
+      <h2>Using the Makefile</h2>
+      <pre>make all</pre>
+      <p>generates intermediate code and XML representation from XABSL sources.
+        Then documentation and debug symbols are generated.</p>
+      <pre>make DOC</pre>
+      <p>generates the documentation. Note that single HTML pages can also be
+        generated seperately by typing</p>
+      <pre>make file_path_and_name_of_the_HTML_page.html</pre>
+      <p>Some shortcuts:</p>
+      <pre>make IC</pre>
+      <p>Intermediate code only.</p>
+      <pre>make DS</pre>
+      <p>Debug symbols only.</p>
+      <h2>Using the XABSL compiler</h2>
+      <p>The XABSL compiler is invoked by executing the Ruby script <em>xabsl.rb</em>. The following options can be specified at the command line when running the XABSL compiler:</p>
+      <table border="0" cellpadding="4" cellspacing="0">
+        <tr>
+          <td>-q, --quiet</td>
+          <td>Suppress almost any output.</td>
+        </tr>
+        <tr>
+          <td>-v, --verbose</td>
+          <td>Run verbosely.</td>
+        </tr>
+        <tr>
+          <td>-x, --xml <em>path</em></td>
+          <td>Generated xml at <em>path</em>.</td>
+        </tr>
+        <tr>
+          <td>-i, --intermediate-code <em>filename</em></td>
+          <td>Generate intermediate code in <em>filename</em>.</td>
+        </tr>
+        <tr>
+          <td>-a, --api-file <em>filename</em></td>
+          <td>Create .api file <em>filename</em> and copy it to scite/Microsoft Visual Studio locations.</td>
+        </tr>
+        <tr>
+          <td>-m, --vcproj <em>filename</em></td>
+          <td>Create partial .vcproj file containing a files list for a Microsoft Visual Studio project.</td>
+        </tr>
+        <tr>
+          <td>-I, --incremental <em>directory</em></td>
+          <td>Incremental compiling, put dumpfiles to given <em>directory</em>.</td>
+        </tr>
+        <tr>
+          <td>-C, --comments</td>
+          <td>Insert additional comments into generated files.</td>
+        </tr>
+        <tr>
+          <td>-V, --vs-error-message-style</td>
+          <td>Produce Microsoft Visual Studio compliant error messages.</td>
+        </tr>
+        <tr>
+          <td>-f, --force-output</td>
+          <td>Will force output even if errors occured.</td>
+        </tr>
+      </table>
+  </body>
+</html>
