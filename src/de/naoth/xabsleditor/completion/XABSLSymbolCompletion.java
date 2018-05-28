@@ -32,7 +32,7 @@ public class XABSLSymbolCompletion extends FunctionCompletion
     public XABSLSymbolCompletion(CompletionProvider provider, XABSLContext.XABSLSymbol symbol) {
         super(provider, symbol.getName(), symbol.getType());
         this.symbol = symbol;
-        // TODO: set correct parameter definition
+
         setParams(symbol.getParameter().stream().map((t) -> {
             Parameter p = new Parameter(t.getType(), t.getName());
             p.setDescription(t.getComment());

@@ -15,6 +15,7 @@
  */
 package de.naoth.xabsleditor.completion;
 
+import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
@@ -22,29 +23,44 @@ import org.fife.ui.autocomplete.CompletionProvider;
  *
  * @author Heinrich Mellmann
  */
-public class XABSLStateCompletion extends BasicCompletion {
+public class XABSLStateCompletion extends BasicCompletion
+{
+    XABSLOptionContext.State state;
+    
+    public XABSLStateCompletion(CompletionProvider provider, XABSLOptionContext.State state) {
+        super(provider, state.name);
 
-    String stateName;
-
-    public XABSLStateCompletion(CompletionProvider provider, String stateName) {
-        super(provider, stateName);
-
-        this.stateName = stateName;
-        this.setShortDescription("State " + stateName);
+        this.state = state;
+        this.setShortDescription("State " + state.name);
         this.setSummary(createSummary());
         setRelevance(30);
     }
 
     protected String createSummary() {
         StringBuilder sb = new StringBuilder();
-
-        sb.append("<b> ")
-                .append(this.stateName)
-                .append("</b>")
-                .append("<hr>");
-
-        sb.append("An option state.");
-
+        if(state.initial) {
+            sb.append("<font color=\"#00FF00\">initial</font> ");
+        }
+        if(state.target) {
+            sb.append("<font color=\"#FF0000\">target</font> ");
+        }
+        sb.append("<b>")
+          .append(state.name)
+          .append("</b> - state<hr>");
+        if(!state.comment.isEmpty()) {
+            
+            sb.append(state.comment).append("<br><br>");
+        }
+        if(state.outgoingOptions.size() > 0) {
+            sb.append("Outgoing options:");
+            sb.append("<ul>");
+            state.outgoingOptions.stream().forEachOrdered((out) -> {
+                sb.append("<li>");
+                sb.append(out);
+                sb.append("</li>");
+            });
+            sb.append("</ul>");
+        }
         return sb.toString();
     }//end createSummary
 
@@ -54,7 +70,7 @@ public class XABSLStateCompletion extends BasicCompletion {
      * @return The name.
      */
     public String getName() {
-        return this.stateName;
+        return state.name;
     }//end getName
 
     /**
@@ -64,6 +80,6 @@ public class XABSLStateCompletion extends BasicCompletion {
      */
     @Override
     public String getInputText() {
-        return this.stateName;
+        return state.name;
     }
 }//end class XABSLStateCompetion

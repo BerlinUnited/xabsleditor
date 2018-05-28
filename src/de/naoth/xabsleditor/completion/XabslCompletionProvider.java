@@ -70,7 +70,7 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             // add the variables of the current option
             DefaultCompletionProvider variables = new DefaultCompletionProvider();
             ((XABSLOptionParser)parser.getFileParser()).getOption().getParameter().forEach((t) -> {
-                variables.addCompletion(new XabslVariableCompletion(variables, "@"+t.getName(), "Option parameter", t.getComment()));
+                variables.addCompletion(new XabslVariableCompletion(variables, t));
             });
             provider.addChildCompletionProvider("variables", variables);
             return provider;
@@ -81,8 +81,8 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
     public CompletionProvider updateLocalStates(XParser parser, XabslDefaultCompletionProvider provider) {
         // add all states of the current option
         DefaultCompletionProvider states = new DefaultCompletionProvider();
-        ((XABSLOptionParser)parser.getFileParser()).getStates().keySet().forEach((v)->{
-            states.addCompletion(new XABSLStateCompletion(states, v));
+        ((XABSLOptionParser)parser.getFileParser()).getStates().values().forEach((s)->{
+            states.addCompletion(new XABSLStateCompletion(states, s));
         });
         provider.addChildCompletionProvider("states", states);
         return provider;

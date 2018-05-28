@@ -34,7 +34,6 @@ public class XABSLOptionCompletion extends FunctionCompletion
         setShortDescription(option.getComment());
         this.option = option;
         
-        // TODO: set correct parameter definition
         setParams(option.getParameter().stream().map((t) -> {
             Parameter p = new Parameter(t.getType(), t.getName());
             p.setDescription(t.getComment());

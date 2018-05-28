@@ -143,17 +143,6 @@ public class GraphPanel extends javax.swing.JPanel
         String optionName = currentEditor.getFile().getName();
         optionName = optionName.replaceAll(".xabsl", "");
         updateAgentContext(currentEditor.getXABSLContext(), optionName);
-
-        // refresh autocompetion
-        DefaultCompletionProvider completionProvider = new DefaultCompletionProvider();
-
-        for (XABSLOptionContext.State state : p.getStateMap().values()) {
-            completionProvider.addCompletion(new XABSLStateCompletion(completionProvider, state.name));
-        }//end for
-
-//        currentEditor.setCompletionProvider(completionProvider);
-        // TODO: is updating the context and the completion provider neccessary?!//        currentEditor.setCompletionProvider(completionProvider);
-        // TODO: is updating the context and the completion provider neccessary?!
     }
     
     class XabslGraphMouseListener implements GraphMouseListener<XabslNode>
