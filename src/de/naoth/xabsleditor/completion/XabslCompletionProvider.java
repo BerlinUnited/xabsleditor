@@ -2,13 +2,17 @@ package de.naoth.xabsleditor.completion;
 
 import de.naoth.xabsleditor.parser.XABSLOptionParser;
 import de.naoth.xabsleditor.parser.XParser;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.LanguageAwareCompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rtextarea.RTextArea;
 
 /**
  *
@@ -22,7 +26,7 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
     private final CompletionProvider stateProvider = new StateCompletionProvider();
     private final CompletionProvider decisionProvider = new DecisionCompletionProvider();
     private final CompletionProvider actionProvider = new XabslDefaultCompletionProvider();
-    private final CompletionProvider optionsProvider = new XabslDefaultCompletionProvider();
+    private final CompletionProvider statesProvider = new XabslDefaultCompletionProvider();
 
     public XabslCompletionProvider() {
         super(new XabslDefaultCompletionProvider());
@@ -38,7 +42,7 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             while(l != null) {
                 if(l.getType() != Token.NULL) {
                     switch(l.getLexeme()) {
-                        case "goto":      provider = optionsProvider;  break;
+                        case "goto":      provider = updateLocalStates((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) statesProvider);      break;
                         case "if":
                         case "else":
                         case "decision":  provider = updateLocalParameter((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) decisionProvider); break;
@@ -58,11 +62,12 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             return emptyDocumentProvider;
         }
         
-        return provider;//super.getProviderFor(comp);
+        return provider;
     }
     
     public CompletionProvider updateLocalParameter(XParser parser, XabslDefaultCompletionProvider provider) {
         if(parser.getFileParser() instanceof XABSLOptionParser) {
+            // add the variables of the current option
             DefaultCompletionProvider variables = new DefaultCompletionProvider();
             ((XABSLOptionParser)parser.getFileParser()).getOption().getParameter().forEach((t) -> {
                 variables.addCompletion(new XabslVariableCompletion(variables, "@"+t.getName(), "Option parameter", t.getComment()));
@@ -73,6 +78,16 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         return provider;
     }
     
+    public CompletionProvider updateLocalStates(XParser parser, XabslDefaultCompletionProvider provider) {
+        // add all states of the current option
+        DefaultCompletionProvider states = new DefaultCompletionProvider();
+        ((XABSLOptionParser)parser.getFileParser()).getStates().keySet().forEach((v)->{
+            states.addCompletion(new XABSLStateCompletion(states, v));
+        });
+        provider.addChildCompletionProvider("states", states);
+        return provider;
+    }
+    
     public void updateSymbols(CompletionProvider provider) {
         ((XabslDefaultCompletionProvider)actionProvider).addChildCompletionProvider("symbols", provider);
         ((XabslDefaultCompletionProvider)decisionProvider).addChildCompletionProvider("symbols", provider);
@@ -80,7 +95,24 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
     
     public void updateOptions(CompletionProvider provider) {
         ((XabslDefaultCompletionProvider)actionProvider).addChildCompletionProvider("options", provider);
-        ((XabslDefaultCompletionProvider)decisionProvider).addChildCompletionProvider("options", provider);
+    }
+
+    @Override
+    public String getToolTipText(RTextArea textArea, MouseEvent e) {
+        String tip = null;
+
+        List<Completion> completions = actionProvider.getCompletionsAt(textArea, e.getPoint());
+        if (completions!=null && completions.size()>0) {
+            for (Completion completion : completions) {
+                // don't show tooltip for shorthand completions
+                if(!(completion instanceof XabslTemplateCompletion || completion.getToolTipText() == null)) {
+                    tip = completion.getToolTipText();
+                    break;
+                }
+            }
+        }
+        
+        return tip;
     }
     
     class EmptyCompletionProvider extends DefaultCompletionProvider
@@ -248,6 +280,9 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
                 new XabslCompletion(this, "if", "if", "if statement"),
                 new XabslCompletion(this, "else", "else", "else statement"),
                 new XabslCompletion(this, "stay", "stay", "stay statement"),
+                new XabslCompletion(this, "action_done", "action_done", "action_done statement"),
+                new XabslCompletion(this, "state_time", "state_time", "state_time statement"),
+                new XabslCompletion(this, "option_time", "option_time", "option_time statement"),
                 //                          input, definition, template, shortDescription, summary
                 new XabslTemplateCompletion(this, "if statement", 
                                                   "if statement", 

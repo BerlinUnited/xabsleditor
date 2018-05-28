@@ -49,4 +49,9 @@ public class XABSLSymbolCompletion extends FunctionCompletion
         int length = param.getName().length() + 1 + param.getType().length();
         return new int[] {length, param.getName().length() + 1, length};
     }
+
+    @Override
+    public String getToolTipText() {
+        return getShortDescription();
+    }
 }//end class XABSLSymbolCompletion

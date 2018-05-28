@@ -19,6 +19,7 @@ import de.naoth.xabsleditor.parser.XABSLContext.XABSLBasicSymbol;
 import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
 import de.naoth.xabsleditor.parser.XParser.XABSLAbstractParser;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
 import org.fife.ui.rsyntaxtextarea.Token;
@@ -46,6 +47,14 @@ public class XABSLOptionParser extends XABSLAbstractParser
 
   public XABSLOption getOption() {
       return currentOption;
+  }
+  
+  /**
+   * Retrieves the states of the this option.
+   * @return map of states
+   */
+  public Map<String, XABSLOptionContext.State> getStates() {
+      return parent.xabslOptionContext.getStateMap();
   }
 
   @Override

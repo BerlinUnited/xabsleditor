@@ -37,6 +37,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkListener;
@@ -51,7 +52,10 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.ToolTipSupplier;
 
 /**
  *
@@ -93,12 +97,16 @@ public class XEditorPanel extends javax.swing.JPanel
     hashCode = textArea.getText().hashCode();
     // disable traversal keys; the tab panel should handle it
     textArea.setFocusTraversalKeysEnabled(false);
+    textArea.setCodeFoldingEnabled(true);
+    textArea.setMarkOccurrences(true);
+    textArea.setCloseCurlyBraces(true);
   }
 
   private void InitTextArea(String str)
   {
+    FoldParserManager.get().addFoldParserMapping(XParser.SYNTAX_STYLE_XABSL, new CurlyFoldParser());
+    
     searchOffset = 0;
-
     textArea = new RSyntaxTextArea()
     {
       /**
@@ -186,6 +194,10 @@ public class XEditorPanel extends javax.swing.JPanel
     });
 
     this.scrolPane = new RTextScrollPane(textArea, true);
+    scrolPane.setFoldIndicatorEnabled(true);
+    scrolPane.setIconRowHeaderEnabled(true);
+    scrolPane.setLineNumbersEnabled(true);
+    scrolPane.getGutter().setBookmarkingEnabled(true);
     add(scrolPane);
 
     searchPanel.setVisible(false);
@@ -455,8 +467,8 @@ public class XEditorPanel extends javax.swing.JPanel
         ac.setParameterAssistanceEnabled(true);
         ac.install(textArea);
         
-//        textArea.setToolTipSupplier((ToolTipSupplier) this.completionProvider);
-//        ToolTipManager.sharedInstance().registerComponent(textArea);
+        textArea.setToolTipSupplier((ToolTipSupplier) provider);
+        ToolTipManager.sharedInstance().registerComponent(textArea);
     } else {
         ac.setCompletionProvider(provider);
     }

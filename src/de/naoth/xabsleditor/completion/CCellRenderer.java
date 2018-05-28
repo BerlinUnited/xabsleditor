@@ -74,6 +74,8 @@ public class CCellRenderer extends CompletionCellRenderer {
             prepareForXABSLCompletion(list, (XabslCompletion)value, index, selected, hasFocus);
         } else if(value instanceof XabslTemplateCompletion) {
             prepareForXABSLTemplateCompletion(list, (XabslTemplateCompletion)value, index, selected, hasFocus);
+        } else if(value instanceof XABSLStateCompletion) {
+            setIcon(SYMBOL_ICON);
         }
 
         return this;

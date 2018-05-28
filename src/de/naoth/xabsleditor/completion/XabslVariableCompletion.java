@@ -13,4 +13,9 @@ public class XabslVariableCompletion extends BasicCompletion
         super(provider, replacementText, shortDesc, summary);
         setRelevance(50);
     }
+    
+    @Override
+    public String getToolTipText() {
+        return getShortDescription();
+    }
 }

@@ -22,49 +22,48 @@ import org.fife.ui.autocomplete.CompletionProvider;
  *
  * @author Heinrich Mellmann
  */
-public class XABSLStateCompletion extends BasicCompletion
-{
-  String stateName;
-  
-  public XABSLStateCompletion(CompletionProvider provider, String stateName)
-  {
-    super(provider, stateName);
-    
-    this.stateName = stateName;
-    this.setShortDescription("State " + stateName);
-    this.setSummary(createSummary());
-    setRelevance(30);
-  }
+public class XABSLStateCompletion extends BasicCompletion {
 
-  protected String createSummary() {
-    StringBuilder sb = new StringBuilder();
+    String stateName;
 
-    sb.append("<b> ")
-      .append(this.stateName)
-      .append("</b>")
-      .append("<hr>");
+    public XABSLStateCompletion(CompletionProvider provider, String stateName) {
+        super(provider, stateName);
 
-    sb.append("An option state.");
+        this.stateName = stateName;
+        this.setShortDescription("State " + stateName);
+        this.setSummary(createSummary());
+        setRelevance(30);
+    }
 
-    return sb.toString();
-  }//end createSummary
-  
-  /**
-	 * Returns the name of this variable.
-	 *
-	 * @return The name.
-	 */
-	public String getName() {
-		return this.stateName;
-	}//end getName
+    protected String createSummary() {
+        StringBuilder sb = new StringBuilder();
 
-  /**
-	 * Returns the text the user must start typing to get this completion.
-	 *
-	 * @return The text the user must start to input.
-	 */
-  @Override
-	public String getInputText() {
-		return this.stateName;
-	}
+        sb.append("<b> ")
+                .append(this.stateName)
+                .append("</b>")
+                .append("<hr>");
+
+        sb.append("An option state.");
+
+        return sb.toString();
+    }//end createSummary
+
+    /**
+     * Returns the name of this variable.
+     *
+     * @return The name.
+     */
+    public String getName() {
+        return this.stateName;
+    }//end getName
+
+    /**
+     * Returns the text the user must start typing to get this completion.
+     *
+     * @return The text the user must start to input.
+     */
+    @Override
+    public String getInputText() {
+        return this.stateName;
+    }
 }//end class XABSLStateCompetion

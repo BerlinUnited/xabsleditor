@@ -95,4 +95,8 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
         return symbol.getSecondaryType();
     }
 
+    @Override
+    public String getToolTipText() {
+        return getShortDescription();
+    }
 }//end class XABSLSymbolSimpleCompletion

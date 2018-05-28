@@ -1,5 +1,7 @@
 package de.naoth.xabsleditor.completion;
 
+import java.awt.Point;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -35,5 +37,17 @@ public class XabslDefaultCompletionProvider extends DefaultCompletionProvider
     
     public void addChildCompletionProvider(String id, CompletionProvider p) {
         children.put(id, p);
+    }
+
+    @Override
+    public List<Completion> getCompletionsAt(JTextComponent tc, Point pt) {
+        final List<Completion> l = super.getCompletionsAt(tc, pt) == null ? new ArrayList<>() : super.getCompletionsAt(tc, pt);
+        children.values().forEach((p) -> {
+            List<Completion> u = p.getCompletionsAt(tc, pt);
+            if(u != null) {
+                l.addAll(u);
+            }
+        });
+        return l;
     }
 }
