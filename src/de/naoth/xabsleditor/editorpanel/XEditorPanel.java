@@ -64,7 +64,7 @@ public class XEditorPanel extends javax.swing.JPanel
 {
 
   private RSyntaxTextArea textArea;
-  private RTextScrollPane scrolPane;
+  private RTextScrollPane scrollPane;
   private AutoCompletion ac;
   
 
@@ -191,12 +191,23 @@ public class XEditorPanel extends javax.swing.JPanel
       }
     });
 
-    this.scrolPane = new RTextScrollPane(textArea, true);
-    scrolPane.setFoldIndicatorEnabled(true);
-    scrolPane.setIconRowHeaderEnabled(true);
-    scrolPane.setLineNumbersEnabled(true);
-    scrolPane.getGutter().setBookmarkingEnabled(true);
-    add(scrolPane);
+    this.scrollPane = new RTextScrollPane(textArea, true);
+    scrollPane.setFoldIndicatorEnabled(true);
+    scrollPane.setLineNumbersEnabled(true);
+    
+    // NOTE: currently not used
+    // setup bookmarking capability
+//    scrollPane.setIconRowHeaderEnabled(true);
+//    scrolPane.getGutter().setBookmarkIcon(new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/var.png")));
+//    scrolPane.getGutter().setBookmarkingEnabled(true);
+
+    // setup the error/warning/info notification bar on the right side (like netbeans)
+//    ErrorStrip es = new ErrorStrip(textArea);
+//    es.setShowMarkedOccurrences(true);
+//    es.setLevelThreshold(ParserNotice.Level.INFO);
+//    add(es, java.awt.BorderLayout.LINE_END);
+
+    add(scrollPane, java.awt.BorderLayout.CENTER);
 
     searchPanel.setVisible(false);
   }//end InitTextArea
@@ -518,7 +529,7 @@ public class XEditorPanel extends javax.swing.JPanel
     // update all the fonts with the new fonsize
     this.textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
     
-    scrolPane.getGutter().setLineNumberFont(scrolPane.getGutter().getLineNumberFont().deriveFont(size));
+    scrollPane.getGutter().setLineNumberFont(scrollPane.getGutter().getLineNumberFont().deriveFont(size));
   }
   
   /**
