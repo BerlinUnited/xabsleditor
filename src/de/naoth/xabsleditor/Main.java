@@ -28,6 +28,7 @@ import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
 import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
+import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.FileWatcher;
 import de.naoth.xabsleditor.utils.Project;
@@ -60,6 +61,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 
 /**
  *
@@ -168,6 +171,8 @@ public class Main extends javax.swing.JFrame implements JumpListener
         Image icon = Toolkit.getDefaultToolkit().getImage(
                 this.getClass().getResource("res/XabslEditor.png"));
         setIconImage(icon);
+        
+        FoldParserManager.get().addFoldParserMapping(XParser.SYNTAX_STYLE_XABSL, new CurlyFoldParser());
 
         searchInProjectDialog = new SearchInProjectDialog(this, false);
 

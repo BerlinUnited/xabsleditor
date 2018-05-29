@@ -52,8 +52,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
-import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
-import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
+import org.fife.ui.rsyntaxtextarea.parser.Parser;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.ToolTipSupplier;
 
@@ -97,15 +96,12 @@ public class XEditorPanel extends javax.swing.JPanel
     hashCode = textArea.getText().hashCode();
     // disable traversal keys; the tab panel should handle it
     textArea.setFocusTraversalKeysEnabled(false);
-    textArea.setCodeFoldingEnabled(true);
     textArea.setMarkOccurrences(true);
     textArea.setCloseCurlyBraces(true);
   }
 
   private void InitTextArea(String str)
   {
-    FoldParserManager.get().addFoldParserMapping(XParser.SYNTAX_STYLE_XABSL, new CurlyFoldParser());
-    
     searchOffset = 0;
     textArea = new RSyntaxTextArea()
     {
@@ -127,7 +123,9 @@ public class XEditorPanel extends javax.swing.JPanel
       }//end getUnderlineForToken
       
     };//end new RSyntaxTextArea
-
+    
+    textArea.setCodeFoldingEnabled(true);
+    textArea.getFoldManager().setCodeFoldingEnabled(true);
 
     if(str != null)
     {
@@ -492,9 +490,17 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public void setXABSLContext(XABSLContext xabslContext)
   {
-    this.context = xabslContext;
-    textArea.clearParsers();
-    textArea.addParser(new XParser(xabslContext));
+      this.context = xabslContext;
+      // we just want to remove 'our' (X)parser!
+      for (int i = 0; i < textArea.getParserCount(); i++) {
+          Parser p = textArea.getParser(i);
+          if (p instanceof XParser) {
+              textArea.removeParser(p);
+              i--;
+          }
+      }
+      // 're-add' parser
+      textArea.addParser(new XParser(xabslContext));
   }//end setXABSLContext
 
   public XABSLContext getXABSLContext()
