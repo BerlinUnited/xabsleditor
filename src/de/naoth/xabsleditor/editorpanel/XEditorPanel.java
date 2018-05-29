@@ -26,6 +26,10 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -54,6 +58,8 @@ import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.parser.Parser;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.SearchContext;
+import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.ToolTipSupplier;
 
 /**
@@ -63,15 +69,13 @@ import org.fife.ui.rtextarea.ToolTipSupplier;
 public class XEditorPanel extends javax.swing.JPanel
 {
 
-  private RSyntaxTextArea textArea;
+  private XSyntaxTextArea textArea;
   private RTextScrollPane scrollPane;
   private AutoCompletion ac;
-  
 
   private File file;
   private XABSLContext context;
   private int hashCode;
-  private int searchOffset;
   private String lastSearch;
 
   /** Creates new form XEditorPanel */
@@ -102,27 +106,7 @@ public class XEditorPanel extends javax.swing.JPanel
 
   private void InitTextArea(String str)
   {
-    searchOffset = 0;
-    textArea = new RSyntaxTextArea()
-    {
-      /**
-       * underline only when the hyperlink is activated
-       */
-      @Override
-      public boolean getUnderlineForToken(Token t) {
-        // HACK: using the color of token to identify if
-        //       it is activated, since hoveredOverLinkOffset
-        //       is private in RSyntaxTextArea
-        if(t.isHyperlink())
-        {
-          return (getHyperlinksEnabled() &&
-                  getForegroundForToken(t) == getHyperlinkForeground());
-        }//end if
-
-        return super.getUnderlineForToken(t);
-      }//end getUnderlineForToken
-      
-    };//end new RSyntaxTextArea
+    textArea = new XSyntaxTextArea();
     
     textArea.setCodeFoldingEnabled(true);
     textArea.getFoldManager().setCodeFoldingEnabled(true);
@@ -190,6 +174,23 @@ public class XEditorPanel extends javax.swing.JPanel
         fireDocumentChangedEvent();
       }
     });
+    
+    textArea.addKeyListener(new KeyListener() {
+        @Override
+        public void keyTyped(KeyEvent e) {}
+
+        @Override
+        public void keyPressed(KeyEvent e) {}
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_F3) {
+                search(lastSearch);
+            } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE && searchPanel.isVisible()) {
+                searchPanel.setVisible(false);
+            }
+        }
+    });
 
     this.scrollPane = new RTextScrollPane(textArea, true);
     scrollPane.setFoldIndicatorEnabled(true);
@@ -210,6 +211,19 @@ public class XEditorPanel extends javax.swing.JPanel
     add(scrollPane, java.awt.BorderLayout.CENTER);
 
     searchPanel.setVisible(false);
+    searchPanel.addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentShown(ComponentEvent e) {
+            textArea.setMarkAllOnOccurrenceSearches(true);
+        }
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+            textArea.setMarkAllOnOccurrenceSearches(false);
+            textArea.clearAllHighlights();
+            textArea.grabFocus();
+        }
+    });
   }//end InitTextArea
   
   private void resetUndos() {
@@ -415,54 +429,12 @@ public class XEditorPanel extends javax.swing.JPanel
    */
   public boolean search(String s)
   {
-    if(s != null)
-    {
-      if(lastSearch == null || !lastSearch.equals(s))
-      {
-        // reset if new search expression
-        searchOffset = 0;
-      }
-      try
-      {
-        int textLength = textArea.getText().length();
-        if(searchOffset >= textLength)
-        {
-          searchOffset = 0;
-        }
-
-        String text =
-          textArea.getText(searchOffset, textLength - searchOffset);
-
-        int found = text.toLowerCase().indexOf(s.toLowerCase());
-        if(found > -1)
-        {
-          textArea.grabFocus();
-          //textArea.setCaretPosition(searchOffset + found);
-          setCarretPosition(searchOffset + found);
-          textArea.moveCaretPosition(searchOffset + found + s.length());
-
-          //Highlighter.HighlightPainter p = new ChangeableHighlightPainter(Color.BLUE, true, 0.5f);
-          //textArea.getHighlighter().addHighlight(searchOffset + found, searchOffset + found + s.length(), p);
-          
-          searchOffset = searchOffset + found + 1;
-          lastSearch = s;
-
-          return true;
-        }
-      }
-      catch(BadLocationException ex)
-      {
-      }
+    lastSearch = s;
+    if(s != null && !s.isEmpty()) {
+          SearchContext sc = new SearchContext(s);
+          sc.setMarkAll(textArea.getMarkAllOnOccurrenceSearches());
+        return SearchEngine.find(textArea, sc).wasFound();
     }
-
-    searchOffset = 0;
-    lastSearch = null;
-    // reset any selection
-    textArea.grabFocus();
-    int oldCaretPos = textArea.getCaretPosition();
-    textArea.setCaretPosition(0);
-    textArea.setCaretPosition(oldCaretPos);
-
     return false;
   }//end search
 
@@ -491,7 +463,7 @@ public class XEditorPanel extends javax.swing.JPanel
   public Map<String, XABSLOptionContext.State> getStateMap()
   {
     try{
-      return ((XParser)textArea.getParser(0)).getStateMap();
+      return textArea.getXParser().getStateMap();
     }catch(Exception e)
     {
       //

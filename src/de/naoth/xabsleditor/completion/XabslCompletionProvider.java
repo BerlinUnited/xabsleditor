@@ -1,5 +1,6 @@
 package de.naoth.xabsleditor.completion;
 
+import de.naoth.xabsleditor.editorpanel.XSyntaxTextArea;
 import de.naoth.xabsleditor.parser.XABSLOptionParser;
 import de.naoth.xabsleditor.parser.XParser;
 import java.awt.event.MouseEvent;
@@ -10,7 +11,6 @@ import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.LanguageAwareCompletionProvider;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rtextarea.RTextArea;
 
@@ -34,7 +34,7 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
 
     @Override
     protected CompletionProvider getProviderFor(JTextComponent comp) {
-        RSyntaxTextArea rsta = (RSyntaxTextArea)comp;
+        XSyntaxTextArea rsta = (XSyntaxTextArea)comp;
         int line = rsta.getCaretLineNumber();
         CompletionProvider provider = null;
         for (int i = line; i >= 0; i--) {
@@ -42,11 +42,11 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             while(l != null) {
                 if(l.getType() != Token.NULL) {
                     switch(l.getLexeme()) {
-                        case "goto":      provider = updateLocalStates((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) statesProvider);      break;
+                        case "goto":      provider = updateLocalStates(rsta.getXParser(), (XabslDefaultCompletionProvider) statesProvider);      break;
                         case "if":
                         case "else":
-                        case "decision":  provider = updateLocalParameter((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) decisionProvider); break;
-                        case "action":    provider = updateLocalParameter((XParser)rsta.getParser(0), (XabslDefaultCompletionProvider) actionProvider);   break;
+                        case "decision":  provider = updateLocalParameter(rsta.getXParser(), (XabslDefaultCompletionProvider) decisionProvider); break;
+                        case "action":    provider = updateLocalParameter(rsta.getXParser(), (XabslDefaultCompletionProvider) actionProvider);   break;
                         case "state":     provider = stateProvider;    break;
                         case "option":    provider = optionProvider;   break;
                         case "namespace": provider = symbolProvider;   break;
