@@ -428,4 +428,12 @@ public class XTokenMaker extends AbstractTokenMaker
   {
     return matchString.indexOf(c) > -1;
   }//end is
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getCurlyBracesDenoteCodeBlocks(int languageIndex) {
+        return true;
+    }
 }//end class XScanner
