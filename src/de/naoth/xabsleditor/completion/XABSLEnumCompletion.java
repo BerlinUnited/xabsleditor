@@ -19,14 +19,22 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
 /**
- *
- * @author admin
+ * Represents the completion information for a xabsl enum.
+ * 
+ * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class XABSLEnumCompletion extends BasicCompletion
 {
     private String enumName = "";
     private String enumElement = "";
 
+    /**
+     * Constructor. Defines the style and attributes of a xabsl enum completion.
+     * 
+     * @param provider the parent completion provider
+     * @param enumName the name of the enum
+     * @param enumElement the value/element of the enum
+     */
     public XABSLEnumCompletion(CompletionProvider provider, String enumName, String enumElement) {
         super(provider, enumElement);
 
@@ -38,6 +46,11 @@ public class XABSLEnumCompletion extends BasicCompletion
         setRelevance(40);
     }
 
+    /**
+     * Returns the (styled) summary of this enum completion.
+     * 
+     * @return html string summary
+     */
     protected String createSummary() {
         StringBuilder sb = new StringBuilder();
 

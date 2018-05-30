@@ -32,8 +32,9 @@ import org.fife.ui.autocomplete.VariableCompletion;
  * This class handles the ui/style of the completion window and each completion entry.
  * @author Heinrich Mellmann
  */
-public class CCellRenderer extends CompletionCellRenderer {
-
+public class CCellRenderer extends CompletionCellRenderer
+{
+    // some icons
     private static final Icon VARIABLE_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/var.png"));
     private static final Icon FUNCTION_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/function.png"));
     private static final Icon MACRO_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/macro.png"));
@@ -48,6 +49,9 @@ public class CCellRenderer extends CompletionCellRenderer {
     private static final Icon OPTION_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/xabsl_option_file.png"));
     private static final Icon SYMBOL_ICON = new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/xabsl_symbols_file.png"));
 
+    /**
+     * Constructor. Sets the background of the completion window.
+     */
     public CCellRenderer() {
         setAlternateBackground(new Color(245, 245, 245));
     }
@@ -61,28 +65,33 @@ public class CCellRenderer extends CompletionCellRenderer {
         super.getListCellRendererComponent(list, value, index, selected, hasFocus);
         
         if (value instanceof XABSLSymbolCompletion) {
-            prepareForXABSLSymbolCompletion(list, (XABSLSymbolCompletion) value, index, selected, hasFocus);
+            prepareForXABSLSymbolCompletion((XABSLSymbolCompletion) value, selected);
         } else if (value instanceof XABSLSymbolSimpleCompletion) {
-            prepareForXABSLSymbolSimpleCompletion(list, (XABSLSymbolSimpleCompletion) value, index, selected, hasFocus);
+            prepareForXABSLSymbolSimpleCompletion((XABSLSymbolSimpleCompletion) value, selected);
         } else if (value instanceof XABSLOptionCompletion) {
-            prepareForXABSLOptionCompletion(list, (XABSLOptionCompletion) value, index, selected, hasFocus);
+            prepareForXABSLOptionCompletion((XABSLOptionCompletion) value, selected);
         } else if (value instanceof XABSLEnumCompletion) {
-            prepareForXABSLEnumCompletion(list, (XABSLEnumCompletion) value, index, selected, hasFocus);
+            prepareForXABSLEnumCompletion((XABSLEnumCompletion) value, selected);
         } else if(value instanceof XabslVariableCompletion) {
-            prepareForXABSLVariableCompletion(list, (XabslVariableCompletion) value, index, selected, hasFocus);
+            prepareForXABSLVariableCompletion((XabslVariableCompletion) value, selected);
         } else if(value instanceof XabslCompletion) {
-            prepareForXABSLCompletion(list, (XabslCompletion)value, index, selected, hasFocus);
+            prepareForXABSLCompletion((XabslCompletion)value, selected);
         } else if(value instanceof XabslTemplateCompletion) {
-            prepareForXABSLTemplateCompletion(list, (XabslTemplateCompletion)value, index, selected, hasFocus);
+            prepareForXABSLTemplateCompletion((XabslTemplateCompletion)value, selected);
         } else if(value instanceof XABSLStateCompletion) {
             setIcon(SYMBOL_ICON);
         }
 
         return this;
-    }//end getListCellRendererComponent
+    } // END getListCellRendererComponent()
 
-    protected void prepareForXABSLSymbolSimpleCompletion(JList list, XABSLSymbolSimpleCompletion xc, int index, boolean selected, boolean hasFocus) {
-
+    /**
+     * Prepares the code completion entry for a xabsl symbols.
+     * 
+     * @param xc the symbol completion object
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLSymbolSimpleCompletion(XABSLSymbolSimpleCompletion xc, boolean selected) {
         StringBuilder sb = new StringBuilder("<html><b><em>");
         sb.append(xc.getName());
         sb.append("</em></b>");
@@ -112,10 +121,15 @@ public class CCellRenderer extends CompletionCellRenderer {
                 break;
         }//end switch
 
-    }//end prepareForXABSLSymbolSimpleCompletion
+    } // END prepareForXABSLSymbolSimpleCompletion()
 
-    protected void prepareForXABSLEnumCompletion(JList list,
-            XABSLEnumCompletion xe, int index, boolean selected, boolean hasFocus) {
+    /**
+     * Prepares the code completion window entry for a xabsl symbol.
+     * 
+     * @param xe the enum completion object
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLEnumCompletion(XABSLEnumCompletion xe, boolean selected) {
 
         StringBuilder sb = new StringBuilder("<html><em>");
         if (!selected) {
@@ -131,10 +145,15 @@ public class CCellRenderer extends CompletionCellRenderer {
 
         setText(sb.toString());
         setIcon(FUNCTION_ICON);
-    }//end prepareForXABSLEnumCompletion
+    } // END prepareForXABSLEnumCompletion()
 
-    protected void prepareForXABSLSymbolCompletion(JList list,
-            XABSLSymbolCompletion xc, int index, boolean selected, boolean hasFocus) {
+    /**
+     * Prepares the code completion window entry for a xabsl symbol.
+     * 
+     * @param xc the symbol completion object (with parameters)
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLSymbolCompletion(XABSLSymbolCompletion xc, boolean selected) {
 
         StringBuilder sb = new StringBuilder("<html><b><em>");
         sb.append(xc.getName());
@@ -177,9 +196,15 @@ public class CCellRenderer extends CompletionCellRenderer {
 
         setText(sb.toString());
         setIcon(VARIABLE_ICON);
-    }//end prepareForXABSLSymbolCompletion
+    } // END prepareForXABSLSymbolCompletion()
 
-    protected void prepareForXABSLOptionCompletion(JList list, XABSLOptionCompletion oc, int index, boolean selected, boolean hasFocus) {
+    /**
+     * Prepares the code completion window entry for a xabsl option.
+     * 
+     * @param oc the option completion object
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLOptionCompletion(XABSLOptionCompletion oc, boolean selected) {
 
         StringBuilder sb = new StringBuilder("<html><b><em>");
         sb.append(oc.getName());
@@ -214,22 +239,40 @@ public class CCellRenderer extends CompletionCellRenderer {
 
         setText(sb.toString());
         setIcon(MACRO_ICON);
-    }//end prepareForXABSLOptionCompletion
+    }// END prepareForXABSLOptionCompletion()
     
-    protected void prepareForXABSLVariableCompletion(JList list, XabslVariableCompletion vc, int index, boolean selected, boolean hasFocus) {
+    /**
+     * Prepares the code completion window entry for a xabsl optoin variable.
+     * 
+     * @param vc the variable completion object
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLVariableCompletion(XabslVariableCompletion vc, boolean selected) {
         setText("<html><b><em>"+vc.getReplacementText()+"</em></b></html>");
         setIcon(TEST_ICON);
-    }
+    } // END prepareForXABSLVariableCompletion()
     
-    protected void prepareForXABSLCompletion(JList list, XabslCompletion vc, int index, boolean selected, boolean hasFocus) {
+    /**
+     * Prepares the code completion window entry for a xabsl language keyword.
+     * 
+     * @param vc the keyword completion object
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLCompletion(XabslCompletion vc, boolean selected) {
         setText("<html><b><font color='#0000FF'>"+vc.getReplacementText()+"</font></b></html>");
         setIcon(TEST_ICON);
-    }
+    } // END prepareForXABSLCompletion()
 
-    protected void prepareForXABSLTemplateCompletion(JList list, XabslTemplateCompletion vc, int index, boolean selected, boolean hasFocus) {
+    /**
+     * Prepares the code completion window entry for a xabsl shorthand completion.
+     * 
+     * @param vc the shorthand completion object
+     * @param selected whether, or not, the entry is selected
+     */
+    protected void prepareForXABSLTemplateCompletion(XabslTemplateCompletion vc, boolean selected) {
         setText("<html><b><font color='#5096ff'>"+vc.getDefinitionString()+"</font></b></html>");
         setIcon(TEST_ICON);
-    }
+    } // END prepareForXABSLTemplateCompletion()
 
     /**
      * {@inheritDoc}
@@ -239,7 +282,7 @@ public class CCellRenderer extends CompletionCellRenderer {
             Completion c, int index, boolean selected, boolean hasFocus) {
         super.prepareForOtherCompletion(list, c, index, selected, hasFocus);
         setIcon(EMPTY_ICON);
-    }//end prepareForOtherCompletion
+    } // END prepareForOtherCompletion()
 
     /**
      * {@inheritDoc}
@@ -251,7 +294,7 @@ public class CCellRenderer extends CompletionCellRenderer {
         super.prepareForVariableCompletion(list, vc, index, selected,
                 hasFocus);
         setIcon(VARIABLE_ICON);
-    }//end prepareForVariableCompletion
+    } // END prepareForVariableCompletion()
 
     /**
      * {@inheritDoc}
@@ -263,10 +306,13 @@ public class CCellRenderer extends CompletionCellRenderer {
         super.prepareForFunctionCompletion(list, fc, index, selected,
                 hasFocus);
         setIcon(FUNCTION_ICON);
-    }//end prepareForFunctionCompletion
+    } // END prepareForFunctionCompletion()
 
-    private static class EmptyIcon implements Icon, Serializable {
-
+    /**
+     * Represents a empty icon of the given size.
+     */
+    private static class EmptyIcon implements Icon, Serializable
+    {
         private final int size;
 
         public EmptyIcon(int size) {

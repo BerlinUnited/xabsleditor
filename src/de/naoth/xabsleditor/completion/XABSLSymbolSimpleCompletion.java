@@ -21,13 +21,21 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
 /**
- *
+ * Represents the completion information for a xabsl symbol with parameters.
+ * 
  * @author Heinrich Mellmann
  */
 public class XABSLSymbolSimpleCompletion extends BasicCompletion
 {
+    /** The xabsl symbol represented by this completion. */
     protected XABSLContext.XABSLSymbol symbol;
 
+    /**
+     * Constructor. Defines the style and attributes of a xabsl symbol completion.
+     * 
+     * @param provider the parent completion provider
+     * @param symbol the xabsl symbol to show completion for
+     */
     public XABSLSymbolSimpleCompletion(CompletionProvider provider, XABSLContext.XABSLSymbol symbol) {
         super(provider, symbol.getName());
         this.symbol = symbol;
@@ -37,6 +45,11 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
         setRelevance(40);
     }
 
+    /**
+     * Returns the (styled) summary of this state completion.
+     * 
+     * @return html string summary
+     */
     protected String createSummary() {
         StringBuilder sb = new StringBuilder();
 
@@ -59,6 +72,11 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
         return sb.toString();
     }//end createSummary
 
+    /**
+     * If this symbol is of an enum type, the possible values are added to the completion info.
+     * 
+     * @param sb the StringBuilder, where the infos is appended too
+     */
     protected void possiblyAddEnumDefinition(StringBuilder sb) {
         // list the enum elements
         if (symbol.getType().equals("enum")) {
@@ -91,10 +109,20 @@ public class XABSLSymbolSimpleCompletion extends BasicCompletion
         return symbol.getType();
     }
 
+    /**
+     * Returns the secondary type of this symbol.
+     * 
+     * @return the secondary type
+     */
     public SecondaryType getSecondaryType() {
         return symbol.getSecondaryType();
     }
 
+    /**
+     * Returns the tool tip text to display for mouse hovers over this completion.
+     * 
+     * @return The tool tip text for this completion, or <code>null</code> if none.
+     */
     @Override
     public String getToolTipText() {
         return getShortDescription();

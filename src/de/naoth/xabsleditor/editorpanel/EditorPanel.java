@@ -417,13 +417,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public File getActiveAgent() {
         return activeTab == null ? null : activeTab.getAgent();
     }
-    /*
-    public void setActiveCompletionProvider(DefaultCompletionProvider completionProvider) {
-        if(activeTab != null) {
-            activeTab.setCompletionProvider(completionProvider);
-        }
-    }
-    */
+
     public EditorPanelTab getActiveTab() {
         return activeTab;
     }

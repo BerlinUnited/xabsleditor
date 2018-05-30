@@ -19,6 +19,7 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
 /**
  * Represents a xabsl project.
+ * 
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class Project
@@ -33,7 +34,7 @@ public class Project
     private final XABSLContext context = new XABSLContext();
     /** The xabsl extension. */
     private final String XABSL_FILE_ENDING = ".xabsl";
-    /** */
+    /** The code completion provider for the project. */
     private final XabslCompletionProvider completionProvider = new XabslCompletionProvider();
 
     /**
@@ -147,6 +148,9 @@ public class Project
         return fileTree;
     }
 
+    /**
+     * Updates the project code completion provider with the (new) symbols, options & enums.
+     */
     private void updateCompletionProvider() {
         // TODO: if the context has changed, the provider must be updated
         DefaultCompletionProvider s = new XabslDefaultCompletionProvider();
@@ -176,6 +180,11 @@ public class Project
         completionProvider.updateOptions(o);
     }
     
+    /**
+     * Returns the projects code completion provider.
+     * 
+     * @return completion provider of this project
+     */
     public CompletionProvider completionProvider() {
         return completionProvider;
     }

@@ -20,13 +20,21 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 
 /**
- *
+ * Represents the completion information for a xabsl state.
+ * 
  * @author Heinrich Mellmann
  */
 public class XABSLStateCompletion extends BasicCompletion
 {
+    /** The xabsl state represented by this completion. */
     XABSLOptionContext.State state;
     
+    /**
+     * Constructor. Defines the style and attributes of a xabsl state completion.
+     * 
+     * @param provider the parent completion provider
+     * @param state the xabsl state to show completion for
+     */
     public XABSLStateCompletion(CompletionProvider provider, XABSLOptionContext.State state) {
         super(provider, state.name);
 
@@ -36,6 +44,11 @@ public class XABSLStateCompletion extends BasicCompletion
         setRelevance(30);
     }
 
+    /**
+     * Returns the (styled) summary of this state completion.
+     * 
+     * @return html string summary
+     */
     protected String createSummary() {
         StringBuilder sb = new StringBuilder();
         if(state.initial) {

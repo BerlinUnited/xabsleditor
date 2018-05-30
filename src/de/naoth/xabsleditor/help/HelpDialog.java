@@ -29,12 +29,17 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 /**
- *
- * @author gxy
+ * The help dialog for the xabsleditor.
+ * Shows some information about the xabsleditor and also about the xabsl language
+ * itself.
+ * 
+ * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class HelpDialog extends javax.swing.JDialog
 {
+    /** The regex for replacing images in the html string with the appropiate resource of the jar file. */
     private final Pattern image = Pattern.compile("src=\"(file:(\\S+))\"");
+    /** Link listener for handling html links (<a>) in the help documents */
     private final HyperlinkListener linkOpener;
     
     /** Creates new form HelpDialog */
@@ -42,6 +47,7 @@ public class HelpDialog extends javax.swing.JDialog
         super(parent, modal);
         initComponents();
         
+        // open links in the system browser - if possible
         linkOpener = (HyperlinkEvent e) -> {
             if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 if(e.getURL() != null) {
@@ -64,13 +70,13 @@ public class HelpDialog extends javax.swing.JDialog
         this.compiler.setText(loadHtml("/de/naoth/xabsleditor/help/compiler.html"));
         this.engine.setText(loadHtml("/de/naoth/xabsleditor/help/engine.html"));
         this.reference.setText(loadHtml("/de/naoth/xabsleditor/help/reference.html"));
-
+        // "jump" to the top
         this.helpPanel.setCaretPosition(0);
         this.about.setCaretPosition(0);
         this.compiler.setCaretPosition(0);
         this.engine.setCaretPosition(0);
         this.reference.setCaretPosition(0);
-        
+        // add the link handler
         this.helpPanel.addHyperlinkListener(linkOpener);
         this.about.addHyperlinkListener(linkOpener);
         this.compiler.addHyperlinkListener(linkOpener);
@@ -88,9 +94,17 @@ public class HelpDialog extends javax.swing.JDialog
         this.getRootPane().registerKeyboardAction(actionListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
     
+    /**
+     * Loads the given html file and replaces embeded images with the corresponding
+     * resources in the jar file.
+     * 
+     * @param file the html file, which should be loaded
+     * @return the loaded html string
+     */
     private String loadHtml(String file) {
         StringBuffer html = new StringBuffer();
         Matcher m = image.matcher(Tools.getResourceAsString(file));
+        // replace image resources
         while (m.find()) {
             URL res = getClass().getResource("/de/naoth/xabsleditor/help/"+m.group(2));
             if(res != null) {
@@ -100,7 +114,7 @@ public class HelpDialog extends javax.swing.JDialog
         }
         m.appendTail(html);
         return html.toString();
-    }
+    } // END loadHtml()
 
     /** This method is called from within the constructor to
      * initialize the form.

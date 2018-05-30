@@ -7,7 +7,8 @@ import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 
 /**
- *
+ * The XABSL editor with some customizations of the underlying RSyntaxTextArea.
+ * 
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class XSyntaxTextArea extends RSyntaxTextArea
@@ -23,11 +24,14 @@ public class XSyntaxTextArea extends RSyntaxTextArea
         if (t.isHyperlink()) {
             return (getHyperlinksEnabled()
                     && getForegroundForToken(t) == getHyperlinkForeground());
-        }//end if
+        }
 
         return super.getUnderlineForToken(t);
-    }//end getUnderlineForToken
+    } //END getUnderlineForToken()
     
+    /**
+     * Clears all highlighted text parts from a (previous) highlighted search.
+     */
     public void clearAllHighlights() {
         // HACK: "clearMarkAllHighlights()" is private, so we have to trigger a
         //       null-search inorder to call it.
@@ -36,6 +40,11 @@ public class XSyntaxTextArea extends RSyntaxTextArea
         SearchEngine.find(this, sc).wasFound();
     }
     
+    /**
+     * Returns the Xabsl Parser of this text area.
+     * 
+     * @return the XParser if set, otherwise null
+     */
     public XParser getXParser() {
         for (int i = 0; i < getParserCount(); i++) {
             if(getParser(i) instanceof XParser) {

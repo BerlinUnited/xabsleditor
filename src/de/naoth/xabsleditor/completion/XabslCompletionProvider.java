@@ -15,7 +15,8 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rtextarea.RTextArea;
 
 /**
- *
+ * The completion provider for the XABSL language.
+ * 
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class XabslCompletionProvider extends LanguageAwareCompletionProvider
@@ -28,10 +29,16 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
     private final CompletionProvider actionProvider = new XabslDefaultCompletionProvider();
     private final CompletionProvider statesProvider = new XabslDefaultCompletionProvider();
 
+    /**
+     * Constructor. Sets the default completion provider.
+     */
     public XabslCompletionProvider() {
         super(new XabslDefaultCompletionProvider());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected CompletionProvider getProviderFor(JTextComponent comp) {
         XSyntaxTextArea rsta = (XSyntaxTextArea)comp;
@@ -41,6 +48,7 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             Token l = rsta.getTokenListForLine(i);
             while(l != null) {
                 if(l.getType() != Token.NULL) {
+                    // based on the previous (known) token select a completion provider
                     switch(l.getLexeme()) {
                         case "goto":      provider = updateLocalStates(rsta.getXParser(), (XabslDefaultCompletionProvider) statesProvider);      break;
                         case "if":
@@ -63,8 +71,16 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         }
         
         return provider;
-    }
+    } // END getProviderFor()
     
+    /**
+     * Updates the given completion provider with the parameter/variables of the current option.
+     * To determine the parameter/variable, the XParser is used.
+     * 
+     * @param parser the parser of the current document/option
+     * @param provider the provider which should be extended
+     * @return the extended provider
+     */
     public CompletionProvider updateLocalParameter(XParser parser, XabslDefaultCompletionProvider provider) {
         if(parser.getFileParser() instanceof XABSLOptionParser) {
             // add the variables of the current option
@@ -76,8 +92,16 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             return provider;
         }
         return provider;
-    }
+    } // END updateLocalParameter()
     
+    /**
+     * Updates the given completion provider with the states of the current option.
+     * To determine the states, the XParser is used.
+     * 
+     * @param parser the parser of the current document/option
+     * @param provider the provider which should be extended
+     * @return the extended provider
+     */
     public CompletionProvider updateLocalStates(XParser parser, XabslDefaultCompletionProvider provider) {
         // add all states of the current option
         DefaultCompletionProvider states = new DefaultCompletionProvider();
@@ -88,19 +112,32 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         return provider;
     }
     
+    /**
+     * Updates the action and decision provider with the (global/project) symbols (contained in the given provider).
+     * 
+     * @param provider completion provider with the global/project symbols
+     */
     public void updateSymbols(CompletionProvider provider) {
         ((XabslDefaultCompletionProvider)actionProvider).addChildCompletionProvider("symbols", provider);
         ((XabslDefaultCompletionProvider)decisionProvider).addChildCompletionProvider("symbols", provider);
     }
     
+    /**
+     * Updates the action provider with the (global/project) options (contained in the given provider).
+     * 
+     * @param provider completion provider with the global/project options
+     */
     public void updateOptions(CompletionProvider provider) {
         ((XabslDefaultCompletionProvider)actionProvider).addChildCompletionProvider("options", provider);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getToolTipText(RTextArea textArea, MouseEvent e) {
         String tip = null;
-
+        // just use the completion of the action provider; others have no "usefull" information for a tooltip
         List<Completion> completions = actionProvider.getCompletionsAt(textArea, e.getPoint());
         if (completions!=null && completions.size()>0) {
             for (Completion completion : completions) {
@@ -113,8 +150,11 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         }
         
         return tip;
-    }
+    } // END getToolTipText()
     
+    /**
+     * Completion provider containing the completions for an empty xabsl file.
+     */
     class EmptyCompletionProvider extends DefaultCompletionProvider
     {
         public EmptyCompletionProvider() {
@@ -149,6 +189,9 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         }
     } // END EmptyCompletionProvider
     
+    /**
+     * Completion provider containing the completions for a xabsl symbol file.
+     */
     class SymbolCompletionProvider extends XabslDefaultCompletionProvider
     {
         public SymbolCompletionProvider() {
@@ -201,6 +244,9 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         }
     } // END SymbolCompletionProvider
     
+    /**
+     * Completion provider containing the completions for a xabsl option file.
+     */
     class OptionCompletionProvider extends XabslDefaultCompletionProvider
     {
         public OptionCompletionProvider() {
@@ -250,6 +296,9 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         }
     } // END OptionCompletionProvider
     
+    /**
+     * Completion provider containing the completions applicable in a xabsl state part.
+     */
     class StateCompletionProvider extends XabslDefaultCompletionProvider
     {
         public StateCompletionProvider() {
@@ -272,6 +321,9 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
         }
     } // END StateCompletionProvider
     
+    /**
+     * Completion provider containing the completions applicable in a xabsl decision part.
+     */
     class DecisionCompletionProvider extends XabslDefaultCompletionProvider
     {
         public DecisionCompletionProvider() {
@@ -307,4 +359,4 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
             ));
         }
     } // END DecisionCompletionProvider
-}
+} // END XabslCompletionProvider

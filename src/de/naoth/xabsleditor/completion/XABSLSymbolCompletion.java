@@ -22,13 +22,21 @@ import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.FunctionCompletion;
 
 /**
- *
+ * Represents the completion information for a xabsl symbol.
+ * 
  * @author Heinrich Mellmann
  */
 public class XABSLSymbolCompletion extends FunctionCompletion
 {
+    /** The xabsl symbol represented by this completion. */
     protected XABSLContext.XABSLSymbol symbol;
     
+    /**
+     * Constructor. Defines the style and attributes of a xabsl symbol completion.
+     * 
+     * @param provider the parent completion provider
+     * @param symbol the xabsl symbol to show completion for
+     */
     public XABSLSymbolCompletion(CompletionProvider provider, XABSLContext.XABSLSymbol symbol) {
         super(provider, symbol.getName(), symbol.getType());
         this.symbol = symbol;
@@ -41,6 +49,16 @@ public class XABSLSymbolCompletion extends FunctionCompletion
         setRelevance(40);
     }
     
+    /**
+     * Adds the parameter definition of the xabsl option to the info string 
+     * (represented by the StringBuilder) and returns the offsets for the
+     * replacement.
+     * This method was patched for the XabslEditor in the Autocomplete library!
+     * 
+     * @param param the paramter, which infos should be added to the completion
+     * @param sb the StringBuilder, where the infos should be appended to
+     * @return the offset start/end where the user can replace the parameter value
+     */
     @Override
     protected int[] getParamText(Parameter param, StringBuilder sb) {
         sb.append(param.getName());
@@ -50,6 +68,9 @@ public class XABSLSymbolCompletion extends FunctionCompletion
         return new int[] {length, param.getName().length() + 1, length};
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getToolTipText() {
         return getShortDescription();

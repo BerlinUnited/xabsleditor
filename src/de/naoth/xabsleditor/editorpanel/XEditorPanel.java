@@ -175,6 +175,7 @@ public class XEditorPanel extends javax.swing.JPanel
       }
     });
     
+    // key listener for continue search and "stop" search, when textarea has focus
     textArea.addKeyListener(new KeyListener() {
         @Override
         public void keyTyped(KeyEvent e) {}
@@ -185,8 +186,10 @@ public class XEditorPanel extends javax.swing.JPanel
         @Override
         public void keyReleased(KeyEvent e) {
             if(e.getKeyCode() == KeyEvent.VK_F3) {
+                // continue search
                 search(lastSearch);
             } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE && searchPanel.isVisible()) {
+                // hide search panel
                 searchPanel.setVisible(false);
             }
         }
@@ -211,6 +214,7 @@ public class XEditorPanel extends javax.swing.JPanel
     add(scrollPane, java.awt.BorderLayout.CENTER);
 
     searchPanel.setVisible(false);
+    // react on hidding search panel
     searchPanel.addComponentListener(new ComponentAdapter() {
         @Override
         public void componentShown(ComponentEvent e) {
@@ -424,6 +428,7 @@ public class XEditorPanel extends javax.swing.JPanel
    * Searching in the text. The search will begin at the beginning of text.
    * When this function is called the next time, it will search for the next
    * occurance. Search will be begun from the beginning if end of text reached.
+   * 
    * @param s The string to search for
    * @return True if something was found, false else
    */
@@ -438,10 +443,15 @@ public class XEditorPanel extends javax.swing.JPanel
     return false;
   }//end search
 
+  /**
+   * Sets the completion provider to this text area.
+   * If the autocompletion object doesn't exist, one is created.
+   * 
+   * @param provider the (default) completion provider
+   */
   public void setCompletionProvider(CompletionProvider provider) {
     if(ac == null) {
         ac = new AutoCompletion(provider);
-        // TODO: setup some stuff, see above
         ac.setDescriptionWindowSize(300, 200);
         ac.setListCellRenderer(new CCellRenderer());
         ac.setShowDescWindow(true);
@@ -455,6 +465,11 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end setCompletionProvider
   
+  /**
+   * Returns the current completion provider, if already set.
+   * 
+   * @return current completion provider
+   */
   public CompletionProvider getCompletionProvider() {
       return ac == null ? null : ac.getCompletionProvider();
   }

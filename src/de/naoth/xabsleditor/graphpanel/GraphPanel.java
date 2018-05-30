@@ -2,7 +2,6 @@ package de.naoth.xabsleditor.graphpanel;
 
 import de.naoth.xabsleditor.compilerconnection.CompileResult;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel;
-import de.naoth.xabsleditor.completion.XABSLStateCompletion;
 import de.naoth.xabsleditor.editorpanel.XEditorPanel;
 import de.naoth.xabsleditor.events.CompilationFinishedEvent;
 import de.naoth.xabsleditor.events.EventListener;
@@ -10,7 +9,6 @@ import de.naoth.xabsleditor.events.EventManager;
 import de.naoth.xabsleditor.events.OpenFileEvent;
 import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
-import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.parser.XabslEdge;
 import de.naoth.xabsleditor.parser.XabslNode;
@@ -22,7 +20,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.StringReader;
 import javax.swing.JOptionPane;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
 /**
  *
