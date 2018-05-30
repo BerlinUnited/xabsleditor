@@ -1,0 +1,83 @@
+diff -u src/main/java/org/fife/ui/autocomplete/FunctionCompletion.java ../AutoComplete-2.6.0-org/src/main/java/org/fife/ui/autocomplete/FunctionCompletion.java
+--- src/main/java/org/fife/ui/autocomplete/FunctionCompletion.java	2018-05-21 14:42:44.413010230 +0200
++++ ../AutoComplete-2.6.0-org/src/main/java/org/fife/ui/autocomplete/FunctionCompletion.java	2016-09-17 23:20:47.000000000 +0200
+@@ -245,27 +245,26 @@
+ 			ble.printStackTrace(); // Never happens
+ 		}
+ 		info.setCaretRange(minPos, maxPos);
+-		int firstParamStart = 0;
+-		int firstParamEnd = 0;
++		int firstParamLen = 0;
+ 
+ 		// Create the text to insert (keep it one completion for
+ 		// performance and simplicity of undo/redo).
+ 		int start = dot;
+ 		for (int i=0; i<paramCount; i++) {
+ 			Parameter param = getParam(i);
+-			int[] paramOffsets = getParamText(param, sb);
++			String paramText = getParamText(param);
+ 			if (i==0) {
+-				firstParamStart = paramOffsets[1];
+-                                firstParamEnd = paramOffsets[2];
++				firstParamLen = paramText.length();
+ 			}
+-			//int end = start + param.getType().length();
+-			info.addReplacementLocation(start + paramOffsets[1], start + paramOffsets[2]);
++			sb.append(paramText);
++			int end = start + paramText.length();
++			info.addReplacementLocation(start, end);
+ 			// Patch for param. list separators with length > 2 -
+ 			// thanks to Matthew Adereth!
+ 			String sep = getProvider().getParameterListSeparator();
+ 			if (i<paramCount-1 && sep!=null) {
+ 				sb.append(sep);
+-				start = start + paramOffsets[0] + sep.length();
++				start = end + sep.length();
+ 			}
+ 		}
+ 		sb.append(getProvider().getParameterListEnd());
+@@ -274,8 +273,8 @@
+ 		info.addReplacementLocation(endOffs, endOffs); // offset after function
+ 		info.setDefaultEndOffs(endOffs);
+ 		
+-		int selectionEnd = paramCount>0 ? (dot+firstParamEnd) : dot;
+-		info.setInitialSelection(dot+firstParamStart, selectionEnd);
++		int selectionEnd = paramCount>0 ? (dot+firstParamLen) : dot;
++		info.setInitialSelection(dot, selectionEnd);
+ 		info.setTextToInsert(sb.toString());
+ 		return info;
+ 
+@@ -316,10 +315,9 @@
+ 	 * Returns the text to insert for a parameter.
+ 	 *
+ 	 * @param param The parameter.
+-         * @param sb
+ 	 * @return The text.
+ 	 */
+-	protected int[] getParamText(ParameterizedCompletion.Parameter param, StringBuilder sb) {
++	private String getParamText(ParameterizedCompletion.Parameter param) {
+ 		String text = param.getName();
+ 		if (text==null) {
+ 			text = param.getType();
+@@ -327,8 +325,7 @@
+ 				text = "arg";
+ 			}
+ 		}
+-                sb.append(text);
+-		return new int[] {text.length(), 0, text.length()};
++		return text;
+ 	}
+ 
+ 
+diff -u src/main/java/org/fife/ui/autocomplete/LanguageAwareCompletionProvider.java ../AutoComplete-2.6.0-org/src/main/java/org/fife/ui/autocomplete/LanguageAwareCompletionProvider.java
+--- src/main/java/org/fife/ui/autocomplete/LanguageAwareCompletionProvider.java	2018-05-21 18:12:35.665190240 +0200
++++ ../AutoComplete-2.6.0-org/src/main/java/org/fife/ui/autocomplete/LanguageAwareCompletionProvider.java	2016-09-17 23:20:47.000000000 +0200
+@@ -235,7 +235,7 @@
+ 	 * @param comp The text component to check.
+ 	 * @return The completion provider to use.
+ 	 */
+-	protected CompletionProvider getProviderFor(JTextComponent comp) {
++	private CompletionProvider getProviderFor(JTextComponent comp) {
+ 
+ 		RSyntaxTextArea rsta = (RSyntaxTextArea)comp;
+ 		RSyntaxDocument doc = (RSyntaxDocument)rsta.getDocument();
