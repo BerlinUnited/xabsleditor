@@ -6,13 +6,13 @@
       <h1>Tools</h1>
       <p>From XABSL source documents, four types of documents can be generated:</p>
       <ul>
-        <li>An <em>Intermediate Code</em> which is executed by the <a href="xabslengine.html">XabslEngine</a>.
+        <li>An <em>Intermediate Code</em> which is executed by the XabslEngine.
           Thus no additional parser is needed as on many embedded computing platforms
           e.g. XML parsers are not available due to resource and portability constraints.<br/>
         </li>
         <li>An extensive HTML-documentation containing SVG-charts for each agent,
           option and state which helps the developers to understand what their
-          behaviors do. See the <a href="index.html">start page</a> for examples.<br/>
+          behaviors do. See the "about tab" for examples.<br/>
         </li>
         <li><em>Debug Symbols</em> containing the names for all options, states,
           basic behaviors, and symbols can be helpful to implement platform
@@ -23,7 +23,7 @@
         <li>A <em>keyword list</em> for instance for using editors with syntax highlighting.<br/>
         </li>
       </ul>
-      <p><img alt="xabsl work flow" src="figs/xabsl_work_flow.gif"/></p>
+      <p><img alt="xabsl work flow" src="file:xabsl_work_flow.gif"/></p>
       <p>The graph above shows how these documents are generated. Documentation and
         debug symbols are generated from an intermediate XML representation using an XSLT processor.
         The XML representation also allows to generate different content from XABSL sources using custom
@@ -33,7 +33,7 @@
       <h2>Adopting the Makefile</h2>
       <p>As there are very many input files and XSLT style sheets, it is recommended
         to use a Makefile instead of executing the XABSL compiler and the XSLT processor directly. There
-        is a <a href="XabslMakefile.html">common XABSL Makefile</a>. This file
+        is a common XABSL Makefile. This file
         has to be included into a custom Makefile which should be located inside
         the directory of the source files. The custom Makefile must contain the
         following variables:</p>
@@ -86,7 +86,7 @@
         </tr>
         <tr>
           <td>DOT</td>
-          <td target="_blank">Path to the dot tool. (<a href="http://www.research.att.com/sw/tools/graphviz/" target="_blank">http://www.research.att.com/sw/tools/graphviz/</a>).
+          <td>Path to the dot tool. (<a href="http://www.research.att.com/sw/tools/graphviz/" target="_blank">http://www.research.att.com/sw/tools/graphviz/</a>).
             This is needed for the charts in the HTML documentation.</td>
         </tr>
         <tr>

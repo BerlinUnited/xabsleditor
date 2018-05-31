@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -50,7 +51,13 @@ public class HelpDialog extends javax.swing.JDialog
         // open links in the system browser - if possible
         linkOpener = (HyperlinkEvent e) -> {
             if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                if(e.getURL() != null) {
+                // handle anchor links
+                if(e.getDescription() != null && e.getDescription().startsWith("#")) {
+                    if(e.getInputEvent().getSource() instanceof JEditorPane) {
+                        JEditorPane p = (JEditorPane) e.getInputEvent().getSource();
+                        p.scrollToReference(e.getDescription().substring(1));
+                    }
+                } else if(e.getURL() != null) {
                     if(Desktop.isDesktopSupported()) {
                         try {
                             Desktop.getDesktop().browse(e.getURL().toURI());

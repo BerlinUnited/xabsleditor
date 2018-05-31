@@ -417,7 +417,7 @@ public class XParser extends AbstractParser
     {
       String message = keyWord + " expected";
       this.result.addNotice(new DefaultParserNotice(this, message, getCurrentLine(), currentToken.getOffset(), currentToken.getLexeme().length()));
-      throw new Exception("Unexpected token: " + message);
+      throw new Exception("Unexpected token: '" + message + "' @ " + currentFileName + ":" + getCurrentLine());
     }//end if
 
     eat();
