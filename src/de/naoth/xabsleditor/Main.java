@@ -348,9 +348,15 @@ public class Main extends javax.swing.JFrame implements JumpListener
             configuration.setProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE, Boolean.toString(false));
         }
 
+        // set "show whitespaces" default to false!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_SHOW_WHITESPACES)) {
+            configuration.setProperty(OptionsDialog.EDITOR_SHOW_WHITESPACES, Boolean.toString(false));
+        }
+
         // set tab size from configuration
         editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
         editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
+        editorPanel.setShowWhitespaces(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_SHOW_WHITESPACES)));
 
         graphPanel.setFontSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
 

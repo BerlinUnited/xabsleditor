@@ -41,6 +41,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     private int tabSize = 2;
     private float fontSize = 14;
     private boolean showCloseButtons = false;
+    private boolean showWhitespaces = false;
 
     /**
      * Creates new form EditorPanel
@@ -226,6 +227,17 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public boolean getShowCloseButtons() {
         return showCloseButtons;
     }
+    
+    public void setShowWhitespaces(boolean show) {
+        showWhitespaces = show;
+        for (EditorPanelTab tab : this) {
+            tab.setShowWhitespaces(show);
+        }
+    }
+    
+    public boolean getShowWhitespaces() {
+        return showWhitespaces;
+    }
 
     public void openFile(File file, Project project, int carret, String search) {
         if (file == null) {
@@ -257,6 +269,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             EditorPanelTab tab = new EditorPanelTab(file);
             tab.setTabSize(tabSize);
             tab.setFontSize(fontSize);
+            tab.setShowWhitespaces(showWhitespaces);
             tab.setFileWatcher(watcher);
             if(project != null) {
                 tab.setXABSLContext(project.context());

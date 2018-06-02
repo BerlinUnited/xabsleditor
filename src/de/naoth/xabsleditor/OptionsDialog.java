@@ -48,6 +48,7 @@ public class OptionsDialog extends javax.swing.JDialog
   public static final String EDITOR_TAB_LAYOUT = "editorTabLayout";
   public static final String EDITOR_TAB_LAST_USED = "editorTabLastUsed";
   public static final String EDITOR_SAVE_BEFOR_COMPILE = "editorSaveBeforeCompile";
+  public static final String EDITOR_SHOW_WHITESPACES = "editorShowWhitespaces";
   
   public static final String APPLICATION_FONT_SIZE = "applicationFontSize";
   
@@ -107,6 +108,7 @@ public class OptionsDialog extends javax.swing.JDialog
     cbTabLayout.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_TAB_LAYOUT)));
     cbTabLastUsed.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_TAB_LAST_USED)));
     cbSaveBeforCompile.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_SAVE_BEFOR_COMPILE)));
+    cbShowWhitespaces.setSelected(Boolean.parseBoolean(configuration.getProperty(EDITOR_SHOW_WHITESPACES)));
     
     // iterate through elements of btn-group and select the one in the config
     String openLast = configuration.getProperty(OPEN_LAST, "");
@@ -170,6 +172,7 @@ public class OptionsDialog extends javax.swing.JDialog
         cbTabLastUsed = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         appFontSize = new javax.swing.JSpinner();
+        cbShowWhitespaces = new javax.swing.JCheckBox();
 
         fileChooserCompilationPath.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
@@ -310,6 +313,9 @@ public class OptionsDialog extends javax.swing.JDialog
         appFontSize.setModel(new javax.swing.SpinnerNumberModel(14, 8, 120, 1));
         appFontSize.setToolTipText("A restart is needed for this setting!");
 
+        cbShowWhitespaces.setText("Whitespace should be visible");
+        cbShowWhitespaces.setToolTipText("Sets whether whitespace is visible.");
+
         javax.swing.GroupLayout jpEditorLayout = new javax.swing.GroupLayout(jpEditor);
         jpEditor.setLayout(jpEditorLayout);
         jpEditorLayout.setHorizontalGroup(
@@ -317,6 +323,7 @@ public class OptionsDialog extends javax.swing.JDialog
             .addGroup(jpEditorLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jpEditorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbShowWhitespaces)
                     .addGroup(jpEditorLayout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -361,10 +368,12 @@ public class OptionsDialog extends javax.swing.JDialog
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbSaveBeforCompile)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbShowWhitespaces)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jpStartOpen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jpStartBehavior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(27, 27, 27))
         );
 
         optionPanel.addTab("Editor", jpEditor);
@@ -433,6 +442,7 @@ public class OptionsDialog extends javax.swing.JDialog
       configuration.setProperty(EDITOR_TAB_LAYOUT, Boolean.toString(this.cbTabLayout.isSelected()));
       configuration.setProperty(EDITOR_TAB_LAST_USED, Boolean.toString(this.cbTabLastUsed.isSelected()));
       configuration.setProperty(EDITOR_SAVE_BEFOR_COMPILE, Boolean.toString(this.cbSaveBeforCompile.isSelected()));
+      configuration.setProperty(EDITOR_SHOW_WHITESPACES, Boolean.toString(this.cbShowWhitespaces.isSelected()));
 
       configuration.setProperty(START_POSITION, this.bgStartBehavior.getSelection().getActionCommand());
       
@@ -469,6 +479,7 @@ public class OptionsDialog extends javax.swing.JDialog
     private javax.swing.ButtonGroup bgStartBehavior;
     private javax.swing.JButton btBrowseCompilation;
     private javax.swing.JCheckBox cbSaveBeforCompile;
+    private javax.swing.JCheckBox cbShowWhitespaces;
     private javax.swing.JCheckBox cbTabCloseBtn;
     private javax.swing.JCheckBox cbTabLastUsed;
     private javax.swing.JCheckBox cbTabLayout;

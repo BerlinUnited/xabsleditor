@@ -140,7 +140,6 @@ public class XEditorPanel extends javax.swing.JPanel
     scheme.setStyle(Token.SEPARATOR, new Style());
     
     textArea.setSyntaxScheme(scheme);
-    textArea.setWhitespaceVisible(true);
     textArea.setVisible(true);
 
     //textArea.setHyperlinksEnabled(true);
@@ -517,6 +516,10 @@ public class XEditorPanel extends javax.swing.JPanel
     this.textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
     
     scrollPane.getGutter().setLineNumberFont(scrollPane.getGutter().getLineNumberFont().deriveFont(size));
+  }
+  
+  public void setShowWhitespaces(boolean show) {
+    textArea.setWhitespaceVisible(show);
   }
   
   /**
