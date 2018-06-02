@@ -10,7 +10,13 @@ package de.naoth.xabsleditor;
  *
  * @author  thomas
  */
-public class AboutDialog extends javax.swing.JDialog {
+public class AboutDialog extends javax.swing.JDialog
+{
+  private final String VERSION = "1.2";
+  private final String GIT_URL = "https://github.com/BerlinUnited/xabsleditor";
+  private final String NAOTH_URL = "http://naoth.de";
+  private final int YEAR = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+  private final String INFO = "<html>\n<center>\n<h3>XabslEditor "+VERSION+"</h3>\n<p>\n<a href=\""+GIT_URL+"\">"+GIT_URL+"</a>\n</p>\n<p>\ninitially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt\n<br><a href=\""+NAOTH_URL+"\"></a>\n</p>\n<br>&copy; 2008-"+YEAR+"\n</center>\n</html>";
   
   /** Creates new form AboutDialog */
   public AboutDialog(java.awt.Frame parent, boolean modal) {
@@ -46,7 +52,7 @@ public class AboutDialog extends javax.swing.JDialog {
         jEditorPane1.setEditable(false);
         jEditorPane1.setBorder(null);
         jEditorPane1.setContentType("text/html"); // NOI18N
-        jEditorPane1.setText("<html> \n<center>\n  <h3>XabslEditor 1.0-rc2 (Release Candidate)</h3> \n  <p>\n   <a href=\"https://github.com/BerlinUnited/xabsleditor\">https://github.com/BerlinUnited/xabsleditor</a> \n   </p>\n   <p>\n   initially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt \n  <br><a href=\"http://naoth.de\">http://naoth.de</a> \n  </p>\n  <br>&copy; 2008-2015\n</center>\n</html>");
+        jEditorPane1.setText(INFO);
         jScrollPane1.setViewportView(jEditorPane1);
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/de/naoth/xabsleditor/res/XabslEditor.png"))); // NOI18N
