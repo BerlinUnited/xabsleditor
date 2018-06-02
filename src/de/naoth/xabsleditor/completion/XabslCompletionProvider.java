@@ -4,7 +4,9 @@ import de.naoth.xabsleditor.editorpanel.XSyntaxTextArea;
 import de.naoth.xabsleditor.parser.XABSLOptionParser;
 import de.naoth.xabsleditor.parser.XParser;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.fife.ui.autocomplete.Completion;
@@ -43,13 +45,31 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
     protected CompletionProvider getProviderFor(JTextComponent comp) {
         XSyntaxTextArea rsta = (XSyntaxTextArea)comp;
         int line = rsta.getCaretLineNumber();
+        int seperatorCounter = 0;
         CompletionProvider provider = null;
         for (int i = line; i >= 0; i--) {
+            // we're needing the tokens in a iterable list (reverse); collect them
+            ArrayList<Token> tokenlist = new ArrayList<>();
             Token l = rsta.getTokenListForLine(i);
             while(l != null) {
-                if(l.getType() != Token.NULL) {
+                tokenlist.add(l);
+                l = l.getNextToken();
+            }
+            // create reverse token list and iterate through the inverse order
+            Collections.reverse(tokenlist);
+            for (Token t : tokenlist) {
+                // based on the seperator token {}, we're determine in which "block" we currently are
+                if(t.getType() == Token.SEPARATOR) {
+                    if(t.getLexeme().equals("}")) {
+                        seperatorCounter++;
+                    } else if(t.getLexeme().equals("{")) {
+                        seperatorCounter-- ;
+                    }
+                }
+                // ignore "child" blocks
+                if(seperatorCounter < 0 && t.getType() != Token.NULL) {
                     // based on the previous (known) token select a completion provider
-                    switch(l.getLexeme()) {
+                    switch(t.getLexeme()) {
                         case "goto":      provider = updateLocalStates(rsta.getXParser(), (XabslDefaultCompletionProvider) statesProvider);      break;
                         case "if":
                         case "else":
@@ -60,7 +80,6 @@ public class XabslCompletionProvider extends LanguageAwareCompletionProvider
                         case "namespace": provider = symbolProvider;   break;
                     }
                 }
-                l = l.getNextToken();
             }
             // stop 'search'
             if(provider != null) { break; }
