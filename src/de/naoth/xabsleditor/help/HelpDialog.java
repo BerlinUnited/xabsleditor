@@ -12,21 +12,15 @@
 package de.naoth.xabsleditor.help;
 
 import de.naoth.xabsleditor.Tools;
-import java.awt.Desktop;
+import de.naoth.xabsleditor.utils.LinkListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
-import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 /**
@@ -49,27 +43,7 @@ public class HelpDialog extends javax.swing.JDialog
         initComponents();
         
         // open links in the system browser - if possible
-        linkOpener = (HyperlinkEvent e) -> {
-            if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                // handle anchor links
-                if(e.getDescription() != null && e.getDescription().startsWith("#")) {
-                    if(e.getInputEvent().getSource() instanceof JEditorPane) {
-                        JEditorPane p = (JEditorPane) e.getInputEvent().getSource();
-                        p.scrollToReference(e.getDescription().substring(1));
-                    }
-                } else if(e.getURL() != null) {
-                    if(Desktop.isDesktopSupported()) {
-                        try {
-                            Desktop.getDesktop().browse(e.getURL().toURI());
-                        } catch (URISyntaxException | IOException ex) {
-                            Logger.getLogger(HelpDialog.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } else {
-                        Logger.getLogger(HelpDialog.class.getName()).log(Level.SEVERE, null, "Can not open URL (" +e.getURL()+ "); Desktop not supported.");
-                    }
-                }
-            }
-        };
+        linkOpener = new LinkListener();
 
         // load & set the html content
         this.helpPanel.setText(loadHtml("/de/naoth/xabsleditor/help/help.html"));

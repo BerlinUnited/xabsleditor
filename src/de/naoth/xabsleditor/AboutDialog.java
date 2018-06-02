@@ -6,6 +6,8 @@
 
 package de.naoth.xabsleditor;
 
+import de.naoth.xabsleditor.utils.LinkListener;
+
 /**
  *
  * @author  thomas
@@ -14,14 +16,15 @@ public class AboutDialog extends javax.swing.JDialog
 {
   private final String VERSION = "1.2";
   private final String GIT_URL = "https://github.com/BerlinUnited/xabsleditor";
-  private final String NAOTH_URL = "http://naoth.de";
+  private final String NAOTH_URL = "https://naoth.de";
   private final int YEAR = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
-  private final String INFO = "<html>\n<center>\n<h3>XabslEditor "+VERSION+"</h3>\n<p>\n<a href=\""+GIT_URL+"\">"+GIT_URL+"</a>\n</p>\n<p>\ninitially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt\n<br><a href=\""+NAOTH_URL+"\"></a>\n</p>\n<br>&copy; 2008-"+YEAR+"\n</center>\n</html>";
+  private final String INFO = "<html>\n<center>\n<h3>XabslEditor "+VERSION+"</h3>\n<p>\n<a href=\""+GIT_URL+"\">"+GIT_URL+"</a>\n</p>\n<p>\ninitially created by the <b>N</b>ao <b>T</b>eam <b>H</b>umboldt\n<br><a href=\""+NAOTH_URL+"\">"+NAOTH_URL+"</a>\n</p>\n<br>&copy; 2008-"+YEAR+"\n</center>\n</html>";
   
   /** Creates new form AboutDialog */
   public AboutDialog(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
+    jEditorPane1.addHyperlinkListener(new LinkListener());
   }
   
   /** This method is called from within the constructor to
