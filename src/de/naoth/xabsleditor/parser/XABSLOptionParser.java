@@ -19,6 +19,7 @@ import de.naoth.xabsleditor.parser.XABSLContext.XABSLBasicSymbol;
 import de.naoth.xabsleditor.parser.XABSLContext.XABSLOption;
 import de.naoth.xabsleditor.parser.XParser.XABSLAbstractParser;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.fife.ui.rsyntaxtextarea.parser.DefaultParserNotice;
 import org.fife.ui.rsyntaxtextarea.Token;
@@ -43,6 +44,18 @@ public class XABSLOptionParser extends XABSLAbstractParser
   private boolean currentStateInitial;
   private boolean currentStateTarget;
   private XABSLOption currentOption;
+
+  public XABSLOption getOption() {
+      return currentOption;
+  }
+  
+  /**
+   * Retrieves the states of the this option.
+   * @return map of states
+   */
+  public Map<String, XABSLOptionContext.State> getStates() {
+      return parent.xabslOptionContext.getStateMap();
+  }
 
   @Override
   public void parse() throws Exception
@@ -156,7 +169,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
 
     isTokenAndEat("state");
 
-    int offset = getCurrentToken().offset;
+    int offset = getCurrentToken().getOffset();
     currentStateName = parseIdentifier();
 
 
@@ -240,14 +253,14 @@ public class XABSLOptionParser extends XABSLAbstractParser
     else if(isToken("stay"))
     {
       isTokenAndEat("stay");
-      addTransition(currentStateName, currentStateName, getCurrentToken().offset);
+      addTransition(currentStateName, currentStateName, getCurrentToken().getOffset());
       isTokenAndEat(";");
     }
     else
     {
       addNotice(new DefaultParserNotice( this.parent,
         "Either \"stay\" or \"goto\" needed in decision",
-        getCurrentLine(), getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
+        getCurrentLine(), getCurrentToken().getOffset(), Math.max(getCurrentToken().getEndOffset(), 2)));
 
     }
   }//end parseSingleDecision
@@ -270,7 +283,7 @@ public class XABSLOptionParser extends XABSLAbstractParser
   {
     isTokenAndEat("goto");
 
-    int offset = getCurrentToken().offset;
+    int offset = getCurrentToken().getOffset();
     String targetStateName = parseIdentifier();
 
     addTransition(currentStateName, targetStateName, offset);
@@ -487,13 +500,13 @@ public class XABSLOptionParser extends XABSLAbstractParser
     {
       addNotice(new DefaultParserNotice(this.parent,
         "More right paranthesis than left ones (" + Math.abs(parenthesisCount) + ")",
-        getCurrentLine(), getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
+        getCurrentLine(), getCurrentToken().getOffset(), Math.max(getCurrentToken().getEndOffset(), 2)));
     }
     else if(parenthesisCount > 0)
     {
       addNotice(new DefaultParserNotice(this.parent,
         "More left paranthesis than right ones (" + Math.abs(parenthesisCount) + ")",
-        getCurrentLine(), getCurrentToken().offset, Math.max(getCurrentToken().textCount, 2)));
+        getCurrentLine(), getCurrentToken().getOffset(), Math.max(getCurrentToken().getEndOffset(), 2)));
     }
     isTokenAndEat(";");
   }//end parseAssignment

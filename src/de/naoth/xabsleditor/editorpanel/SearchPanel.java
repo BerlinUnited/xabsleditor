@@ -94,7 +94,7 @@ public class SearchPanel extends javax.swing.JPanel
     {
       this.setVisible(false);
     }
-    else if(evt.getKeyCode() == KeyEvent.VK_ENTER)
+    else if(evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == KeyEvent.VK_F3)
     {
       if(parent.search(txtSearch.getText()))
       {

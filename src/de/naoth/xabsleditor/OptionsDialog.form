@@ -188,9 +188,10 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbShowWhitespaces" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="jLabel4" min="-2" max="-2" attributes="1"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -244,10 +245,12 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbSaveBeforCompile" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbShowWhitespaces" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="jpStartOpen" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jpStartBehavior" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -419,6 +422,12 @@
                   <SpinnerModel initial="14" maximum="120" minimum="8" numberType="java.lang.Integer" stepSize="1" type="number"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="A restart is needed for this setting!"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="cbShowWhitespaces">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Whitespace should be visible"/>
+                <Property name="toolTipText" type="java.lang.String" value="Sets whether whitespace is visible."/>
               </Properties>
             </Component>
           </SubComponents>

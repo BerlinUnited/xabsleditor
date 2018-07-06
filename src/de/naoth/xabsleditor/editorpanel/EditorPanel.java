@@ -7,6 +7,7 @@ import de.naoth.xabsleditor.events.LocateFileEvent;
 import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.utils.FileWatcher;
+import de.naoth.xabsleditor.utils.Project;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.MouseEvent;
@@ -24,8 +25,6 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
-import org.fife.ui.autocomplete.ShorthandCompletion;
 
 /**
  *
@@ -42,6 +41,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     private int tabSize = 2;
     private float fontSize = 14;
     private boolean showCloseButtons = false;
+    private boolean showWhitespaces = false;
 
     /**
      * Creates new form EditorPanel
@@ -227,10 +227,23 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public boolean getShowCloseButtons() {
         return showCloseButtons;
     }
+    
+    public void setShowWhitespaces(boolean show) {
+        showWhitespaces = show;
+        for (EditorPanelTab tab : this) {
+            tab.setShowWhitespaces(show);
+        }
+    }
+    
+    public boolean getShowWhitespaces() {
+        return showWhitespaces;
+    }
 
-    public void openFile(File file, File agent, XABSLContext context, int carret, String search) {
+    public void openFile(File file, Project project, int carret, String search) {
         if (file == null) {
-            createDocumentTab(null, null, null);
+            createDocumentTab(null, null);
+        } else if(project == null) {
+            createDocumentTab(file, null);
         } else {
             // find and select already opened file
             for (EditorPanelTab tab : this) {
@@ -240,7 +253,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
                 }
             }
             // ... otherwise create new tab
-            createDocumentTab(file, context, agent);
+            createDocumentTab(file, project);
             
             if(search == null) {
                 activeTab.setCarretPosition(carret);
@@ -250,16 +263,19 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
     }
 
-    private EditorPanelTab createDocumentTab(File file, XABSLContext context, File agentsFile) {
+    private EditorPanelTab createDocumentTab(File file, Project project) {
         try {
             // create new document
             EditorPanelTab tab = new EditorPanelTab(file);
-            tab.setXABSLContext(context);
-            tab.setAgent(agentsFile);
             tab.setTabSize(tabSize);
             tab.setFontSize(fontSize);
-            tab.setCompletionProvider(createCompletitionProvider(context));
+            tab.setShowWhitespaces(showWhitespaces);
             tab.setFileWatcher(watcher);
+            if(project != null) {
+                tab.setXABSLContext(project.context());
+                tab.setAgent(project.agent());
+                tab.setCompletionProvider(project.completionProvider());
+            }
             if (file == null) {
                 tabs.addTab("New " + tabs.getTabCount(), null, tab, "New xabsl file");
             } else {
@@ -285,8 +301,8 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             // update the other openend editors
             // TODO: distinguish between different projects!?
             for (EditorPanelTab t : this) {
-                if (t != tab && context != null) {
-                    t.setXABSLContext(context);
+                if (t != tab && project != null) {
+                    t.setXABSLContext(project.context());
                 }
             }
             return tab;
@@ -298,48 +314,6 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         return null;
     }//end createDocumentTab
   
-    private DefaultCompletionProvider createCompletitionProvider(XABSLContext context) {
-        
-        DefaultCompletionProvider provider = new DefaultCompletionProvider() {
-            @Override
-            protected boolean isValidChar(char ch) {
-                return super.isValidChar(ch) || ch == '.';
-            }
-        };
-
-        provider.setParameterizedCompletionParams('(', ", ", ')');
-
-        if (context != null) {
-            for (XABSLContext.XABSLSymbol symbol : context.getSymbolMap().values()) {
-                if (symbol.getParameter().isEmpty()) {
-                    provider.addCompletion(new XABSLSymbolSimpleCompletion(provider, symbol));
-                } else {
-                    provider.addCompletion(new XABSLSymbolCompletion(provider, symbol));
-                }
-                //System.out.println(symbol); // debug stuff
-            }//end for
-
-            for (XABSLContext.XABSLOption option : context.getOptionMap().values()) {
-                provider.addCompletion(new XABSLOptionCompletion(provider, option));
-            }//end for
-
-            for (XABSLContext.XABSLEnum xabslEnum : context.getEnumMap().values()) {
-                for (String param : xabslEnum.getElements()) {
-                    provider.addCompletion(new XABSLEnumCompletion(provider, xabslEnum.name, param));
-                }//end for
-            }//end for
-        }//end if
-
-        // add some default macros
-        provider.addCompletion(new ShorthandCompletion(provider,
-                "state",
-                "state <name> {\n\tdecision {\n\t}\n\taction {\n\t}\n}",
-                "behavior state",
-                "behavior state"));
-
-        return provider;
-    }//end createCompletitionProvider
-
     public void closeActiveTab(boolean force) {
         if(activeTab != null) {
             // something changed ...
@@ -456,13 +430,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     public File getActiveAgent() {
         return activeTab == null ? null : activeTab.getAgent();
     }
-    
-    public void setActiveCompletionProvider(DefaultCompletionProvider completionProvider) {
-        if(activeTab != null) {
-            activeTab.setCompletionProvider(completionProvider);
-        }
-    }
-    
+
     public EditorPanelTab getActiveTab() {
         return activeTab;
     }

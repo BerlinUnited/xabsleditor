@@ -49,7 +49,6 @@ public class XTokenMaker extends AbstractTokenMaker
    * @return The start and end strings to add to a line to "comment"
    *         it out.
    */
-  @Override
   public String[] getLineCommentStartAndEnd()
   {
     return new String[]
@@ -429,4 +428,12 @@ public class XTokenMaker extends AbstractTokenMaker
   {
     return matchString.indexOf(c) > -1;
   }//end is
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean getCurlyBracesDenoteCodeBlocks(int languageIndex) {
+        return true;
+    }
 }//end class XScanner

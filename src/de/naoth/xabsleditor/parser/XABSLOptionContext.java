@@ -72,8 +72,8 @@ public class XABSLOptionContext
       else
       {
         // not a common decision
-        XabslNode nFrom = new XabslNode(t.from, XabslNode.Type.State);
-        XabslNode nTo = new XabslNode(t.to, XabslNode.Type.State);
+        XabslNode nFrom = new XabslNode(String.valueOf(t.from), XabslNode.Type.State);
+        XabslNode nTo = new XabslNode(String.valueOf(t.to), XabslNode.Type.State);
         optionGraph.addEdge(new XabslEdge(XabslEdge.Type.Normal), nFrom, nTo);
       }
     }//end for

@@ -16,6 +16,7 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.Tools;
+import de.naoth.xabsleditor.completion.CCellRenderer;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XABSLOptionContext;
 import de.naoth.xabsleditor.parser.XParser;
@@ -23,9 +24,12 @@ import de.naoth.xabsleditor.parser.XTokenMaker;
 import de.naoth.xabsleditor.utils.XABSLFileFilter;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -46,14 +50,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.undo.UndoManager;
 import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.autocomplete.CCompletionProvider;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rsyntaxtextarea.parser.Parser;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.SearchContext;
+import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.ToolTipSupplier;
 
 /**
@@ -63,13 +69,13 @@ import org.fife.ui.rtextarea.ToolTipSupplier;
 public class XEditorPanel extends javax.swing.JPanel
 {
 
-  private RSyntaxTextArea textArea;
-  private RTextScrollPane scrolPane;
+  private XSyntaxTextArea textArea;
+  private RTextScrollPane scrollPane;
+  private AutoCompletion ac;
 
   private File file;
   private XABSLContext context;
   private int hashCode;
-  private int searchOffset;
   private String lastSearch;
 
   /** Creates new form XEditorPanel */
@@ -94,33 +100,16 @@ public class XEditorPanel extends javax.swing.JPanel
     hashCode = textArea.getText().hashCode();
     // disable traversal keys; the tab panel should handle it
     textArea.setFocusTraversalKeysEnabled(false);
+    textArea.setMarkOccurrences(true);
+    textArea.setCloseCurlyBraces(true);
   }
 
   private void InitTextArea(String str)
   {
-    searchOffset = 0;
-
-    textArea = new RSyntaxTextArea()
-    {
-      /**
-       * underline only when the hyperlink is activated
-       */
-      @Override
-      public boolean getUnderlineForToken(Token t) {
-        // HACK: using the color of token to identify if
-        //       it is activated, since hoveredOverLinkOffset
-        //       is private in RSyntaxTextArea
-        if(t.isHyperlink())
-        {
-          return (getHyperlinksEnabled() &&
-                  getForegroundForToken(t) == getHyperlinkForeground());
-        }//end if
-
-        return super.getUnderlineForToken(t);
-      }//end getUnderlineForToken
-      
-    };//end new RSyntaxTextArea
-
+    textArea = new XSyntaxTextArea();
+    
+    textArea.setCodeFoldingEnabled(true);
+    textArea.getFoldManager().setCodeFoldingEnabled(true);
 
     if(str != null)
     {
@@ -151,7 +140,6 @@ public class XEditorPanel extends javax.swing.JPanel
     scheme.setStyle(Token.SEPARATOR, new Style());
     
     textArea.setSyntaxScheme(scheme);
-    textArea.setWhitespaceVisible(true);
     textArea.setVisible(true);
 
     //textArea.setHyperlinksEnabled(true);
@@ -185,11 +173,60 @@ public class XEditorPanel extends javax.swing.JPanel
         fireDocumentChangedEvent();
       }
     });
+    
+    // key listener for continue search and "stop" search, when textarea has focus
+    textArea.addKeyListener(new KeyListener() {
+        @Override
+        public void keyTyped(KeyEvent e) {}
 
-    this.scrolPane = new RTextScrollPane(textArea, true);
-    add(scrolPane);
+        @Override
+        public void keyPressed(KeyEvent e) {}
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(e.getKeyCode() == KeyEvent.VK_F3) {
+                // continue search
+                search(lastSearch);
+            } else if(e.getKeyCode() == KeyEvent.VK_ESCAPE && searchPanel.isVisible()) {
+                // hide search panel
+                searchPanel.setVisible(false);
+            }
+        }
+    });
+
+    this.scrollPane = new RTextScrollPane(textArea, true);
+    scrollPane.setFoldIndicatorEnabled(true);
+    scrollPane.setLineNumbersEnabled(true);
+    
+    // NOTE: currently not used
+    // setup bookmarking capability
+//    scrollPane.setIconRowHeaderEnabled(true);
+//    scrolPane.getGutter().setBookmarkIcon(new ImageIcon(CCellRenderer.class.getResource("/de/naoth/xabsleditor/res/var.png")));
+//    scrolPane.getGutter().setBookmarkingEnabled(true);
+
+    // setup the error/warning/info notification bar on the right side (like netbeans)
+//    ErrorStrip es = new ErrorStrip(textArea);
+//    es.setShowMarkedOccurrences(true);
+//    es.setLevelThreshold(ParserNotice.Level.INFO);
+//    add(es, java.awt.BorderLayout.LINE_END);
+
+    add(scrollPane, java.awt.BorderLayout.CENTER);
 
     searchPanel.setVisible(false);
+    // react on hidding search panel
+    searchPanel.addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentShown(ComponentEvent e) {
+            textArea.setMarkAllOnOccurrenceSearches(true);
+        }
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+            textArea.setMarkAllOnOccurrenceSearches(false);
+            textArea.clearAllHighlights();
+            textArea.grabFocus();
+        }
+    });
   }//end InitTextArea
   
   private void resetUndos() {
@@ -390,97 +427,57 @@ public class XEditorPanel extends javax.swing.JPanel
    * Searching in the text. The search will begin at the beginning of text.
    * When this function is called the next time, it will search for the next
    * occurance. Search will be begun from the beginning if end of text reached.
+   * 
    * @param s The string to search for
    * @return True if something was found, false else
    */
   public boolean search(String s)
   {
-    if(s != null)
-    {
-      if(lastSearch == null || !lastSearch.equals(s))
-      {
-        // reset if new search expression
-        searchOffset = 0;
-      }
-      try
-      {
-        int textLength = textArea.getText().length();
-        if(searchOffset >= textLength)
-        {
-          searchOffset = 0;
-        }
-
-        String text =
-          textArea.getText(searchOffset, textLength - searchOffset);
-
-        int found = text.toLowerCase().indexOf(s.toLowerCase());
-        if(found > -1)
-        {
-          textArea.grabFocus();
-          //textArea.setCaretPosition(searchOffset + found);
-          setCarretPosition(searchOffset + found);
-          textArea.moveCaretPosition(searchOffset + found + s.length());
-
-          //Highlighter.HighlightPainter p = new ChangeableHighlightPainter(Color.BLUE, true, 0.5f);
-          //textArea.getHighlighter().addHighlight(searchOffset + found, searchOffset + found + s.length(), p);
-          
-          searchOffset = searchOffset + found + 1;
-          lastSearch = s;
-
-          return true;
-        }
-      }
-      catch(BadLocationException ex)
-      {
-      }
+    lastSearch = s;
+    if(s != null && !s.isEmpty()) {
+          SearchContext sc = new SearchContext(s);
+          sc.setMarkAll(textArea.getMarkAllOnOccurrenceSearches());
+        return SearchEngine.find(textArea, sc).wasFound();
     }
-
-    searchOffset = 0;
-    lastSearch = null;
-    // reset any selection
-    textArea.grabFocus();
-    int oldCaretPos = textArea.getCaretPosition();
-    textArea.setCaretPosition(0);
-    textArea.setCaretPosition(oldCaretPos);
-
     return false;
   }//end search
 
-  private CCompletionProvider completionProvider = null;
-  
-  
-  private void createCompletionProvider()
-  {
-    this.completionProvider = new CCompletionProvider(new DefaultCompletionProvider());
-
-    AutoCompletion ac = new AutoCompletion(this.completionProvider);
-    ac.setDescriptionWindowSize(300, 200);
-		ac.setListCellRenderer(new CCellRenderer());
-		ac.setShowDescWindow(true);
-		ac.setParameterAssistanceEnabled(true);
-		ac.install(textArea);
-
-    textArea.setToolTipSupplier((ToolTipSupplier)this.completionProvider);
-		ToolTipManager.sharedInstance().registerComponent(textArea);
-  }//end createCompletionProvider
-
-
-  public void setCompletionProvider(DefaultCompletionProvider completionProvider) {
-    if(this.completionProvider == null) createCompletionProvider();
-    this.completionProvider.setDefaultCompletionProvider(completionProvider);
+  /**
+   * Sets the completion provider to this text area.
+   * If the autocompletion object doesn't exist, one is created.
+   * 
+   * @param provider the (default) completion provider
+   */
+  public void setCompletionProvider(CompletionProvider provider) {
+    if(ac == null) {
+        ac = new AutoCompletion(provider);
+        ac.setDescriptionWindowSize(300, 200);
+        ac.setListCellRenderer(new CCellRenderer());
+        ac.setShowDescWindow(true);
+        ac.setParameterAssistanceEnabled(true);
+        ac.install(textArea);
+        
+        textArea.setToolTipSupplier((ToolTipSupplier) provider);
+        ToolTipManager.sharedInstance().registerComponent(textArea);
+    } else {
+        ac.setCompletionProvider(provider);
+    }
   }//end setCompletionProvider
-
   
-  public void setLocalCompletionProvider(DefaultCompletionProvider completionProvider) {
-    if(this.completionProvider == null) createCompletionProvider();
-    this.completionProvider.setXabslLocalCompletionProvider(completionProvider);
-  }//end setLocalCompletionProvider
+  /**
+   * Returns the current completion provider, if already set.
+   * 
+   * @return current completion provider
+   */
+  public CompletionProvider getCompletionProvider() {
+      return ac == null ? null : ac.getCompletionProvider();
+  }
 
   // HACK: make it local...
   public Map<String, XABSLOptionContext.State> getStateMap()
   {
     try{
-      return ((XParser)textArea.getParser(0)).getStateMap();
+      return textArea.getXParser().getStateMap();
     }catch(Exception e)
     {
       //
@@ -490,9 +487,17 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public void setXABSLContext(XABSLContext xabslContext)
   {
-    this.context = xabslContext;
-    textArea.clearParsers();
-    textArea.addParser(new XParser(xabslContext));
+      this.context = xabslContext;
+      // we just want to remove 'our' (X)parser!
+      for (int i = 0; i < textArea.getParserCount(); i++) {
+          Parser p = textArea.getParser(i);
+          if (p instanceof XParser) {
+              textArea.removeParser(p);
+              i--;
+          }
+      }
+      // 're-add' parser
+      textArea.addParser(new XParser(xabslContext));
   }//end setXABSLContext
 
   public XABSLContext getXABSLContext()
@@ -510,7 +515,11 @@ public class XEditorPanel extends javax.swing.JPanel
     // update all the fonts with the new fonsize
     this.textArea.setFont(RSyntaxTextArea.getDefaultFont().deriveFont(size));
     
-    scrolPane.getGutter().setLineNumberFont(scrolPane.getGutter().getLineNumberFont().deriveFont(size));
+    scrollPane.getGutter().setLineNumberFont(scrollPane.getGutter().getLineNumberFont().deriveFont(size));
+  }
+  
+  public void setShowWhitespaces(boolean show) {
+    textArea.setWhitespaceVisible(show);
   }
   
   /**

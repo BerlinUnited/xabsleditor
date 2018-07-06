@@ -1,15 +1,25 @@
 package de.naoth.xabsleditor.utils;
 
+import de.naoth.xabsleditor.completion.XabslCompletionProvider;
+import de.naoth.xabsleditor.completion.XabslDefaultCompletionProvider;
+import de.naoth.xabsleditor.completion.XABSLEnumCompletion;
+import de.naoth.xabsleditor.completion.XABSLOptionCompletion;
+import de.naoth.xabsleditor.completion.XABSLSymbolCompletion;
+import de.naoth.xabsleditor.completion.XABSLSymbolSimpleCompletion;
 import de.naoth.xabsleditor.parser.XABSLContext;
 import de.naoth.xabsleditor.parser.XParser;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
 /**
  * Represents a xabsl project.
+ * 
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
 public class Project
@@ -24,6 +34,8 @@ public class Project
     private final XABSLContext context = new XABSLContext();
     /** The xabsl extension. */
     private final String XABSL_FILE_ENDING = ".xabsl";
+    /** The code completion provider for the project. */
+    private final XabslCompletionProvider completionProvider = new XabslCompletionProvider();
 
     /**
      * Constructor, reads the project of the given agent file and creates the
@@ -95,6 +107,8 @@ public class Project
                 }
             }
         });
+        // after reading project, also update completion provider
+        updateCompletionProvider();
     } // END updateProject()
     
     /**
@@ -132,5 +146,46 @@ public class Project
      */
     public DefaultMutableTreeNode tree() {
         return fileTree;
+    }
+
+    /**
+     * Updates the project code completion provider with the (new) symbols, options & enums.
+     */
+    private void updateCompletionProvider() {
+        // TODO: if the context has changed, the provider must be updated
+        DefaultCompletionProvider s = new XabslDefaultCompletionProvider();
+        DefaultCompletionProvider o = new XabslDefaultCompletionProvider();
+        
+        // add symbols to completion list
+        s.addCompletions(context.getSymbolMap().values().stream().map((symbol) -> {
+            if (symbol.getParameter().isEmpty()) {
+                return new XABSLSymbolSimpleCompletion(s, symbol);
+            } else {
+                return new XABSLSymbolCompletion(s, symbol);
+            }
+        }).collect(Collectors.toList()));
+        
+        // add options to completion list
+        o.addCompletions(context.getOptionMap().values().stream().map((option) -> {
+            return new XABSLOptionCompletion(o, option);
+        }).collect(Collectors.toList()));
+        
+        for (XABSLContext.XABSLEnum xabslEnum : context.getEnumMap().values()) {
+            for (String param : xabslEnum.getElements()) {
+                o.addCompletion(new XABSLEnumCompletion(o, xabslEnum.name, param));
+            }//end for
+        }//end for
+        
+        completionProvider.updateSymbols(s);
+        completionProvider.updateOptions(o);
+    }
+    
+    /**
+     * Returns the projects code completion provider.
+     * 
+     * @return completion provider of this project
+     */
+    public CompletionProvider completionProvider() {
+        return completionProvider;
     }
 }

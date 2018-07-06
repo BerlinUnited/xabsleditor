@@ -15,6 +15,7 @@
  */
 package de.naoth.xabsleditor;
 
+import de.naoth.xabsleditor.help.HelpDialog;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpListener;
 import de.naoth.xabsleditor.compilerconnection.CompilerOutputPanel.JumpTarget;
 import de.naoth.xabsleditor.editorpanel.EditorPanelTab;
@@ -27,6 +28,7 @@ import de.naoth.xabsleditor.events.RefreshGraphEvent;
 import de.naoth.xabsleditor.events.ReloadProjectEvent;
 import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
+import de.naoth.xabsleditor.parser.XParser;
 import de.naoth.xabsleditor.utils.DotFileFilter;
 import de.naoth.xabsleditor.utils.FileWatcher;
 import de.naoth.xabsleditor.utils.Project;
@@ -59,6 +61,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 
 /**
  *
@@ -167,6 +171,8 @@ public class Main extends javax.swing.JFrame implements JumpListener
         Image icon = Toolkit.getDefaultToolkit().getImage(
                 this.getClass().getResource("res/XabslEditor.png"));
         setIconImage(icon);
+        
+        FoldParserManager.get().addFoldParserMapping(XParser.SYNTAX_STYLE_XABSL, new CurlyFoldParser());
 
         searchInProjectDialog = new SearchInProjectDialog(this, false);
 
@@ -243,7 +249,7 @@ public class Main extends javax.swing.JFrame implements JumpListener
             projects.put(agent.getAbsolutePath(), p);
             evtManager.publish(new UpdateProjectEvent(this, projects));
         }
-        editorPanel.openFile(evt.file, p.agent(), p.context(), evt.carretPosition, evt.search);
+        editorPanel.openFile(evt.file, p, evt.carretPosition, evt.search);
     }
 
     /**
@@ -342,9 +348,15 @@ public class Main extends javax.swing.JFrame implements JumpListener
             configuration.setProperty(OptionsDialog.EDITOR_SAVE_BEFOR_COMPILE, Boolean.toString(false));
         }
 
+        // set "show whitespaces" default to false!
+        if (!configuration.containsKey(OptionsDialog.EDITOR_SHOW_WHITESPACES)) {
+            configuration.setProperty(OptionsDialog.EDITOR_SHOW_WHITESPACES, Boolean.toString(false));
+        }
+
         // set tab size from configuration
         editorPanel.setTabSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_TAB_SIZE, "2")));
         editorPanel.setFontSize(Float.parseFloat(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
+        editorPanel.setShowWhitespaces(Boolean.parseBoolean(configuration.getProperty(OptionsDialog.EDITOR_SHOW_WHITESPACES)));
 
         graphPanel.setFontSize(Integer.parseInt(configuration.getProperty(OptionsDialog.EDITOR_FONT_SIZE, "14")));
 
@@ -667,7 +679,9 @@ public class Main extends javax.swing.JFrame implements JumpListener
   private void newFileAction(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newFileAction
   {//GEN-HEADEREND:event_newFileAction
       // create new tab
-      editorPanel.openFile(null, null, null, 0, null);
+      // NOTE: the new (empty) file has no associated project, hence no autocompletion or alike
+      // TODO: can we fix this somehow?!
+      editorPanel.openFile(null, null, 0, null);
 }//GEN-LAST:event_newFileAction
 
     private void miCloseActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_miCloseActionPerformed

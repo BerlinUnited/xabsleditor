@@ -1,0 +1,369 @@
+<html>
+  <head> 
+    <title>XabslEditor Engine</title>
+  </head>
+  <body>
+	  <h1>The xabsl::Engine Class Library</h1>
+          <p>The <b>xabsl::Engine</b>
+            is the XABSL runtime system. It is platform and application
+            independent and written in plain ANSI C++. Due to that, XABSL can be easily
+            employed on any robotic platform. To run
+            the engine in a specific software environment only two classes (for file
+            access and error handling) have to be derived from abstract classes.</p>
+	  <p>The engine parses and executes the intermediate code that was generated
+            from XABSL documents. It links the symbols of a XABSL specification
+            to variables and functions
+            of the agent platform. Therefore, for each used symbol an entity in the
+            software environment has to be registered to the engine. While options
+            and their states are represented in XABSL, basic behaviors are written in
+            C++. They have to be derived from a common base class and registered to
+            the engine.</p>
+	  <p> The engine provides extensive debugging interfaces for monitoring
+            the option and state activations, the values of the symbols and the parameters
+            of options and basic behaviors. Instead of executing the engine from the
+            root option, single options or basic behaviors can be tested separately.</p>
+	  <h2>Files of the xabsl::Engine</h2>
+	  <table>
+  <tr><td class="indexkey"><b>XabslAction.cpp</b> </td><td class="indexvalue">Implementation of class Action and helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslAction.h</b> </td><td class="indexvalue">Definition of class Action and Helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslAgent.cpp</b> </td><td class="indexvalue">Implementation of class Agent </td></tr>
+  <tr><td class="indexkey"><b>XabslAgent.h</b> </td><td class="indexvalue">Definition of class Agent </td></tr>
+  <tr><td class="indexkey"><b>XabslArray.h</b> </td><td class="indexvalue">Declaration and implementation of template class NamedArray </td></tr>
+  <tr><td class="indexkey"><b>XabslBasicBehavior.h</b> </td><td class="indexvalue">Declaration class BasicBehavior </td></tr>
+  <tr><td class="indexkey"><b>XabslBehavior.h</b> </td><td class="indexvalue">Definition of class Behavior </td></tr>
+  <tr><td class="indexkey"><b>XabslBooleanExpression.cpp</b> </td><td class="indexvalue">Implementation of BooleanExpression and derivates </td></tr>
+  <tr><td class="indexkey"><b>XabslBooleanExpression.h</b> </td><td class="indexvalue">Definition of BooleanExpression and derivates </td></tr>
+  <tr><td class="indexkey"><b>XabslCoopState.h</b> </td><td class="indexvalue">Definition of class CoopState and Helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslDecimalExpression.cpp</b> </td><td class="indexvalue">Implementation of DecimalExpression and derivates </td></tr>
+  <tr><td class="indexkey"><b>XabslDecimalExpression.h</b> </td><td class="indexvalue">Definition of DecimalExpression and derivates </td></tr>
+  <tr><td class="indexkey"><b>XabslEngine.cpp</b> </td><td class="indexvalue">Implementation of class Engine </td></tr>
+  <tr><td class="indexkey"><b>XabslEngine.h</b> </td><td class="indexvalue">Declaration class Engine </td></tr>
+  <tr><td class="indexkey"><b>XabslEnumeratedExpression.cpp</b> </td><td class="indexvalue">Implementation of EnumeratedExpression and derivates </td></tr>
+  <tr><td class="indexkey"><b>XabslEnumeratedExpression.h</b> </td><td class="indexvalue">Definition of EnumeratedExpression and derivates </td></tr>
+  <tr><td class="indexkey"><b>XabslOption.cpp</b> </td><td class="indexvalue">Implementation of class Option and helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslOption.h</b> </td><td class="indexvalue">Definition of class Option and Helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslParameters.cpp</b> </td><td class="indexvalue">Implementation of class Parameters </td></tr>
+  <tr><td class="indexkey"><b>XabslParameters.h</b> </td><td class="indexvalue">Definition of class Parameters </td></tr>
+  <tr><td class="indexkey"><b>XabslState.cpp</b> </td><td class="indexvalue">Implementation of class State and helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslState.h</b> </td><td class="indexvalue">Definition of class State and Helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslStatement.cpp</b> </td><td class="indexvalue">Implementation of class Statement and helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslStatement.h</b> </td><td class="indexvalue">Definition of class Statement and Helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslSymbols.cpp</b> </td><td class="indexvalue">Implementation of class Symbols and helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslSymbols.h</b> </td><td class="indexvalue">Definition of class Symbols and helper classes </td></tr>
+  <tr><td class="indexkey"><b>XabslTeamMessage.h</b> </td><td class="indexvalue">Definition of class TeamMessage </td></tr>
+  <tr><td class="indexkey"><b>XabslTools.cpp</b> </td><td class="indexvalue">Implementation of several helper classes for the Engine </td></tr>
+  <tr><td class="indexkey"><b>XabslTools.h</b> </td><td class="indexvalue">Definition of several helper classes for the Engine </td></tr>
+</table>
+	  <h2>Running the xabsl::Engine on a specific Target Platform</h2>
+	  <p id="adaption">First, one has to declare a message and error handling
+            class that is derived from <b>ErrorHandler</b>.
+            This class has to implement the printMessage() and printError() function.
+            E.g.:</p>
+<pre>class MyErrorHandler : public xabsl::ErrorHandler
+{
+public:
+  MyErrorHandler();
+	
+  virtual void printError(const char* text) {cout &lt;&lt; "error: " &lt;&lt; text &lt;&lt; endl;}
+	
+  virtual void printMessage(const char* text){cout &lt;&lt; text &lt;&lt; endl;}
+};</pre>
+	  <p>The Boolean variable &quot;errorsOccurred&quot; can be used to determine
+            if there occurred errors during the creation or execution of the engine.</p>
+	  <p>Then, a class that gives the engine a read access to the intermediate
+            code has to be derived from <b>InputSource</b>.
+            These pure virtual functions have to be implemented:</p>
+	  <ul>
+            <li>open(): opens the file containing the intermediate code. Note that
+              the code doesn't need to be read from a file. It is also possible to
+              read it from a memory buffer or any other stream.</li>
+            <li>close(): is called by the engine after having read the data.</li>
+            <li>readValue(): reads a numeric value from the file. </li>
+            <li>readString(): reads a string from the file.</li>
+	  </ul>
+	  <p>An example:</p>
+<pre>class MyFileInputSource : public xabsl::InputSource
+{
+public:
+  MyFileInputSource(const char* fileName) : file(0), theChar(' ')
+  { strcpy(filename,fileName); }
+
+  ~MyFileInputSource() {if (file!=0) delete file;}
+
+  virtual bool open() {file = new std::ifstream(filename); return(file!=0);}
+  virtual void close() {if (file!=0) delete file; file = 0;}
+
+  virtual double readValue()
+  { char buf[20]; readFromFile(buf); return atof(buf); }
+
+  virtual bool readString(char* destination, int maxLength)
+  { readFromFile(destination); return true; }
+	
+private:
+  char filename[200];
+  std::ifstream* file;
+  char theChar;
+
+  void readFromFile(char* value)
+  {
+    while(!file->eof() && isWhitespace())
+    {
+      if (theChar == '/')
+        while(!file->eof() && theChar != '\n') file->read(&theChar,1);
+      file->read(&theChar,1);
+    }
+
+    while(!file->eof() && !isWhitespace())
+    { *value++ = theChar; if(!file->eof()) file->read(&theChar,1); }
+    *value = 0;
+  }
+
+  bool isWhitespace()
+  { return theChar == ' ' || theChar == '/' || theChar == '\n'
+           || theChar == '\r' || theChar == '\t'; }
+};
+</pre>
+	  <p>Please note that the file contains comments (//...) that have to be skipped
+            by the read functions:</p>
+<pre>// divide (7)
+7
+// multiply (6)
+6
+// decimal value (0): 52.5
+0 52.5
+// reference to decimal symbol (1) ball.y:
+1 13</pre>
+	  <p>The comments have to be treated as in C++ files. (New line ends a comment.)
+            In the example only &quot;7 6 0 52.5 1 13&quot; should be read from the
+            file.</p>
+	  <p>At last, a static function that returns the system time in milliseconds has to be defined, e.g.:</p>
+<pre>static unsigned long getSystemTime() {
+  timeb sysTime;
+  ftime(&sysTime);
+  return (sysTime.time * 1000 + sysTime.millitm);
+}
+</pre>
+	  <h2>Creating a New Engine</h2>
+	  <p>First, an instance of the adapted <b>ErrorHandler</b>
+            has to be created:</p>
+	  <pre>MyErrorHandler errorHandler;</pre>
+	  <p>Then, the engine can be created, passing a reference to the error handler
+            and a pointer to the time function as parameters:</p>
+	  <pre>xabsl::Engine(errorHandler,&amp;getSystemTime);</pre>
+	  <p>Now all the symbols and basic behaviors have to be registered to the
+            engine. Note that this has to be done before the <a href="#creating-option-graph">option
+              graph is created</a>.</p>
+	  <h2>Registering Symbols</h2>
+	  <p>As the behaviors written in XABSL use symbols to interact with the agent's
+            software environment, for each of these symbols the corresponding variable
+            or function have to be registered to the engine. The following example
+            registers the variables <em>aDoubleInputVariable</em> and <em>aDoubleOutputVariable</em>
+            to the symbols <em>"a-decimal-input-symbol"</em> and <em>"a-decimal-output-symbol"</em>
+            which were defined in the XABSL agent:</p>
+	  <pre>pMyEngine->registerDecimalInputSymbol("a-decimal-input-symbol",&amp;aDoubleInputVariable);</pre>
+	  <pre>pMyEngine->registerDecimalOutputSymbol("a-decimal-output-symbol",&amp;aDoubleOutputVariable);</pre>
+	  <p>If the value for the symbol is not represented by a variable but by a
+            function, this function has to be registered to the engine. Note that
+            this function has do be static:</p>
+<pre>class MySymbols 
+{
+public:
+  static double doubleReturningFunction();
+  static void doubleAcceptingFunction(double value);
+};
+
+...
+
+MySymbols mySymbols;
+
+pMyEngine->registerDecimalInputSymbol("a-decimal-input-symbol",
+	    &amp;MySymbols::doubleReturningFunction);
+pMyEngine->registerDecimalOutputSymbol("a-decimal-output-symbol",
+	    &amp;MySymbols::doubleAcceptingFunction);</pre>
+	  <p><br/>
+            The registration of Boolean symbols works in a similar way:</p>
+	  <pre>pMyEngine->registerBooleanInputSymbol("a-boolean-input-symbol",&amp;aBooleanInputVariable);</pre>
+	  <pre>pMyEngine->registerBooleanOutputSymbol("a-boolean-output-symbol",&amp;aBooleanOutputVariable);</pre>
+	  <p>Or:</p>
+<pre>class MySymbols 
+{
+public:
+  static bool booleanReturningFunction();
+  static void booleanAcceptingFunction(bool value);
+};
+
+...
+
+MySymbols mySymbols;
+
+pMyEngine->registerBooleanInputSymbol("a-boolean-input-symbol",
+	    &amp;MySymbols::booleanReturningFunction);
+pMyEngine->registerBooleanOutputSymbol("a-boolean-output-symbol",
+	    &amp;MySymbols::booleanAcceptingFunction,
+	    &amp;MySymbols::booleanReturningFunction);</pre>
+	  <p><br/>
+            Enumerated input or output symbols have to be registered similarily:</p>
+<pre>class MySymbols
+{
+public:
+  enum MyEnum { element1, element2, element3 } anEnumInputVariable, anEnumOutputVariable;
+  static MyEnum enumReturningFunction();
+  static void enumAcceptingFunction(MyEnum value);
+};
+
+...
+
+MySymbols mySymbols;
+
+pMyEngine->registerEnumeratedInputSymbol("an-enumerated-input-symbol", "my-enum",
+	    (int*)&amp;mySymbols.anEnumInputVariable);
+pMyEngine->registerEnumeratedOutputSymbol("an-enumerated-output-symbol", "my-enum",
+	    (int*)&amp;mySymbols.anEnumOutputVariable);</pre>
+	  <p>Or:</p>
+<pre>pMyEngine->registerEnumeratedInputSymbol("an-enumerated-input-symbol", "my-enum",
+	    &amp;MySymbols::enumReturningFunction);
+pMyEngine->registerEnumeratedOutputSymbol("an-enumerated-symbol", "my-enum",
+	    &amp;MySymbols::enumAcceptingFunction,
+        &amp;MySymbols::enumReturningFunction);</pre>
+	  <p>For the enumerations used in enumerated symbols, each enum element that was defined in the XABSL agent
+            has to be registered to its corresponding value:</p>
+<pre>pMyEngine->registerEnumElement("my-enum", "my-enum.element1", MySymbols::element1);
+pMyEngine->registerEnumElement("my-enum", "my-enum.element2", MySymbols::element2);
+pMyEngine->registerEnumElement("my-enum", "my-enum.element3", MySymbols::element3);</pre>
+	  <p><br/>
+            If input symbols have parameters, these have to be declared and registered additionally:
+    </p>
+<pre>class MySymbols
+{
+public:
+  static double parameter1, parameter2;
+  static double myFunction() { return (parameter1 + parameter2) / 2; }
+};
+
+...
+
+MySymbols mySymbols;
+
+pMyEngine->registerDecimalInputSymbol("a-decimal-input-symbol",
+	    &amp;MySymbols::myFunction);
+pMyEngine->registerDecimalInputSymbolDecimalParameter("a-decimal-input-symbol",
+	    "a-decimal-input-symbol.parameter1", mySymbols.parameter1);
+pMyEngine->registerDecimalInputSymbolDecimalParameter("a-decimal-input-symbol",
+	    "a-decimal-input-symbol.parameter2", mySymbols.parameter2);</pre>
+	  <p>
+	  For different symbol and parameter types there are different functions for registering parameters. These functions are:
+          <ul>
+              <li><i>registerDecimalInputSymbolDecimalParameter</i></li>
+              <li><i>registerDecimalInputSymbolBooleanParameter</i></li>
+              <li><i>registerDecimalInputSymbolEnumeratedParameter</i></li>
+              <li><i>registerBooleanInputSymbolDecimalParameter</i></li>
+              <li><i>registerBooleanInputSymbolBooleanParameter</i></li>
+              <li><i>registerBooleanInputSymbolEnumeratedParameter</i></li>
+              <li><i>registerEnumeratedInputSymbolDecimalParameter</i></li>
+              <li><i>registerEnumeratedInputSymbolBooleanParameter</i></li>
+              <li><i>registerEnumeratedInputSymbolEnumeratedParameter</i></li>
+          </ul>
+	  <h2>Registering Basic Behaviors</h2>
+          <p>All basic behaviors have to be derived from the <i>class xabsl::BasicBehavior</i>
+            and have to implement the pure virtual function <i>execute()</i>.
+            The name of the basic behavior has to be passed to the constructor of
+            the base class. The decimal, boolean, or enumerated parameters of the basic behavior have to be declared
+            as members of the class and registered using <code>parameters->registerDecimal/registerBoolean/registerEnumerated</code> inside the implementation of the function <code>registerParameters()</code>:</p>
+<pre>class MyBasicBehavior : public xabsl::BasicBehavior
+{
+public:
+  double parameter1;
+  bool parameter2;
+  MyEnum parameter3;
+
+  MyBasicBehavior(XabslErrorHandler& errorHandler)
+  : xabsl::BasicBehavior("a-basic-behavior",errorHandler)
+  {}
+
+  virtual void registerParameters()
+  {
+    parameters->registerDecimal("a-basic-behavior.parameter1", parameter1);
+    parameters->registerBoolean("a-basic-behavior.parameter2", parameter2);
+    parameters->registerEnumerated("a-basic-behavior.parameter3", "my-enum", parameter3);
+  }
+	
+  virtual void execute()
+  {
+    // do the requested action using parameter1, parameter2, and parameter3
+  }
+};</pre>
+	  <p>Then, for each basic behavior class an instance has to be registered
+            to the engine:</p>
+<pre>MyBasicBehavior myBasicBehavior(errorHandler);
+
+pMyEngine->registerBasicBehavior(myBasicBehavior);</pre>
+	  <br/>
+          <a name="creating-option-graph"></a>
+	  <h2>Creating the Option Graph</h2>
+	  <p>After the registration of all symbols and basic behaviors, the intermediate
+            code can be parsed:</p>
+<pre>MyFileInputSource input("path_to_the_intermediate_code.dat");
+	
+pMyEngine->createOptionGraph(input);</pre>
+	  <p>If the engine detects an error during the execution of the option graph,
+            the error handler is invoked. This can happen when the intermediate code
+            contains a symbol or a basic behavior that was not registered before.
+            Whether the option graph was created successfully or not can be checked
+            like this:</p>
+<pre>if (errorHandler.errorsOccurred)
+{
+  // do some backup behavior
+  delete pMyEngine;
+}</pre>
+	  <h2>Executing the Engine</h2>
+	  <p>If no errors occurred during the creation, the engine can be executed
+            this way:</p>
+	  <pre>pMyEngine->execute();</pre>
+	  <p>This function executes the option graph only a single time. Starting
+            from the selected root option, the state machine of each option is carried
+            out to determine the next active state. Then for the subsequent option
+            of this state the state machine becomes carried out and so on until the
+            subsequent behavior is a basic behavior, which is executed then, too.
+            After that the output symbols that were set during the execution of the
+            option graph become applied to the software environment.</p>
+	  <p>In the <code>execute</code>()
+            function the execution starts from the selected root option, which is
+            in the beginning the root option of the first agent. The agent can be
+            switched using this function:</p>
+	  <pre>pMyEngine->setSelectedAgent("name-of-the-agent");<br /></pre>
+	  <h2>Debugging Interfaces</h2>
+	  <p>Instead of executing the option graph beginning with the root option of the currently selected agent,
+            the function<p>
+    <pre>pMyEngine->setRootAction("name-of-an-option-or-basic-behavior", isOption);</pre>
+    <p>can be called to select a different root action. This is useful to test a single option or basic behavior. With </p>
+	  <pre>pMyEngine->getRootAction(0)->getParameters()->setDecimalParameter("name-of-the-decimal-parameter", 42);
+pMyEngine->getRootAction(0)->getParameters()->setBooleanParameter("name-of-the-boolean-parameter", true);
+pMyEngine->getRootAction(0)->getParameters()->setEnumeratedParameter("name-of-the-enumerated-parameter", element2);</pre>
+	  <p>the parameters of the executed option or basic behavior can be set.</p>
+	  <p><br/>
+            There is a number of functions to trace the current state of the option
+            graph, the option activation tree, the option parameters, and the selected
+            basic behavior:</p>
+	  <pre>const xabsl::Action* getRootAction (int index) const;
+const xabsl::Array &lt;xabsl::Action*&gt; getRootActions () const;
+const char* getSelectedAgentName ();</pre>
+	  <p>The member functions of the xabsl::Action object returned can be used to retrieve this information.</p>
+	  <p><br/>
+            For tracing the values of symbols, the engine provides access to the symbols
+            stored:</p>
+	  <pre>
+xabsl::DecimalInputSymbol* decimalInputSymbol = pMyEngine->decimalInputSymbols["name-of-a-symbol"];
+xabsl::BooleanInputSymbol* booleanInputSymbol = pMyEngine->booleanInputSymbols["name-of-a-symbol"];
+xabsl::EnumeratedInputSymbol* enumeratedInputSymbol = pMyEngine->enumeratedInputSymbols["name-of-a-symbol"];
+xabsl::DecimalOutputSymbol* decimalOutputSymbol = pMyEngine->decimalOutputSymbols["name-of-a-symbol"];
+xabsl::BooleanOutputSymbol* booleanOutputSymbol = pMyEngine->booleanOutputSymbols["name-of-a-symbol"];
+xabsl::EnumeratedOutputSymbol* enumeratedOutputSymbol = pMyEngine->enumeratedOutputSymbols["name-of-a-symbol"];</pre>
+	  <p>Note that these operators crash if the requested symbol does not exist. The existence of symbols can be checked using the <code>exists</code> method:</p>
+	  <pre>pMyEngine->decimalInputSymbols.exists("name-of-a-symbol");
+            pMyEngine->booleanInputSymbols.exists("name-of-a-symbol");
+            pMyEngine->enumeratedInputSymbols.exists("name-of-a-symbol");
+            pMyEngine->decimalOutputSymbols.exists("name-of-a-symbol");
+            pMyEngine->booleanOutputSymbols.exists("name-of-a-symbol");
+            pMyEngine->enumeratedOutputSymbols.exists("name-of-a-symbol");</pre>
+  </body>
+</html>
