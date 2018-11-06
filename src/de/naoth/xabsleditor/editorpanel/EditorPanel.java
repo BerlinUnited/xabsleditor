@@ -10,15 +10,20 @@ import de.naoth.xabsleditor.utils.FileWatcher;
 import de.naoth.xabsleditor.utils.Project;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
@@ -59,6 +64,41 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             }
         });
         tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
+        // handle addition/removal of tabs
+        tabs.addContainerListener(new ContainerListener() {
+            @Override
+            public void componentAdded(ContainerEvent e) {
+                if(e.getChild() instanceof EditorPanelTab) {
+                    // create a menu entry for the newly added tab
+                    TabMenuItem item = new TabMenuItem((EditorPanelTab) e.getChild(), tabs.getTitleAt(tabs.indexOfComponent(e.getChild())));
+                    // select tab of the selected menu entry
+                    item.addActionListener((a) -> { tabs.setSelectedComponent(item.tab); });
+                    // determine index, where to add the new menu entry so that the menu is sorted alphabetically
+                    int i = 0;
+                    for (; i < tabPopupMenu_Tabs.getMenuComponentCount(); i++) {
+                        Component c = tabPopupMenu_Tabs.getMenuComponent(i);
+                        if(c instanceof TabMenuItem && ((TabMenuItem)c).getText().compareTo(item.getText())>0) {
+                            break;
+                        }
+                    }
+                    // add menu entry at the appropiate menu index
+                    tabPopupMenu_Tabs.add(item, i);
+                }
+            }
+
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                if(e.getChild() instanceof EditorPanelTab) {
+                    // get the menu entry associated with the removed tab
+                    Optional<Component> item = Arrays.asList(tabPopupMenu_Tabs.getMenuComponents()).stream().filter((t) -> {
+                        return ((TabMenuItem)t).getTab().equals(e.getChild());
+                    }).findFirst();
+                    // remove menu entry of the removed tab
+                    if(item.isPresent()) { tabPopupMenu_Tabs.remove(item.get()); }
+                }
+            }
+        });
 
         // add right-click-behavior of the tabs
         tabs.addMouseListener(new MouseListener() {
@@ -112,6 +152,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         tabPopupMenu_CloseOthers = new javax.swing.JMenuItem();
         tabPopupMenu_Sep = new javax.swing.JPopupMenu.Separator();
         tabPopupMenu_Locate = new javax.swing.JMenuItem();
+        tabPopupMenu_Tabs = new javax.swing.JMenu();
         tabs = new javax.swing.JTabbedPane();
 
         tabPopupMenu_Close.setText("Close");
@@ -151,6 +192,9 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
             }
         });
         tabPopupMenu.add(tabPopupMenu_Locate);
+
+        tabPopupMenu_Tabs.setText("Select Tab");
+        tabPopupMenu.add(tabPopupMenu_Tabs);
 
         setLayout(new java.awt.BorderLayout());
         add(tabs, java.awt.BorderLayout.CENTER);
@@ -455,6 +499,7 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
     private javax.swing.JMenuItem tabPopupMenu_CloseOthers;
     private javax.swing.JMenuItem tabPopupMenu_Locate;
     private javax.swing.JPopupMenu.Separator tabPopupMenu_Sep;
+    private javax.swing.JMenu tabPopupMenu_Tabs;
     private javax.swing.JTabbedPane tabs;
     // End of variables declaration//GEN-END:variables
 
@@ -471,5 +516,22 @@ public class EditorPanel extends javax.swing.JPanel implements Iterable<EditorPa
         }
         // use arraylist-iterator
         return it_tabs.iterator();
+    }
+
+    /**
+     * Menu item with extra field holding reference to a associated tab.
+     */
+    class TabMenuItem extends JMenuItem
+    {
+        private final EditorPanelTab tab;
+
+        public TabMenuItem(EditorPanelTab tab, String text) {
+            super(text);
+            this.tab = tab;
+        }
+
+        public EditorPanelTab getTab() {
+            return tab;
+        }
     }
 }

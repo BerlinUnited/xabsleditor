@@ -47,6 +47,11 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tabPopupMenu_LocateActionPerformed"/>
           </Events>
         </MenuItem>
+        <Menu class="javax.swing.JMenu" name="tabPopupMenu_Tabs">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Select Tab"/>
+          </Properties>
+        </Menu>
       </SubComponents>
     </Container>
   </NonVisualComponents>
