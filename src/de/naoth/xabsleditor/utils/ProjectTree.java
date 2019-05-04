@@ -10,11 +10,15 @@ import de.naoth.xabsleditor.events.RenameFileEvent;
 import de.naoth.xabsleditor.events.UpdateProjectEvent;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -39,6 +43,11 @@ public class ProjectTree extends javax.swing.JPanel
         initComponents();
         
         evtManager.add(this);
+        
+        // hide open option, if not supported!
+        if(!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+            fileTreePopup.remove(fileTreePopupOpen);
+        }
 
         // set the cell renderer for the projects treeview
         fileTree.setCellRenderer(new DefaultTreeCellRenderer(){
@@ -88,6 +97,7 @@ public class ProjectTree extends javax.swing.JPanel
      */
     private void showPopup(int x, int y, boolean rename) {
         fileTreePopupRename.setEnabled(rename);
+        fileTreePopupOpen.setEnabled(rename);
         fileTreePopup.show(fileTree, x, y);
     }
     
@@ -196,6 +206,7 @@ public class ProjectTree extends javax.swing.JPanel
         fileTreePopupRefresh = new javax.swing.JMenuItem();
         fileTreePopupNewFile = new javax.swing.JMenuItem();
         fileTreePopupRename = new javax.swing.JMenuItem();
+        fileTreePopupOpen = new javax.swing.JMenuItem();
         jScrollPaneFileTree = new javax.swing.JScrollPane();
         fileTree = new javax.swing.JTree();
 
@@ -228,6 +239,15 @@ public class ProjectTree extends javax.swing.JPanel
             }
         });
         fileTreePopup.add(fileTreePopupRename);
+
+        fileTreePopupOpen.setText("Open folder");
+        fileTreePopupOpen.setEnabled(false);
+        fileTreePopupOpen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileTreePopupOpenActionPerformed(evt);
+            }
+        });
+        fileTreePopup.add(fileTreePopupOpen);
 
         setMinimumSize(new java.awt.Dimension(200, 22));
         setLayout(new java.awt.BorderLayout());
@@ -276,10 +296,26 @@ public class ProjectTree extends javax.swing.JPanel
         }
     }//GEN-LAST:event_fileTreePopupRenameActionPerformed
 
+    private void fileTreePopupOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTreePopupOpenActionPerformed
+        if(fileTree.getSelectionPath() != null) {
+            DefaultMutableTreeNode n = (DefaultMutableTreeNode) fileTree.getSelectionPath().getLastPathComponent();
+            if(n.getUserObject() instanceof File) {
+                try {
+                    File f = (File) n.getUserObject();
+                    if(f.isFile()) { f = f.getParentFile(); }
+                    Desktop.getDesktop().open(f);
+                } catch (IOException ex) {
+                    Logger.getLogger(ProjectTree.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }//GEN-LAST:event_fileTreePopupOpenActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree fileTree;
     private javax.swing.JPopupMenu fileTreePopup;
     private javax.swing.JMenuItem fileTreePopupNewFile;
+    private javax.swing.JMenuItem fileTreePopupOpen;
     private javax.swing.JMenuItem fileTreePopupRefresh;
     private javax.swing.JMenuItem fileTreePopupRename;
     private javax.swing.JScrollPane jScrollPaneFileTree;
