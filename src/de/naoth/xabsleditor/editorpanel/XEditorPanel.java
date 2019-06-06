@@ -31,7 +31,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -91,11 +91,14 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     initComponents();
     InitTextArea();
-    resetUndos();
+    
     
     if(file != null) {
         loadFromFile(file);
     }
+    // NOTE: this has to be after loadFromFile to remove all insertions while 
+    //       opening the file
+    resetUndos();
     
     // this is done inside loadFromFile
     //hashCode = textArea.getText().hashCode();
@@ -122,7 +125,7 @@ public class XEditorPanel extends javax.swing.JPanel
       //textArea.setText(str);
     }
     */
-    
+    textArea.setText("");
     textArea.setAutoIndentEnabled(true);
     
     textArea.setCaretPosition(0);
@@ -301,8 +304,6 @@ public class XEditorPanel extends javax.swing.JPanel
 
   public boolean isChanged()
   {
-    // IDEA?
-    //return this.textArea.isDirty();
     return hashCode != textArea.getText().hashCode();
   }
   
@@ -395,11 +396,17 @@ public class XEditorPanel extends javax.swing.JPanel
     private void loadFromFile(File file) 
     {    
         try {
+            // NOTE: this is here for documentation purposes
             //https://docs.oracle.com/javase/7/docs/api/javax/swing/text/DefaultEditorKit.html
-            this.textArea.read(new FileReader(file), file);
+            //this.textArea.read(new FileReader(file), file);
+            
+            // NOTE: use the convenient method load, because it can handle
+            //       the UTF-8 files with BOM identifyer
+            //       https://en.wikipedia.org/wiki/Byte_order_mark
+            this.textArea.load(FileLocation.create(file), null);
+            
             //System.gc();
             releaseFile(file);
-            //this.textArea.load(FileLocation.create(file), null);
             setFile(file);
             renewHashCode();
         } catch (IOException ioe) {
@@ -634,15 +641,18 @@ public class XEditorPanel extends javax.swing.JPanel
         // only if we have a valid file
         if(this.file != null) {
             try {
-                this.textArea.saveAs(FileLocation.create(file));
-                releaseFile(file);
-                /*
+                // NOTE: don't use the convenient method saveAs, because it is writing 
+                //       the UTF-8 files with BOM identifyer, which is not recomended 
+                //       and might make problems
+                //       https://en.wikipedia.org/wiki/Byte_order_mark
+                //this.textArea.saveAs(FileLocation.create(file));
+                
                 // write data
                 FileWriter writer = new FileWriter(this.file);
-                //writer.write(this.getText());
                 this.textArea.write(writer);
                 writer.close();
-                */
+                releaseFile(file);
+               
                 renewHashCode();
 
                 // change UI (title, tooltip) of tab
