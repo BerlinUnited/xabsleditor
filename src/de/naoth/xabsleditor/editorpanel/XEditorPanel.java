@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
@@ -379,19 +378,6 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end jumpToLine
 
-  static private void releaseFile(File file) 
-  {
-   // don't block
-   CompletableFuture.runAsync(() -> {
-    int n = 0;
-    while(!file.renameTo(file) && n++ < 3) {
-        try {
-         Thread.sleep(100);
-        } catch( InterruptedException ex) {}
-        System.gc();
-    }
-   });
-  }
   
     private void loadFromFile(File file) 
     {    
@@ -406,7 +392,7 @@ public class XEditorPanel extends javax.swing.JPanel
             this.textArea.load(FileLocation.create(file), null);
             
             //System.gc();
-            releaseFile(file);
+            Tools.releaseFileAsync(file);
             setFile(file);
             renewHashCode();
         } catch (IOException ioe) {
@@ -427,7 +413,7 @@ public class XEditorPanel extends javax.swing.JPanel
                 //https://docs.oracle.com/javase/7/docs/api/javax/swing/text/DefaultEditorKit.html
                 this.textArea.reload();
                 //System.gc();
-                releaseFile(file);
+                Tools.releaseFileAsync(file);
                 renewHashCode();
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -446,7 +432,7 @@ public class XEditorPanel extends javax.swing.JPanel
         try {
             String str = new String(Files.readAllBytes(file.toPath()));
             //System.gc();
-            releaseFile(file);
+            Tools.releaseFileAsync(file);
             return str;
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -651,7 +637,7 @@ public class XEditorPanel extends javax.swing.JPanel
                 FileWriter writer = new FileWriter(this.file);
                 this.textArea.write(writer);
                 writer.close();
-                releaseFile(file);
+                Tools.releaseFileAsync(file);
                
                 renewHashCode();
 

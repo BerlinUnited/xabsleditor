@@ -1,5 +1,6 @@
 package de.naoth.xabsleditor.utils;
 
+import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.completion.XabslCompletionProvider;
 import de.naoth.xabsleditor.completion.XabslDefaultCompletionProvider;
 import de.naoth.xabsleditor.completion.XABSLEnumCompletion;
@@ -98,7 +99,9 @@ public class Project
                 // parse XABSL file
                 try {
                     XParser p = new XParser(context);
-                    p.parse(new FileReader(f), f.getAbsolutePath());
+                    FileReader reader = new FileReader(f);
+                    p.parse(reader, f.getAbsolutePath());
+                    reader.close();
 
                     // HACK: problems with equal file names
                     context.getFileTypeMap().put(name, p.getFileType());
@@ -107,6 +110,10 @@ public class Project
                 }
             }
         });
+        
+        // try to release all files after the update
+        System.gc();
+        
         // after reading project, also update completion provider
         updateCompletionProvider();
     } // END updateProject()
