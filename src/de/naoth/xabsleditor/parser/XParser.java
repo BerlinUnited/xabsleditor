@@ -77,7 +77,7 @@ public class XParser extends AbstractParser
   public ParseResult parse(RSyntaxDocument doc, String style)
   {
     Element root = doc.getDefaultRootElement();
-		int lineCount = root.getElementCount();
+    int lineCount = root.getElementCount();
     currentDocument = doc;
 
     if (style==null || SyntaxConstants.SYNTAX_STYLE_NONE.equals(style)){
@@ -104,9 +104,9 @@ public class XParser extends AbstractParser
   {
     this.currentFileName = fileName;
     parse(reader);
-  }//end parse
+  }
 
-  public void parse(Reader reader)
+  private void parse(Reader reader)
   {
     //noticeList.clear();
 
@@ -114,7 +114,7 @@ public class XParser extends AbstractParser
     {
       StringBuilder buffer = new StringBuilder();
 
-      int c = 1;
+      int c;
       while((c = reader.read()) > -1)
       {
         buffer.append((char) c);
@@ -144,6 +144,10 @@ public class XParser extends AbstractParser
       if(currentToken != null && currentToken.getType() != Token.NULL)
       {
         skipSpace();
+        if(!isToken(Token.RESERVED_WORD)) {
+            throw new Exception("Token type is " + getNameForTokenType(currentToken.getType()) + " but " + getNameForTokenType(Token.RESERVED_WORD) + " expected.");
+        }
+        
         if(isToken("option"))
         {
           this.parser = new XABSLOptionParser(this);
@@ -159,22 +163,28 @@ public class XParser extends AbstractParser
           this.parser = new XABSLAgentParser(this);
           this.fileType = "agent";
         }
+        else {
+          throw new Exception("Unknown file type.");
+        }
       }
 
       // new files doesn't have any character/token -> can't be parsed!
       if(this.parser != null) {
         this.parser.parse();
+        skipSpace();
       }
 
-      if(currentToken != null && currentToken.getType() != Token.NULL)
-      {
+      if(currentToken != null && currentToken.getType() != Token.NULL) {
         throw new Exception("Unexpected end of file.");
-        //System.out.println("Unexpected end of File.");
       }
     }
     catch(Exception e)
     {
-      System.err.println(e.getMessage());
+      if(this.currentFileName != null) {
+          System.err.println("[ERROR] while parsing " + this.getCurrentFileName() + ":" + getCurrentLine() + " \n " + e.getMessage());
+      } else {
+          System.err.println("[ERROR] internal parsing:" + getCurrentLine() + " \n " + e.getMessage());
+      }
     }
   }//end parse
 
@@ -335,7 +345,7 @@ public class XParser extends AbstractParser
   private void getNextToken()
   {
     currentToken = currentToken.getNextToken();
-  }//end getNextToken
+  }
 
   protected void eat() throws Exception
   {
@@ -361,7 +371,7 @@ public class XParser extends AbstractParser
     {
       this.result.addNotice(new DefaultParserNotice(this, "End of file expected.", getCurrentLine(), currentToken.getOffset(), currentToken.getLexeme().length()));
       throw new Exception("End of file expected.");
-    }//end if
+    }
   }//end isEOF
 
   protected boolean isToken(int type) throws Exception
@@ -426,8 +436,9 @@ public class XParser extends AbstractParser
 
   protected int getCurrentLine()
   {
-    if(currentDocument == null)
+    if(currentDocument == null) {
       return 0;
+    }
 
     Element root = currentDocument.getDefaultRootElement();
     return root.getElementIndex(currentToken.getOffset());
@@ -436,7 +447,7 @@ public class XParser extends AbstractParser
   protected String getCurrentFileName()
   {
     return currentFileName;
-  }//end getCurrentFileName
+  }
 
   public abstract class XABSLAbstractParser
   {
