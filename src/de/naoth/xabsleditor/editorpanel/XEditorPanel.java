@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
@@ -377,11 +378,27 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end jumpToLine
 
+  static private void releaseFile(File file) 
+  {
+   // don't block
+   CompletableFuture.runAsync(() -> {
+    int n = 0;
+    while(!file.renameTo(file) && n++ < 3) {
+        try {
+         Thread.sleep(100);
+        } catch( InterruptedException ex) {}
+        System.gc();
+    }
+   });
+  }
+  
     private void loadFromFile(File file) 
     {    
         try {
             //https://docs.oracle.com/javase/7/docs/api/javax/swing/text/DefaultEditorKit.html
             this.textArea.read(new FileReader(file), file);
+            //System.gc();
+            releaseFile(file);
             //this.textArea.load(FileLocation.create(file), null);
             setFile(file);
             renewHashCode();
@@ -402,6 +419,8 @@ public class XEditorPanel extends javax.swing.JPanel
             try {
                 //https://docs.oracle.com/javase/7/docs/api/javax/swing/text/DefaultEditorKit.html
                 this.textArea.reload();
+                //System.gc();
+                releaseFile(file);
                 renewHashCode();
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -418,7 +437,10 @@ public class XEditorPanel extends javax.swing.JPanel
         }
         
         try {
-            return new String(Files.readAllBytes(file.toPath()));
+            String str = new String(Files.readAllBytes(file.toPath()));
+            //System.gc();
+            releaseFile(file);
+            return str;
         } catch (IOException ioe) {
             ioe.printStackTrace();
             JOptionPane.showMessageDialog(null, ioe.toString(), "Can't load file", JOptionPane.ERROR_MESSAGE);
@@ -613,7 +635,7 @@ public class XEditorPanel extends javax.swing.JPanel
         if(this.file != null) {
             try {
                 this.textArea.saveAs(FileLocation.create(file));
-                
+                releaseFile(file);
                 /*
                 // write data
                 FileWriter writer = new FileWriter(this.file);
