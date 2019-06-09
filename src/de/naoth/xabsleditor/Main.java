@@ -51,6 +51,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -99,6 +103,9 @@ public class Main extends javax.swing.JFrame implements JumpListener
     /** The xabsl compiler. */
     private final XabslCompiler compiler = new XabslCompiler();
 
+    /** a thread updating the project if necessary */
+    private final Updater updater = new Updater();
+    
     /**
      * Callback for drag'n'drop xabsl files on the editor.
      */
@@ -225,6 +232,8 @@ public class Main extends javax.swing.JFrame implements JumpListener
         if (configuration.getProperty("dividerPostionTwo") != null) {
             jSplitPane.setDividerLocation(Integer.parseInt(configuration.getProperty("dividerPostionTwo")));
         }
+        
+        updater.start();
     }//end Main
 
     /**
@@ -251,6 +260,45 @@ public class Main extends javax.swing.JFrame implements JumpListener
         }
         editorPanel.openFile(evt.file, p, evt.carretPosition, evt.search);
     }
+    
+    class Updater extends Thread
+    {
+        final Lock lock = new ReentrantLock();
+        final Condition update  = lock.newCondition();
+        
+        @Override
+        public void run() {
+            while (true) {
+                lock.lock();
+                try {
+                    System.out.println("wait");
+                    update.await();
+                    lock.unlock();
+                    
+                    System.out.println("projects update!!!!");
+                    projects.entrySet().forEach((entry) -> {
+                        entry.getValue().update();
+                    });
+                    evtManager.publish(new UpdateProjectEvent(this, projects));
+                    System.out.println("wait done");
+                } catch(InterruptedException ex) {
+                    
+                }
+            }
+        }
+        
+        public void update() {
+            System.out.println("update");
+            try {
+            lock.lock();
+            update.signal();
+            } finally {
+                lock.unlock();
+                System.out.println("update done");
+            }   
+        }
+    }
+    
 
     /**
      * Listener for the ReloadProjectEvent.
@@ -262,10 +310,18 @@ public class Main extends javax.swing.JFrame implements JumpListener
      */
     @EventListener
     public void updateProject(ReloadProjectEvent e) {
-        projects.entrySet().forEach((entry) -> {
-            entry.getValue().update();
-        });
-        evtManager.publish(new UpdateProjectEvent(this, projects));
+        updater.update();
+        /*
+        synchronized(projects) {
+            CompletableFuture.runAsync(() -> {
+                    synchronized(projects) {
+                        projects.entrySet().forEach((entry) -> {
+                            entry.getValue().update();
+                        });
+                        evtManager.publish(new UpdateProjectEvent(this, projects));
+                    }
+            });
+        }*/
     } // END updateProject()
 
     /**
