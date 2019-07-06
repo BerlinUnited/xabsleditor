@@ -60,6 +60,11 @@ public class SearchPanel extends javax.swing.JPanel
 
         jLabel1.setText("Search:");
 
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchActionPerformed(evt);
+            }
+        });
         txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 txtSearchKeyPressed(evt);
@@ -93,6 +98,9 @@ public class SearchPanel extends javax.swing.JPanel
     if(evt.getKeyCode() == KeyEvent.VK_ESCAPE)
     {
       this.setVisible(false);
+      txtSearch.setText("");
+      txtSearch.setBackground(Color.white);
+      txtSearch.setForeground(Color.black);
     }
     else if(evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == KeyEvent.VK_F3)
     {
@@ -117,6 +125,10 @@ public class SearchPanel extends javax.swing.JPanel
     txtSearch.grabFocus();
 
   }//GEN-LAST:event_formComponentShown
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSearchActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
