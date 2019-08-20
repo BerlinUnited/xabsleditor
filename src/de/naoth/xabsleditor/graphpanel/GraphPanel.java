@@ -134,7 +134,7 @@ public class GraphPanel extends javax.swing.JPanel
 
         // Option
         XParser p = new XParser(currentEditor.getXABSLContext());
-        p.parse(new StringReader(text));
+        p.parse(new StringReader(text), currentEditor.getFile().getAbsolutePath());
         updateOptionGraph(p.getOptionGraph());
 
         String optionName = currentEditor.getFile().getName();

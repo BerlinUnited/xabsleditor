@@ -90,6 +90,7 @@ public class OptionVisualizer extends javax.swing.JPanel
   {
     if (g == null)
     {
+      this.repaint();
       return;
     }
 

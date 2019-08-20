@@ -350,14 +350,15 @@ public class XTokenMaker extends AbstractTokenMaker
 
   private int decideState(char c)
   {
-    if(Character.isWhitespace(c))
+    if(Character.isWhitespace(c)) 
     {
       return Token.WHITESPACE;
     }
     else if(Character.isJavaIdentifierStart(c))
     {
       return Token.IDENTIFIER;
-    }else if(c == '_')
+    }
+    else if(c == '_')
     {
       return Token.IDENTIFIER;
     }
@@ -376,12 +377,14 @@ public class XTokenMaker extends AbstractTokenMaker
     else if(is(dotSeparators, c))
     {
       return Token.SEPARATOR;
-    }else if(c == '"')
+    }
+    else if(c == '"')
     {
       return Token.LITERAL_STRING_DOUBLE_QUOTE;
     }
-
+    
     // unknown identifier...
+    //System.err.println("[XTokenMaker] unknown character: " + c + "(" + ((int)c) + ")");
     return Token.ERROR_IDENTIFIER;
   }//end decideState
 

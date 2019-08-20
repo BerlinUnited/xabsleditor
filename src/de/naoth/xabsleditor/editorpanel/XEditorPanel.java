@@ -51,6 +51,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.undo.UndoManager;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
@@ -78,44 +79,52 @@ public class XEditorPanel extends javax.swing.JPanel
   private int hashCode;
   private String lastSearch;
 
-  /** Creates new form XEditorPanel */
+  /** Create new panel and read text from file */
   public XEditorPanel()
   {
-      this((String)null);
-  }
-
-  /** Create new panel and read text from file */
-  public XEditorPanel(File file)
-  {
-    this(loadFromFile(file));
-    setFile(file);
+    this(null);
   }
 
   /** Create new panel and with the given text */
-  public XEditorPanel(String str)
+  public XEditorPanel(File file)
   {
     initComponents();
-    InitTextArea(str);
+    InitTextArea();
+    
+    
+    if(file != null) {
+        loadFromFile(file);
+    }
+    // NOTE: this has to be after loadFromFile to remove all insertions while 
+    //       opening the file
     resetUndos();
-    hashCode = textArea.getText().hashCode();
+    
+    // this is done inside loadFromFile
+    //hashCode = textArea.getText().hashCode();
+    
     // disable traversal keys; the tab panel should handle it
     textArea.setFocusTraversalKeysEnabled(false);
     textArea.setMarkOccurrences(true);
     textArea.setCloseCurlyBraces(true);
   }
 
-  private void InitTextArea(String str)
+  private void InitTextArea()
   {
     textArea = new XSyntaxTextArea();
     
     textArea.setCodeFoldingEnabled(true);
     textArea.getFoldManager().setCodeFoldingEnabled(true);
-
+    
+    /*
     if(str != null)
     {
-      textArea.setText(str);
+      try {
+        textArea.read(new StringReader(str), ac);
+      } catch(IOException ex) {}
+      //textArea.setText(str);
     }
-
+    */
+    textArea.setText("");
     textArea.setAutoIndentEnabled(true);
     
     textArea.setCaretPosition(0);
@@ -255,9 +264,15 @@ public class XEditorPanel extends javax.swing.JPanel
     add(searchPanel, java.awt.BorderLayout.PAGE_END);
   }// </editor-fold>//GEN-END:initComponents
 
+  /*
   public String getText()
   {
-    return this.textArea.getText();
+    //return this.textArea.getText();
+    StringWriter sw = new StringWriter();
+    try {
+            this.textArea.write(sw);
+        } catch(IOException ex) {}
+    return sw.toString();
   }
 
   public void setText(String text)
@@ -266,21 +281,33 @@ public class XEditorPanel extends javax.swing.JPanel
     //document.setSyntaxStyle(new XTokenMaker());
     //this.textArea.setDocument(document);
 
-    this.textArea.setText(text);
+    //this.textArea.setText(text);
+      try {
+        this.textArea.read(new StringReader(text), ac);
+      } catch(IOException ex) {}
+      
     this.textArea.revalidate();
   }
+  
   
   public void setContent(String s) {
     setText(s);
   }
+  */
 
+  // NOTE: getText returns the text as it is saved internally, i.e., all line 
+  //       breaks are represented by '\n'
   public String getContent() {
-    return getText();
+    return textArea.getText();
   }
 
   public boolean isChanged()
   {
     return hashCode != textArea.getText().hashCode();
+  }
+  
+  public boolean isModifiedOutsideEditor() {
+    return this.textArea.isModifiedOutsideEditor();
   }
 
   public File getFile()
@@ -292,7 +319,6 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     this.file = file;
   }
-
 
   /*
    *  Attempt to center the line containing the caret at the center of the
@@ -326,9 +352,9 @@ public class XEditorPanel extends javax.swing.JPanel
   {
     this.textArea.setCaretPosition(pos);
 
-    try{
+    try {
       centerLineInScrollPane(this.textArea);
-    }catch(Exception e)
+    } catch(Exception e)
     {
       // TODO:
       // could not scroll to the right position
@@ -352,34 +378,70 @@ public class XEditorPanel extends javax.swing.JPanel
     }
   }//end jumpToLine
 
-    private static String loadFromFile(File file) {
-        if(file == null) {
-            return null;
-        }
-        
+  
+    private void loadFromFile(File file) 
+    {    
         try {
-            return new String(Files.readAllBytes(file.toPath()));
+            // NOTE: this is here for documentation purposes
+            //https://docs.oracle.com/javase/7/docs/api/javax/swing/text/DefaultEditorKit.html
+            //this.textArea.read(new FileReader(file), file);
+            
+            // NOTE: use the convenient method load, because it can handle
+            //       the UTF-8 files with BOM identifyer
+            //       https://en.wikipedia.org/wiki/Byte_order_mark
+            this.textArea.load(FileLocation.create(file), null);
+            
+            //System.gc();
+            Tools.releaseFileAsync(file);
+            setFile(file);
+            renewHashCode();
         } catch (IOException ioe) {
             ioe.printStackTrace();
             JOptionPane.showMessageDialog(null, ioe.toString(), "Can't load file", JOptionPane.ERROR_MESSAGE);
         }
-        return null;
     }//end loadFromFile
-
+    
     public void reloadFromFile() {
         reloadFromFile(true);
     }
     
     public void reloadFromFile(boolean updateTextArea) {
-        if (this.file != null && this.file.exists()) {
-            
-            String content = loadFromFile(file);
-            if(updateTextArea) {
-                textArea.setText(content);
+
+        if(updateTextArea) {
+            //textArea.setText(content);
+            try {
+                //https://docs.oracle.com/javase/7/docs/api/javax/swing/text/DefaultEditorKit.html
+                this.textArea.reload();
+                //System.gc();
+                Tools.releaseFileAsync(file);
+                renewHashCode();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                JOptionPane.showMessageDialog(null, ioe.toString(), "Can't load file", JOptionPane.ERROR_MESSAGE);
             }
-            renewHashCode(content);
+        } else {
+            renewHashCode(readFileToString(file));
         }
     }
+    
+    private static String readFileToString(File file) {
+        if(file == null) {
+            return null;
+        }
+        
+        try {
+            String str = new String(Files.readAllBytes(file.toPath()));
+            //System.gc();
+            Tools.releaseFileAsync(file);
+            return str;
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            JOptionPane.showMessageDialog(null, ioe.toString(), "Can't load file", JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }//end readFileToString
+  
+    
     public void renewHashCode() {
         renewHashCode(null);
     }
@@ -523,9 +585,10 @@ public class XEditorPanel extends javax.swing.JPanel
   }
   
   /**
-   * Checks whether the tab/editor can be closed savely - without data loss.
+   * Checks whether the tab/editor can be closed safely - without data loss.
    * @return true, if tab/editor can be closed without data loss, false otherwise
    */
+  /*
     public boolean close() {
         if (this.isChanged()) {
             // something changed ...
@@ -537,6 +600,7 @@ public class XEditorPanel extends javax.swing.JPanel
         }
         return true;
     }
+  */
 
     public boolean save() {
         return save(System.getProperty("user.home"));
@@ -563,10 +627,18 @@ public class XEditorPanel extends javax.swing.JPanel
         // only if we have a valid file
         if(this.file != null) {
             try {
+                // NOTE: don't use the convenient method saveAs, because it is writing 
+                //       the UTF-8 files with BOM identifyer, which is not recomended 
+                //       and might make problems
+                //       https://en.wikipedia.org/wiki/Byte_order_mark
+                //this.textArea.saveAs(FileLocation.create(file));
+                
                 // write data
                 FileWriter writer = new FileWriter(this.file);
-                writer.write(this.getText());
+                this.textArea.write(writer);
                 writer.close();
+                Tools.releaseFileAsync(file);
+               
                 renewHashCode();
 
                 // change UI (title, tooltip) of tab

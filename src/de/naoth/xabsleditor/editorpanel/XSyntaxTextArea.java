@@ -1,17 +1,22 @@
 package de.naoth.xabsleditor.editorpanel;
 
 import de.naoth.xabsleditor.parser.XParser;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 
 /**
- * The XABSL editor with some customizations of the underlying RSyntaxTextArea.
+ * The XABSL editor with some customizations of the underlying TextEditorPane.
+ * 
+ * TextEditorPane: 
+ *   "An extension of RSyntaxTextArea that adds information 
+ *    about the file being edited, such as: Its name and location."
+ *    http://javadoc.fifesoft.com/rsyntaxtextarea/
  * 
  * @author Philipp Strobel <philippstrobel@posteo.de>
  */
-public class XSyntaxTextArea extends RSyntaxTextArea
+public class XSyntaxTextArea extends TextEditorPane
 {
     /**
      * underline only when the hyperlink is activated

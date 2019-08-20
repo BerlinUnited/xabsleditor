@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -149,5 +150,19 @@ public class Tools
 
     return file;
   }//end validateFileName
+  
+  static public void releaseFileAsync(File file) 
+  {
+   // don't block
+   CompletableFuture.runAsync(() -> {
+    int n = 0;
+    while(!file.renameTo(file) && n++ < 3) {
+        try {
+         Thread.sleep(100);
+        } catch( InterruptedException ex) {}
+        System.gc();
+    }
+   });
+  }
 
 }//end class Tools
