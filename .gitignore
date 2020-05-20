@@ -2,6 +2,7 @@
 dist/
 build/
 private/
+.gradle/
 
 #java project files
 build.xml
