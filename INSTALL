@@ -1,4 +1,0 @@
-Download and install Netbeans (6.8 or higher), open this
-directory with Netbeans and compile it. The result
-will be a jar-file and a lib-directory which will run
-without any further installation.
