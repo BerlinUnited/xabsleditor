@@ -1,0 +1,65 @@
+
+plugins {
+    id 'application' // uses the java and distribution plugin
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://java.freehep.org/maven2" }
+}
+
+dependencies {
+    // NOTE: we're using our own patched version of autocompmlete!
+    //implementation group: 'com.fifesoft', name: 'autocomplete', version: '2.6.0'
+    implementation files('lib/rsyntax/autocomplete-2.6.0.jar')
+    implementation group: 'com.fifesoft', name: 'rsyntaxtextarea', version: '2.6.0'
+    
+    implementation group: 'net.sf.jung', name: 'jung-graph-impl', version: '2.0.1'
+    implementation group: 'net.sf.jung', name: 'jung-visualization', version: '2.0.1'
+    implementation group: 'net.sf.jung', name: 'jung-algorithms', version: '2.0.1'
+    
+    implementation group: 'org.freehep', name: 'freehep-export', version: '2.1.1'
+}
+
+// define the targeted versions
+project.version = 1.2
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_1_8
+
+// configure the application plugin
+application.mainClassName = 'de.naoth.xabsleditor.Main'
+application.executableDir = '' // do not create a "bin" directory in install/zip
+
+// set the source & resources directory and disable the test dirs
+sourceSets.main.java.srcDirs = ['src']
+sourceSets.main.resources.srcDirs = ['src/de/naoth/xabsleditor/res']
+sourceSets.main.output.resourcesDir = file('build/resources/de/naoth/xabsleditor/res') // default: build/resources/main
+sourceSets.main.runtimeClasspath += files('build/resources') // make sure, running from build directory finds the resources
+sourceSets.test.java.srcDirs = []
+sourceSets.test.resources.srcDirs = []
+
+// "install" the resulting application to the "dist" directory (mimic the old behavior)
+installDist.destinationDir = file("$projectDir/dist")
+
+// disable tar generation
+distTar.enabled = false
+
+// make sure the "installDist" task is executed
+build.finalizedBy(installDist)
+
+// make sure the dist directory is also cleaned (since we're moved it out of the build directory)
+task cleanDist(type: Delete) {
+    delete "$projectDir/dist"
+}
+clean.finalizedBy(cleanDist)
+
+// HACK: only the resource files would be placed in the root of the jar
+//       so we're modify the path before actually copy them
+jar {
+    eachFile {
+        file ->
+            if (file.getName() == file.getPath()) {
+                file.setPath("de/naoth/xabsleditor/res/" + file.getName())
+            }
+    }
+}

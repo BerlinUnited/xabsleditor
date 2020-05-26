@@ -22,8 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
@@ -31,7 +30,7 @@ import javafx.beans.property.SimpleBooleanProperty;
  */
 public class FileWatcher extends Thread
 {
-    public BooleanProperty running = new SimpleBooleanProperty(false);
+    public final AtomicBoolean running = new AtomicBoolean(false);
     
     private final WatchService watcher;
     private final Map<WatchKey,Path> keys;
