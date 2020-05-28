@@ -21,6 +21,9 @@ dependencies {
     implementation group: 'org.freehep', name: 'freehep-export', version: '2.1.1'
 }
 
+// by default just (build and) run XabslEditor
+defaultTasks 'run' // 'clean', 'build', 
+
 // define the targeted versions
 project.version = 1.2
 java.sourceCompatibility = JavaVersion.VERSION_1_8

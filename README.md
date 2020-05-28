@@ -18,13 +18,20 @@ This creates `dist` directory with the scripts for executing the XabslEditor.
 # Run XabslEditor
 To execute the XabslEditor simply run the following command, if you not already compiled the project:
 ```bash
-./gradlew run
+./gradlew [run]
 ```
 
 Or, if you already have complied the project, you can run the script file in the `dist` directory:
 ```bash
 ./dist/xabsleditor
 ```
+
+Or, if you want to start the jar with java manually:
+```bash
+java -jar dist/lib/xabsleditor-1.2.jar
+```
+
+On windows use the corresponding `.bat` files.
 
 # IDE
 All IDEs, which support Gradle, should work to compile and run the XabslEditor.
