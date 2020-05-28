@@ -62,4 +62,10 @@ jar {
                 file.setPath("de/naoth/xabsleditor/res/" + file.getName())
             }
     }
+
+    // create a manifest for the jar
+    manifest {
+        attributes 'Class-Path': sourceSets.main.runtimeClasspath.collect { it.name }.join(' ')
+        attributes 'Main-Class': application.mainClassName
+    }
 }
