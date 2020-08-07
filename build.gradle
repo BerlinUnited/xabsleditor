@@ -41,6 +41,17 @@ sourceSets.main.runtimeClasspath += files('build/resources') // make sure, runni
 sourceSets.test.java.srcDirs = []
 sourceSets.test.resources.srcDirs = []
 
+def additionalResources = [ '**/*.html', '**/*.png', '**/*.gif' ]
+processResources {
+  // copy the additional resources to the build directory
+  from('src/de/naoth/xabsleditor/') {
+    include(additionalResources)
+    into '../'
+    // avoid empty directories caused by the additional resources
+    includeEmptyDirs = false
+  }
+}
+
 // "install" the resulting application to the "dist" directory (mimic the old behavior)
 installDist.destinationDir = file("$projectDir/dist")
 
@@ -64,6 +75,12 @@ jar {
             if (file.getName() == file.getPath()) {
                 file.setPath("de/naoth/xabsleditor/res/" + file.getName())
             }
+    }
+
+    // make sure the additional resources are placed correctly
+    from('src/de/naoth/xabsleditor/') {
+      include(additionalResources)
+      into 'de/naoth/xabsleditor'
     }
 
     // create a manifest for the jar
