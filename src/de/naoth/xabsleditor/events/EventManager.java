@@ -19,7 +19,7 @@ public class EventManager
     private static EventManager instance;
     /** Registered listeners of the particular event. */
     private final Map<Class, List<DataSubscriberInfo>> map = new LinkedHashMap<>();
-    
+
     /**
      * Disabled constructor of the event manager singleton.
      */
@@ -90,19 +90,19 @@ public class EventManager
         if (subscriberInfos == null) {
             return 0;
         }
-        int count = 0;
-        for (DataSubscriberInfo subscriberInfo : subscriberInfos) {
+        
+        subscriberInfos.forEach(subscriberInfo -> {
             subscriberInfo.invoke(o);
-            count++;
-        }
-        return count;
+        });
+        
+        return subscriberInfos.size();
     }
 
     /**
      * Wrapper for the registered subscriber object and the method for a event type.
      */
     static class DataSubscriberInfo {
-
+        
         final Method method;
         final Object object;
 
