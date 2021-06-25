@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -98,6 +100,8 @@ public class Main extends javax.swing.JFrame implements JumpListener
     HashMap<String, Project> projects = new HashMap<>();
     /** The xabsl compiler. */
     private final XabslCompiler compiler = new XabslCompiler();
+    /** Thread for background tasks. */
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * Callback for drag'n'drop xabsl files on the editor.
@@ -262,10 +266,15 @@ public class Main extends javax.swing.JFrame implements JumpListener
      */
     @EventListener
     public void updateProject(ReloadProjectEvent e) {
-        projects.entrySet().forEach((entry) -> {
-            entry.getValue().update();
+        // NOTE: re-using a thread pool (of 1) is faster than creating a new 
+        //       thread, eg. with SwingWorker and it currently works :P
+        // do the refresh in a background thread
+        executor.execute(() -> {
+            projects.entrySet().forEach((entry) -> {
+                entry.getValue().update();
+            });
+            evtManager.publish(new UpdateProjectEvent(this, projects));
         });
-        evtManager.publish(new UpdateProjectEvent(this, projects));
     } // END updateProject()
 
     /**

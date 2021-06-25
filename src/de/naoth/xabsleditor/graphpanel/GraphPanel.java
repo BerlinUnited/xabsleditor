@@ -19,6 +19,8 @@ import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.StringReader;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.JOptionPane;
 
 /**
@@ -29,6 +31,8 @@ public class GraphPanel extends javax.swing.JPanel
 {
     /** Manager for distributing events. */
     private final EventManager evtManager = EventManager.getInstance();
+    /** Thread to async refresh graph. */
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     
     private OptionVisualizer optionVisualizer;
     private AgentVisualizer agentVisualizer;
@@ -128,20 +132,25 @@ public class GraphPanel extends javax.swing.JPanel
         if (e.getSource() == null || !(e.getSource() instanceof XEditorPanel) || ((XEditorPanel)e.getSource()).getFile() == null) {
             return;
         }
-        currentEditor = (XEditorPanel)e.getSource();
 
-        String text = currentEditor.getContent();
+        // NOTE: re-using a thread pool (of 1) is faster than creating a new thread, eg. with SwingWorker
+        // do the refresh in a background thread
+        executor.submit(() -> {
+            currentEditor = (XEditorPanel)e.getSource();
 
-        // Option
-        XParser p = new XParser(currentEditor.getXABSLContext());
-        p.parse(new StringReader(text), currentEditor.getFile().getAbsolutePath());
-        updateOptionGraph(p.getOptionGraph());
+            String text = currentEditor.getContent();
 
-        String optionName = currentEditor.getFile().getName();
-        optionName = optionName.replaceAll(".xabsl", "");
-        updateAgentContext(currentEditor.getXABSLContext(), optionName);
+            // Option
+            XParser p = new XParser(currentEditor.getXABSLContext());
+            p.parse(new StringReader(text), currentEditor.getFile().getAbsolutePath());
+            updateOptionGraph(p.getOptionGraph());
+
+            String optionName = currentEditor.getFile().getName();
+            optionName = optionName.replaceAll(".xabsl", "");
+            updateAgentContext(currentEditor.getXABSLContext(), optionName);
+        });
     }
-    
+
     class XabslGraphMouseListener implements GraphMouseListener<XabslNode>
     {
         @Override
