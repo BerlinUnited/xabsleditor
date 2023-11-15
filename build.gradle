@@ -32,6 +32,10 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 // configure the application plugin
 application.mainClassName = 'de.naoth.xabsleditor.Main'
 application.executableDir = '' // do not create a "bin" directory in install/zip
+// workaround for Java 11++
+application.applicationDefaultJvmArgs = [
+  '-Djava.util.Arrays.useLegacyMergeSort=true'
+]
 
 // set the source & resources directory and disable the test dirs
 sourceSets.main.java.srcDirs = ['src']
