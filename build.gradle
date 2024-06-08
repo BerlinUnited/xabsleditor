@@ -1,4 +1,3 @@
-
 plugins {
     id 'application' // uses the java and distribution plugin
 }
@@ -9,87 +8,108 @@ repositories {
 }
 
 dependencies {
-    // NOTE: we're using our own patched version of autocompmlete!
-    //implementation group: 'com.fifesoft', name: 'autocomplete', version: '2.6.0'
+    // NOTE: we're using our own patched version of autocomplete!
+    // implementation group: 'com.fifesoft', name: 'autocomplete', version: '2.6.0'
     implementation files('lib/rsyntax/autocomplete-2.6.0.jar')
-    implementation group: 'com.fifesoft', name: 'rsyntaxtextarea', version: '2.6.0'
-    
-    implementation group: 'net.sf.jung', name: 'jung-graph-impl', version: '2.0.1'
-    implementation group: 'net.sf.jung', name: 'jung-visualization', version: '2.0.1'
-    implementation group: 'net.sf.jung', name: 'jung-algorithms', version: '2.0.1'
-    
-    implementation group: 'org.freehep', name: 'freehep-export', version: '2.1.1'
+    implementation 'com.fifesoft:rsyntaxtextarea:2.6.0'
+
+    // graph libraries
+    implementation 'net.sf.jung:jung-graph-impl:2.0.1'
+    implementation 'net.sf.jung:jung-visualization:2.0.1'
+    implementation 'net.sf.jung:jung-algorithms:2.0.1'
+
+    // pdf export
+    implementation 'org.freehep:freehep-export:2.1.1'
 }
 
 // by default just (build and) run XabslEditor
 defaultTasks 'run' // 'clean', 'build', 
 
-// define the targeted versions
-project.version = 1.2
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
+// Set the project version and Java compatibility versions
+version = '1.2'
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
-// configure the application plugin
-application.mainClassName = 'de.naoth.xabsleditor.Main'
-application.executableDir = '' // do not create a "bin" directory in install/zip
-// workaround for Java 11++
-application.applicationDefaultJvmArgs = [
-  '-Djava.util.Arrays.useLegacyMergeSort=true'
-]
+// Configure the application plugin
+application {
+    mainClass = 'de.naoth.xabsleditor.Main'
+    executableDir = '' // do not create a "bin" directory in install/zip
+    // workaround for Java 11++
+    applicationDefaultJvmArgs = [
+        '-Djava.util.Arrays.useLegacyMergeSort=true'
+    ]
+}
 
-// set the source & resources directory and disable the test dirs
-sourceSets.main.java.srcDirs = ['src']
-sourceSets.main.resources.srcDirs = ['src/de/naoth/xabsleditor/res']
-sourceSets.main.output.resourcesDir = file('build/resources/de/naoth/xabsleditor/res') // default: build/resources/main
-sourceSets.main.runtimeClasspath += files('build/resources') // make sure, running from build directory finds the resources
-sourceSets.test.java.srcDirs = []
-sourceSets.test.resources.srcDirs = []
+// Set source and resource directories, disable test directories
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+        resources.srcDirs = ['src/de/naoth/xabsleditor/res']
+        output.resourcesDir = file('build/resources/de/naoth/xabsleditor/res') // default: build/resources/main
+        runtimeClasspath += files('build/resources') // make sure, running from build directory finds the resources
+    }
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
 
-def additionalResources = [ '**/*.html', '**/*.png', '**/*.gif' ]
+def additionalResources = ['**/*.html', '**/*.png', '**/*.gif']
 processResources {
-  // copy the additional resources to the build directory
-  from('src/de/naoth/xabsleditor/') {
-    include(additionalResources)
-    into '../'
-    // avoid empty directories caused by the additional resources
-    includeEmptyDirs = false
-  }
+	// copy the additional resources to the build directory
+    from('src/de/naoth/xabsleditor/') {
+        include additionalResources
+        into '../'
+        includeEmptyDirs = false
+    }
 }
 
 // "install" the resulting application to the "dist" directory (mimic the old behavior)
-installDist.destinationDir = file("$projectDir/dist")
+installDist {
+    destinationDir = file("$projectDir/dist")
+}
 
-// disable tar generation
-distTar.enabled = false
+// Disable tar generation
+distTar {
+    enabled = false
+}
 
-// make sure the "installDist" task is executed
-build.finalizedBy(installDist)
+// Ensure "installDist" task is executed after build
+build {
+    finalizedBy installDist
+}
 
 // make sure the dist directory is also cleaned (since we're moved it out of the build directory)
-task cleanDist(type: Delete) {
+tasks.register('cleanDist', Delete) {
     delete "$projectDir/dist"
 }
-clean.finalizedBy(cleanDist)
+clean {
+    finalizedBy tasks.cleanDist
+}
 
-// HACK: only the resource files would be placed in the root of the jar
-//       so we're modify the path before actually copy them
+// Modify the path of resource files before copying them and create a manifest for the JAR
 jar {
     eachFile {
-        file ->
-            if (file.getName() == file.getPath()) {
-                file.setPath("de/naoth/xabsleditor/res/" + file.getName())
-            }
+    	file ->
+	        if (file.name == file.path) {
+	            file.path = "de/naoth/xabsleditor/res/" + file.name
+	        }
     }
 
-    // make sure the additional resources are placed correctly
     from('src/de/naoth/xabsleditor/') {
-      include(additionalResources)
-      into 'de/naoth/xabsleditor'
+        include additionalResources
+        into 'de/naoth/xabsleditor'
     }
 
-    // create a manifest for the jar
     manifest {
-        attributes 'Class-Path': sourceSets.main.runtimeClasspath.collect { it.name }.join(' ')
-        attributes 'Main-Class': application.mainClassName
+        attributes(
+            'Class-Path': sourceSets.main.runtimeClasspath.files.collect { it.name }.join(' '),
+            'Main-Class': application.mainClass
+        )
     }
+
+    // exclude duplicate files
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 }
