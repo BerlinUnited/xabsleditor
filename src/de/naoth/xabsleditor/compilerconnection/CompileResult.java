@@ -23,20 +23,11 @@ import java.util.ArrayList;
  */
 public class CompileResult
 {
-  public String messages;
   public boolean warnings;
   public boolean errors;
 
-
-
-  
-  private ArrayList<CompilerNotice> noticeList;
-
-  public CompileResult()
-  {
-    noticeList = new ArrayList<CompilerNotice>();
-  }
-
+  private final StringBuilder messages = new StringBuilder();
+  private final ArrayList<CompilerNotice> noticeList = new ArrayList<>();
 
   public void addNotice(CompilerNotice notice)
   {
@@ -47,12 +38,21 @@ public class CompileResult
   {
     for(CompilerNotice notice: this.noticeList)
     {
-      if(notice.lineOffset == line)
+      if(notice.lineOffset == line) {
         return notice;
-    }//end for
+      }
+    }
     return null;
-  }//end getNotice
+  }
+  
+  public void addMessage(String msg) {
+      this.messages.append(msg).append('\n');   
+  }
 
+  public String getMessages() {
+      return messages.toString();
+  }
+  
   @Override
   public String toString()
   {
@@ -62,7 +62,7 @@ public class CompileResult
       sb.append(notice).append('\n');
     }
     return sb.toString();
-  }//end toString
+  }
 
 
   public static class CompilerNotice
@@ -101,6 +101,7 @@ public class CompileResult
         .append(this.message);
 
       return sb.toString();
-    }//end toString
+    }
+    
   }//end class CompilerNotice
 }//end class CompileResult

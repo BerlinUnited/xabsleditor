@@ -87,10 +87,8 @@ public class OptionsDialog extends javax.swing.JDialog
 
     if(configuration.containsKey(USE_INSTALLED_RUBY))
     {
-      if(Boolean.parseBoolean(configuration.getProperty(USE_INSTALLED_RUBY)) == Boolean.TRUE)
-        this.cbUseRuby.setSelected(true);
-      else
-        this.cbUseRuby.setSelected(false);
+      boolean useInstalledRuby = Boolean.parseBoolean(configuration.getProperty(USE_INSTALLED_RUBY));
+      this.cbUseRuby.setSelected( useInstalledRuby );
     }
 
     if(configuration.containsKey(EDITOR_TAB_SIZE))
@@ -196,8 +194,7 @@ public class OptionsDialog extends javax.swing.JDialog
             }
         });
 
-        cbUseRuby.setSelected(true);
-        cbUseRuby.setText("try to use installed ruby");
+        cbUseRuby.setText("try to use installed ruby for faster compilation");
 
         jLabel2.setText("Default compilation path");
 
@@ -427,8 +424,7 @@ public class OptionsDialog extends javax.swing.JDialog
       }
       else
       {
-        configuration.setProperty(XABSL_COMPILER_COMMAND,
-          txtXabslCompilerCommand.getText());
+        configuration.setProperty(XABSL_COMPILER_COMMAND, txtXabslCompilerCommand.getText());
       }
 
       configuration.setProperty(USE_INSTALLED_RUBY, Boolean.toString(this.cbUseRuby.isSelected()));

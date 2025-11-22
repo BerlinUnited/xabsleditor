@@ -18,8 +18,8 @@ import javax.swing.text.BadLocationException;
  *
  * @author Heinrich Mellmann
  */
-public class CompilerOutputPanel extends javax.swing.JPanel {
-
+public class CompilerOutputPanel extends javax.swing.JPanel 
+{
     private CompileResult currentCompileResult = null;
 
     /** Creates new form CompilerOutputPanel */
@@ -91,7 +91,7 @@ public class CompilerOutputPanel extends javax.swing.JPanel {
         return;
       }
       
-      txtCompilerOutput.setText(result.messages);
+      txtCompilerOutput.setText(result.getMessages());
       System.err.print(result);
     }//end setCompilerResult
 

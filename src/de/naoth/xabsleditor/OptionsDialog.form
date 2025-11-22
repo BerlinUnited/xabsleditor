@@ -148,8 +148,7 @@
           <SubComponents>
             <Component class="javax.swing.JCheckBox" name="cbUseRuby">
               <Properties>
-                <Property name="selected" type="boolean" value="true"/>
-                <Property name="text" type="java.lang.String" value="try to use installed ruby"/>
+                <Property name="text" type="java.lang.String" value="try to use installed ruby for faster compilation"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="txtDefaultCompilationPath">

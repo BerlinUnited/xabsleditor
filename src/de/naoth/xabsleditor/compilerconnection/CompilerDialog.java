@@ -19,7 +19,6 @@ import de.naoth.xabsleditor.Tools;
 import de.naoth.xabsleditor.OptionsDialog;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -87,38 +86,73 @@ public class CompilerDialog extends javax.swing.JDialog
 
         try
         {
-
+          // create the compiler process
           Process compilerProcess = null;
 
-          String compilerCommand = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);          
+          String compilerCommand = configuration.getProperty(OptionsDialog.XABSL_COMPILER_COMMAND);     
+          
           // use the custom compiler command if specified
-          if(compilerCommand != null && !"".equals(compilerCommand))
+          if(compilerCommand != null && !compilerCommand.strip().isEmpty())
           {
-            String cmd = compilerCommand;
-            cmd += " " + agentsFile.getAbsolutePath() + " -i "
-              + outputFile.getAbsolutePath();
+            String[] cmd = new String[]
+            {
+              compilerCommand,
+              agentsFile.getAbsolutePath(),
+              "-i", // intermediate code
+              outputFile.getAbsolutePath()
+            };
+            
+            result.addMessage(String.format("Use custom command:\n%s\n",String.join(" ", cmd)));
             compilerProcess = Runtime.getRuntime().exec(cmd);
           }
           else
           {
-            String[] cmdarray = autoSearchCommand(agentsFile);
-
+            final String compilerDirectoryPath = getCompilerDirectory();
+            
             Boolean useRuby = Boolean.parseBoolean(configuration.getProperty(OptionsDialog.USE_INSTALLED_RUBY));
 
             if(useRuby)
             {
               // try to use the installed ruby
-              try{
-                String cmd = "ruby " + cmdarray[3] + " " + agentsFile.getAbsolutePath() + " -i "
-                  + outputFile.getAbsolutePath();
+              try {
+                String[] cmd = new String[]
+                {
+                  "ruby2",
+                  compilerDirectoryPath + "/xabsl.rb",
+                  agentsFile.getAbsolutePath(),
+                  "-i", // intermediate code
+                  outputFile.getAbsolutePath()
+                };
+                
+                result.addMessage(String.format("Use installed ruby:\n%s\n",String.join(" ", cmd)));
                 compilerProcess = Runtime.getRuntime().exec(cmd);
-              }catch(IOException ex){}
+              } 
+              catch(IOException ex) 
+              {
+                  result.addMessage("INFO: using installed ruby failed:");
+                  result.addMessage("EXCEPTION: " + ex.getMessage() + "\n");
+                  
+                  System.out.println("INFO: using installed ruby failed:");
+                  System.out.println(ex.getMessage());
+              }
             }//end if
 
-            // ...didn't work, try jruby
+            // Use the jruby as default
             if(compilerProcess == null)
             {
-              compilerProcess = Runtime.getRuntime().exec(cmdarray);
+                String[] cmd = new String[]
+                {
+                  "java",
+                  "-jar",
+                  compilerDirectoryPath + "/jruby-complete-1.4.0.jar",
+                  compilerDirectoryPath + "/xabsl.rb",
+                  agentsFile.getAbsolutePath(),
+                  "-i", // intermediate code
+                  outputFile.getAbsolutePath()
+                };
+                
+              result.addMessage(String.format("Use jruby:\n%s\n\n",String.join(" ", cmd)));
+              compilerProcess = Runtime.getRuntime().exec(cmd);
             }
           }
 
@@ -138,7 +172,7 @@ public class CompilerDialog extends javax.swing.JDialog
           if(compilerProcess.exitValue() != 0)
           {
             result.errors = true;
-          }//end if
+          }
 
           String errStr = debugProcessOutpuObserver.getStderr();
           String outStr = debugProcessOutpuObserver.getStdout();
@@ -155,9 +189,9 @@ public class CompilerDialog extends javax.swing.JDialog
               {
                 String fileName = splitted[2];
                 int lineNumber = 0;
-                try{
+                try {
                   lineNumber = Integer.parseInt(splitted[3],10);
-                }catch(NumberFormatException ex)
+                } catch(NumberFormatException ex)
                 {
                   // its not a number ?
                   System.err.println("Couldnt parse the line number of the error message: '" + splitted[3] + "'");
@@ -186,7 +220,9 @@ public class CompilerDialog extends javax.swing.JDialog
           System.err.println(outStr);
           System.err.println(errStr);
 
-          result.messages =  errStr + "\n" + outStr;
+          result.addMessage(outStr);
+          result.addMessage(errStr);
+          
                   
           pbCompiling.setIndeterminate(false);
           pbCompiling.setValue(pbCompiling.getMaximum());
@@ -225,9 +261,12 @@ public class CompilerDialog extends javax.swing.JDialog
     }//end doInBackground
   }//end class CompiliationWorker
 
-  private String[] autoSearchCommand(File agentsFile) throws Exception
+  
+  // TODO: can the jruby jar and xabsl.rb be resources?
+  //       why do we have to search for them?
+  private String getCompilerDirectory() throws Exception
   {
-    // search the installation directory
+    // search the installation directory of the xabsl-editor
     File install = new File(System.getProperty("user.dir"));
 
     CodeSource source = CompilerDialog.class.getProtectionDomain().getCodeSource();
@@ -237,62 +276,29 @@ public class CompilerDialog extends javax.swing.JDialog
       install = new File(url.toURI()).getParentFile();
     }
 
-    boolean compilerDirFound = false;
-    File compilerDir = null;
-
-    while(install != null && install.isDirectory() && !compilerDirFound)
+    while(install != null && install.isDirectory())
     {
-      File[] subdirs = install.listFiles(new FileFilter() {
-
-        @Override
-        public boolean accept(File pathname)
-        {
-          if(pathname.isDirectory() && pathname.getName().equals("xabsl-compiler"))
-          {
-            return true;
-          }
-          else
-          {
-            return false;
-          }
-        }
-        
-      });
+      // filter: select directories named "xabsl-compiler" (should be only one :)
+      File[] xabsl_compiler_dirs = install.listFiles((File pathname) -> 
+              pathname.isDirectory() && pathname.getName().equals("xabsl-compiler")
+      );
       
-      
-      if(subdirs.length > 0)
-      {
-        compilerDirFound = true;
-        compilerDir = subdirs[0];
-
-        break;
-      }
-      else
-      {
-        install = install.getParentFile();
+      // nothing found => move a level up and look in the parent directory
+      if(xabsl_compiler_dirs.length == 0) {
+          install = install.getParentFile();
+      } else {
+          return xabsl_compiler_dirs[0].getAbsolutePath();
       }
     }
 
-    if(compilerDir == null)
-    {
-      throw new Exception("Could not find \"xabsl-compiler\"-directory! Aborting. " +
-        "Please specify your custom path in the options. " +
-        "Assumed installation path was \"" + (install == null ? "null" :  install.getAbsolutePath()) + "\"");
-    }
+    // no compiler was found
+    throw new Exception("Could not find \"xabsl-compiler\"-directory! Aborting. " +
+      "Please specify your custom path in the options. " +
+      "Assumed installation path was \"" + (install == null ? "null" :  install.getAbsolutePath()) + "\"");
 
-    String[] cmdarray = new String[]
-    {
-      "java",
-      "-jar",
-      compilerDir.getAbsolutePath() + "/jruby-complete-1.4.0.jar",
-      compilerDir.getAbsolutePath() + "/xabsl.rb",
-      agentsFile.getAbsolutePath(),
-      "-i",
-      outputFile.getAbsolutePath()
-    };
-
-    return cmdarray;
-  }//end autoSearchCommand
+    // TODO: maybe better to return null and throw an exceptions at a top level?
+    // return null
+  }//end getCompilerDirectory
 
 
 
