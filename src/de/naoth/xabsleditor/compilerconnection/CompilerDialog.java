@@ -117,7 +117,7 @@ public class CompilerDialog extends javax.swing.JDialog
               try {
                 String[] cmd = new String[]
                 {
-                  "ruby2",
+                  "ruby",
                   compilerDirectoryPath + "/xabsl.rb",
                   agentsFile.getAbsolutePath(),
                   "-i", // intermediate code
